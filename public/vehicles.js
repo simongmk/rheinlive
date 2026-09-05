@@ -11,10 +11,10 @@ export class FrameBudget {
   ready(ts){return ts-this.last>=1000/this.fps-1;}
   record(ts,cost){this.last=ts;this.average=this.average*.9+cost*.1;
     // Camera frames follow input, not a fixed clock. A gap is not CPU load.
-    const slow=cost>10;
+    const slow=cost>Math.min(10,1000/this.fps*.4);
     this.slow=slow?this.slow+1:Math.max(0,this.slow-1);this.fast=!slow&&this.average<4?this.fast+1:0;
-    if(this.slow>=6){this.fps=this.fps===30?20:12;this.slow=0;this.fast=0;}
-    if(this.fast>=180){this.fps=this.fps===12?20:30;this.fast=0;}
+    if(this.slow>=6){this.fps=this.fps===60?30:this.fps===30?20:12;this.slow=0;this.fast=0;}
+    if(this.fast>=180){this.fps=this.fps===12?20:this.fps===20?30:60;this.fast=0;}
   }
 }
 
@@ -25,7 +25,7 @@ export function createVehicleLayer(map,{document:doc=document,clock=Date.now,per
   Object.assign(canvas.style,{position:'absolute',inset:'0',pointerEvents:'none'});map.getCanvasContainer().appendChild(canvas);
   let vehicles=[],fetchedAt=0,offset=0,selected=null,theme='dark',frame=null,width=0,height=0,dpr=1,hits=[],destroyed=false,region=null,cameraDirty=false;
   const sprites=new Map(),entries=new Map(),budget=new FrameBudget(),motion=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)');
-  let frames=0,since=perf.now(),observedFps=0,firstFrameAt=null;
+  let frames=0,since=perf.now(),observedFps=0,firstFrameAt=null,nextPaintAt=0,lastCameraAt=-Infinity;
   const fresh=now=>Number.isFinite(fetchedAt)&&now-fetchedAt<=MAX_SNAPSHOT_AGE_MS&&fetchedAt-now<=30000;
   function reconcile(){
     const ts=perf.now(),ids=new Set(vehicles.map(v=>v.id));
@@ -40,7 +40,7 @@ export function createVehicleLayer(map,{document:doc=document,clock=Date.now,per
     if(sprites.has(key))return sprites.get(key);
     const node=doc.createElement('canvas'),size=(radius+7)*2;node.width=Math.ceil(size*dpr);node.height=Math.ceil(size*dpr);const c=node.getContext('2d');c.scale(dpr,dpr);c.globalAlpha=planned?.65:1;c.beginPath();c.arc(size/2,size/2,radius,0,Math.PI*2);c.fillStyle=planned?(theme==='dark'?'#142838':'#ffffff'):v.color;c.fill();c.lineWidth=planned?1:1.8;c.strokeStyle=planned?'#8c9eab':'#ffffff';c.stroke();c.fillStyle=planned?(theme==='dark'?'#a8b9c5':'#475a66'):(v.textColor||'#ffffff');c.font=`700 ${fontSize}px system-ui, sans-serif`;c.textAlign='center';c.textBaseline='middle';const lines=label.split('\n');for(let i=0;i<lines.length;i++)c.fillText(lines[i],size/2,size/2+(i-(lines.length-1)/2)*fontSize,radius*1.75);if(stopped){const x=size/2+radius*.7,y=size/2+radius*.7;c.beginPath();c.arc(x,y,5,0,Math.PI*2);c.fillStyle=theme==='dark'?'#142838':'#ffffff';c.fill();c.strokeStyle=v.color;c.lineWidth=1;c.stroke();c.fillStyle=theme==='dark'?'#ffffff':'#142838';c.font='700 8px system-ui, sans-serif';c.fillText('Ⅱ',x,y+.3,6);}const result={node,size};if(sprites.size>=512)sprites.delete(sprites.keys().next().value);sprites.set(key,result);return result;
   }
-  function paint(){
+  function paint(frameAt=perf.now(),source='update'){
     const start=perf.now();cameraDirty=false;resize();ctx.clearRect(0,0,width,height);hits=[];
     if(doc.hidden){entries.clear();return;}
     const now=clock()+offset,zoom=map.getZoom(),normalRadius=Math.round(Math.min(17,Math.max(10,10+(zoom-9)*1.4))),fontSize=zoom<11?10:12,bounds=map.getBounds();
@@ -62,16 +62,23 @@ export function createVehicleLayer(map,{document:doc=document,clock=Date.now,per
       if(v.id===selected&&active){ctx.beginPath();ctx.arc(xy.x,xy.y,radius+7,0,Math.PI*2);ctx.fillStyle=v.color;ctx.globalAlpha=.2*alpha;ctx.fill();ctx.globalAlpha=alpha;ctx.lineWidth=2;ctx.strokeStyle=v.color;ctx.stroke();}
       const s=sprite(v,radius,fontSize,p.state==='stopped');ctx.globalAlpha=alpha;ctx.drawImage(s.node,xy.x-s.size/2,xy.y-s.size/2,s.size,s.size);ctx.globalAlpha=1;if(active&&alpha>=.2)hits.push({id:v.id,x:xy.x,y:xy.y,radius});
     }
-    const end=perf.now();if(firstFrameAt===null&&hits.length)firstFrameAt=end;budget.record(end,end-start);frames++;if(end-since>=1000){observedFps=Math.round(frames*1000/(end-since));frames=0;since=end;}
+    const end=perf.now(),previousFps=budget.fps;if(firstFrameAt===null&&hits.length)firstFrameAt=end;budget.record(end,end-start);
+    const interval=motion?.matches?1000:1000/budget.fps;
+    // Keep clock deadlines on their original phase. Charging paint duration to
+    // the next deadline can turn cheap 30/60 fps drawings into 20/30 fps.
+    if(source==='clock'&&previousFps===budget.fps)nextPaintAt+=Math.max(1,Math.floor((frameAt-nextPaintAt+1)/interval)+1)*interval;
+    else nextPaintAt=frameAt+interval;
+    if(source==='camera')lastCameraAt=frameAt;
+    frames++;if(end-since>=1000){observedFps=Math.round(frames*1000/(end-since));frames=0;since=end;}
   }
   // A held drag can keep isMoving() true without producing any map frames.
   // Always keep our clock alive; recent camera paints already satisfy its budget.
-  function loop(ts){frame=null;if(destroyed||doc.hidden||!entries.size)return;if(ts-budget.last>=(motion?.matches?1000:1000/budget.fps)-1)paint();schedule();}
+  function loop(ts){frame=null;if(destroyed||doc.hidden||!entries.size)return;if(ts>=nextPaintAt-1&&ts-lastCameraAt>=50)paint(ts,'clock');schedule();}
   function schedule(){if(frame===null&&!destroyed&&!doc.hidden&&entries.size)frame=raf(loop);}
   function wake(){if(frame!==null){caf(frame);frame=null;}paint();schedule();}
   function onVisibility(){if(!doc.hidden)reconcile();wake();}
   const onMove=()=>{cameraDirty=true;};
-  const onRender=()=>{if(cameraDirty&&!doc.hidden)paint();};
+  const onRender=()=>{if(cameraDirty&&!doc.hidden)paint(perf.now(),'camera');};
   map.on('move',onMove);map.on('render',onRender);map.on('resize',wake);doc.addEventListener('visibilitychange',onVisibility);motion?.addEventListener('change',wake);
   return {
     update(next,age=fetchedAt,now=clock()+offset,{immediate=false,discard=[]}={}){for(const id of discard)entries.delete(id);vehicles=next;fetchedAt=age;offset=now-clock();if(immediate)entries.clear();reconcile();wake();},

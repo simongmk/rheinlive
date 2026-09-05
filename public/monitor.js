@@ -88,7 +88,9 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
   }
   $('#locate').onclick=()=>requestLocation(true);
   const timer=setInterval(()=>refresh(),30000),visibility=()=>{if(!document.hidden){renderBoard();refresh();}else{boardController?.abort();boardLoading=false;}};
-  document.addEventListener('visibilitychange',visibility);addEventListener('pagehide',()=>{clearInterval(timer);boardController?.abort();walkController?.abort();geoRevision++;document.removeEventListener('visibilitychange',visibility);},{once:true});
+  const pageShow=e=>{if(e.persisted&&!document.hidden){renderBoard();refresh();}};
+  const pageHide=e=>{boardController?.abort();boardLoading=false;walkController?.abort();walkRevision++;geoRevision++;$('#locate').disabled=false;if(!e.persisted){clearInterval(timer);document.removeEventListener('visibilitychange',visibility);removeEventListener('pageshow',pageShow);removeEventListener('pagehide',pageHide);}};
+  document.addEventListener('visibilitychange',visibility);addEventListener('pagehide',pageHide);addEventListener('pageshow',pageShow);
   return {
     start:()=>requestLocation(true),tick:()=>{if(active&&!document.hidden)renderBoard();},getLocation:()=>location,getStation:()=>station,
     setCity:(id,{manual=false}={})=>{cityId=id;network=null;station=null;board=null;near=[];walks.clear();cardKey='';walkMode='unknown';boardController?.abort();walkController?.abort();walkRevision++;boardLoading=false;if(manual){geoRevision++;$('#locate').disabled=false;}$('#station-monitor').hidden=true;$('#monitor-empty').hidden=false;$('#nearby-stops').replaceChildren();$('#departure-cards').replaceChildren();$('#departure-list').replaceChildren();$('#monitor-search-results').hidden=true;$('#monitor-search').value='';},

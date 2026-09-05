@@ -98,8 +98,8 @@ Das prüft den Scheduler und die Koordinaten, nicht reale Browser-/GPU-FPS.
   Animationsbild und kein eigenes DOM-Element pro Fahrzeug.
 - Fahrzeugsymbole werden einmal gezeichnet und aus einem auf 512 Einträge
   begrenzten Cache wiederverwendet. Die Pixeldichte ist auf 2 begrenzt.
-- Ziel 30 Bilder pro Sekunde; bei anhaltender Last 20 bzw. 12, bei ausreichend
-  Reserven langsame Rückkehr. Kartenbewegungen synchronisieren die Zeichenfläche
+- Start mit 30 Bildern pro Sekunde; nach 180 günstigen Zeichenbildern bis zu
+  60. Bei anhaltender Last zurück auf 30, 20 bzw. 12, mit langsamer Erholung. Kartenbewegungen synchronisieren die Zeichenfläche
   mit der Kartenprojektion. Die erreichbare Rate hängt vom Gerät ab.
 - Unsichtbare Tabs stoppen die Animationsschleife. Ohne Fahrzeuge läuft keine
   Schleife. Die Systemeinstellung für reduzierte Bewegung begrenzt automatische
@@ -231,3 +231,37 @@ sichtbar. Positionsschätzung und geschätzte Halte bleiben knapp markiert.
 Abrufalter, Quellen und Methodik stehen in der Dateninfo. Der Monitor aktualisiert
 seine gesunde Anzeige ohne jede Sekunde wechselnde Abruf-Erklärung. Bei fehlenden
 oder alten Prognosen bleiben Handlungs- und Fehlerhinweise erhalten.
+
+
+## Flüssiger Takt und direkte Haltestellenwahl (05.09.2026)
+
+Die Animationsfrist bleibt jetzt auf einem festen Zeitraster. Die CPU-Zeichenzeit
+wird nicht mehr zum Abstand bis zum nächsten Bild addiert. In deterministischen
+Prüfungen mit 500 Icons und simulierten 3 ms Zeichenzeit bleiben deshalb sowohl
+30 als auch 60 Bilder pro Sekunde erhalten, bei 60- und 120-Hz-Callbacks.
+60 B/s werden erst nach anhaltender Reserve freigegeben; mehr als ca. 6,7 ms
+Zeichenzeit pro Bild lösen dort nach mehreren Bildern die Rückkehr zu 30 aus.
+Das sind Scheduler-Prüfungen, keine gemessenen Browser-/GPU-FPS.
+
+Aktuelle Kamerabilder haben Vorrang. Die eigene Uhr wartet höchstens 50 ms nach
+dem letzten Kamerabild, bevor sie bei stillgehaltener Maus übernimmt. Tests
+prüfen beide Callback-Reihenfolgen bei 30/60 Kamerabildern pro Sekunde: keine
+zusätzlichen Fahrzeugzeichnungen und kein Nachholen verpasster Bilder in Bursts.
+Fades, reale Zeitanker, Haltedauer, Datenablauf und Abfrageintervalle bleiben gleich.
+
+Uhr und Countdown verwenden einen an Sekundengrenzen ausgerichteten Timer statt
+einer zusätzlichen Display-RAF-Schleife. Versteckte oder verlassene Seiten
+stoppen ihn; beim Zurückkehren läuft ein aktueller Tick ohne Nachholschleife.
+Der Abfahrtsmonitor behält seine Wiederaufnahme beim Browser-Zurück vor.
+
+Stationspunkte und Namen sind direkt auswählbar. Sichtbare Kartenobjekte werden
+anhand ihrer Original-ID ins geladene Stationsnetz zurückgeführt; unbekannte IDs
+werden verworfen. Fahrzeuge haben bei überlappenden Klickzielen Vorrang. Hover
+wird höchstens einmal pro Bildschirmbild ausgewertet und während Drags ausgesetzt.
+Es gibt keinen zusätzlichen Download, keine Suche über unsichtbare Haltestellen
+und keine neuen Netzwerkabfragen nur durch Hover. Ein Klick nutzt den bestehenden
+Monitor und dessen begrenzte Abfahrtsabfragen.
+
+Ein frischer geöffneter Fahrtverlauf bleibt beim Nachladen lesbar. Aktualisierte
+Stopps behalten für dieselbe Fahrt die Scrollposition. Das Öffnen des Verlaufs
+orientiert weiterhin am nächsten Halt; Wechsel zu einer anderen Fahrt beginnt neu.

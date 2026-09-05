@@ -27,10 +27,14 @@ test('animation slows down under sustained load and recovers after sustained hea
 test('sparse inexpensive camera frames do not trigger the load throttle',()=>{
   const b=new FrameBudget();for(let i=1;i<=30;i++)b.record(i*150,1);assert.equal(b.fps,30);
 });
+test('60 fps requires sustained headroom and falls back when its draw budget is exceeded',()=>{
+  const b=new FrameBudget();for(let i=1;i<=180;i++)b.record(i*34,1);assert.equal(b.fps,60);
+  for(let i=1;i<=6;i++)b.record(6120+i*17,8);assert.equal(b.fps,30);
+});
 
-function harness(){
+function harness(drawCost=0){
   let now=Date.parse('2026-09-05T12:00:00Z'),ms=0,seq=0,pan=0,paints=0;const tasks=new Map(),listeners=new Map(),handlers=new Map(),draws=[];
-  const context={globalAlpha:1,setTransform(){},scale(){},clearRect(){draws.length=0;paints++;},beginPath(){},arc(){},fill(){},stroke(){},fillText(){},drawImage(_node,x,y){draws.push({x,y,alpha:this.globalAlpha});}};
+  const context={globalAlpha:1,setTransform(){},scale(){},clearRect(){draws.length=0;paints++;ms+=drawCost;},beginPath(){},arc(){},fill(){},stroke(){},fillText(){},drawImage(_node,x,y){draws.push({x,y,alpha:this.globalAlpha});}};
   const doc={hidden:false,createElement:()=>({style:{},setAttribute(){},getContext:()=>({...context}),remove(){}}),addEventListener:(e,f)=>listeners.set(e,f),removeEventListener:e=>listeners.delete(e)};
   const map={getCanvas:()=>({clientWidth:1000,clientHeight:800}),getCanvasContainer:()=>({appendChild(){}}),getZoom:()=>12,getBounds:()=>({contains:()=>true}),project:([lon,lat])=>({x:500+(lon-7)*1000+pan,y:400+(lat-51)*1000}),isMoving:()=>false,on:(e,f)=>handlers.set(e,f),off:e=>handlers.delete(e)};
   const layer=createVehicleLayer(map,{document:doc,clock:()=>now,perf:{now:()=>ms},raf:f=>{tasks.set(++seq,f);return seq;},caf:id=>tasks.delete(id)});
@@ -42,6 +46,35 @@ test('vehicles keep animating at 30 fps while a drag is held still without map r
   const before=h.paints(),initialX=h.draws[0].x;for(let i=1;i<=120;i++){const ms=i*1000/60;h.setTime(start+ms,ms);h.frame();}
   assert.equal(h.paints()-before,60);assert.ok(h.draws[0].x>initialX);assert.equal(h.layer.stats().targetFps,30);
   assert.equal(h.layer.stats().sprites,5);assert.equal(h.tasks.size,1);h.layer.destroy();
+});
+test('real drawing time does not halve the clock rate, including 60 fps on a 120 Hz display',()=>{
+  for(const hz of [60,120]){
+    const h=harness(3),start=h.now();h.layer.update(h.trips,start,start);let before;
+    for(let i=1;i<=hz*10;i++){
+      if(i===hz*8+1)before=h.paints();
+      const ms=i*1000/hz;h.setTime(start+ms,ms);h.frame();
+      if(i===hz*2)assert.equal(h.paints()-1,60,'3 ms draw cost still delivers the initial 30 fps');
+    }
+    assert.equal(h.layer.stats().targetFps,60);assert.equal(h.paints()-before,120);
+    assert.equal(h.layer.stats().sprites,5);assert.equal(h.tasks.size,1);h.layer.destroy();
+  }
+});
+test('60 fps camera motion has no duplicate paints and a held pause resumes without catch-up bursts',()=>{
+  for(const hz of [30,60])for(const clockFirst of [true,false]){
+    const h=harness(),start=h.now();h.layer.update(h.trips,start,start);
+    for(let i=1;i<=180;i++){const ms=i*1000/30;h.setTime(start+ms,ms);h.frame();}
+    assert.equal(h.layer.stats().targetFps,60);const before=h.paints();
+    // Start with an actual camera frame, then exercise both callback orders.
+    h.handlers.get('move')();h.handlers.get('render')();
+    for(let i=1;i<=120;i++){
+      const ms=6000+i*1000/hz;h.setTime(start+ms,ms);if(clockFirst)h.frame();
+      h.pan(i);h.handlers.get('move')();h.handlers.get('render')();if(!clockFirst)h.frame();
+    }
+    assert.equal(h.paints()-before,121);
+    const held=h.paints(),end=6000+120*1000/hz;h.map.isMoving=()=>true;
+    for(let i=1;i<=60;i++){const ms=end+i*1000/60;h.setTime(start+ms,ms);h.frame();}
+    assert.ok(h.paints()-held>=57&&h.paints()-held<=60);assert.equal(h.tasks.size,1);h.layer.destroy();
+  }
 });
 test('camera renders stay aligned without duplicate animation paints in either callback order',()=>{
   for(const clockFirst of [true,false]){

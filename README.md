@@ -7,6 +7,7 @@ can appear when the source supplies them; verified Bonn examples were scheduled
 only. The German interface supports desktop and mobile screens.
 
 - Location-aware nearby stops and a departure monitor with a leave-home countdown.
+- Tap a station dot or label on the map to open its departures.
 - Walking time from the footpath network, adjustable time/buffer, Apple/Google walking links and DB journey planning.
 - Dark and light maps, mapped rail tracks, optional bus/ferry routes, station search and map tilt.
 - City, transport-mode and line filters, plus an accessible list of visible trips.
@@ -14,7 +15,7 @@ only. The German interface supports desktop and mobile screens.
 - One stroke per mapped rail geometry, with rounded close-up tracks, distinct construction sections and a colored selected trip.
 - Icons brake, wait at stations and accelerate again; reported stays take priority over explicitly estimated short dwells.
 - Estimated movement and optional following of a selected trip.
-- One label per station, adaptive animation up to 30 fps, deferred bus network.
+- One label per station, adaptive animation up to 60 fps, deferred bus network.
 - Local load/animation measurements in the information dialog.
 
 **Positions are estimated from stop forecasts and route geometry, not measured

@@ -2,8 +2,9 @@ import {cities,transportModes,MAX_SNAPSHOT_AGE_MS,pointInBounds} from '/lib/citi
 import {prepareTrips,vehiclesAt,vehicleView} from '/lib/transit.mjs';
 import {createTransitMap} from '/map.js';
 import {createDepartureMonitor} from '/monitor.js';
+import {createVisibleTicker} from '/ui-clock.js';
 import {platformForStop,platformText,freshDetail} from '/lib/journey-platform.mjs';
-const $=s=>document.querySelector(s),text=(s,v)=>{$(s).textContent=v;};
+const $=s=>document.querySelector(s),text=(s,v)=>{const n=$(s),value=String(v);if(n.textContent!==value)n.textContent=value;};
 const element=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n;};
 const icon=id=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','icon');svg.setAttribute('aria-hidden','true');const use=document.createElementNS(svg.namespaceURI,'use');use.setAttribute('href','#i-'+id);svg.append(use);return svg;};
 const readPref=(key,fallback)=>{try{return localStorage.getItem('rheinlive:'+key)||fallback;}catch{return fallback;}};
@@ -112,17 +113,17 @@ function selectPath(v){
   map?.select(v,geo);
 }
 async function loadDetail(v){
-  detailController?.abort();const controller=new AbortController();detailController=controller;const rev=revision,id=v.id;const parent=$('#journey-detail');parent.replaceChildren(element('p','','Fahrtverlauf wird geladen …'));
+  detailController?.abort();const controller=new AbortController();detailController=controller;const rev=revision,id=v.id;const parent=$('#journey-detail');if(!detail||detailId!==id||!freshDetail(detail,Date.now()+offset))parent.replaceChildren(element('p','','Fahrtverlauf wird geladen …'));
   try{const r=await fetch(`/api/trip?city=${city.id}&id=${encodeURIComponent(id)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(rev!==revision||selected!==id||controller.signal.aborted)return;if(!r.ok)throw Error(data.error||'Fahrtverlauf nicht erreichbar');detail=data;detailId=id;if(data.cancelled)cancelled.set(id,Date.now());renderJourney();const current=visible.find(x=>x.id===id)||v;renderPlatforms(current);selectPath(current);if(data.cancelled){map?.update(visible.filter(x=>x.id!==id),undefined,undefined,{discard:[id]});$('#follow').disabled=true;}else $('#follow').disabled=false;
   }catch(e){if(controller.signal.aborted||rev!==revision||selected!==id)return;detail=null;detailId=null;$('#trip-alert').hidden=true;text('#journey-summary','Fahrtverlauf');const current=visible.find(x=>x.id===id)||v;renderPlatforms(current);selectPath(current);parent.replaceChildren(element('p','',e.name==='TimeoutError'?'Der Fahrtverlauf braucht gerade zu lange.':e.message));const retry=element('button','text-button','Verlauf erneut laden');retry.onclick=()=>loadDetail(v);parent.append(retry);}
 }
 function renderJourney(){
-  if(!detail)return;const parent=$('#journey-detail');parent.replaceChildren();const notice=$('#trip-alert');notice.hidden=!detail.cancelled&&!detail.alerts.length;notice.textContent=detail.cancelled?'Fahrt entfällt':detail.alerts[0]?.title||'Hinweis zu dieser Fahrt';text('#journey-summary','Fahrtverlauf'+(detail.alerts.length?' · '+detail.alerts.length+' Hinweise':''));
+  if(!detail)return;const parent=$('#journey-detail'),previous=parent.querySelector('.journey-stops'),scroll=previous?.dataset.trip===selected?previous.scrollTop:null;parent.replaceChildren();const notice=$('#trip-alert');notice.hidden=!detail.cancelled&&!detail.alerts.length;notice.textContent=detail.cancelled?'Fahrt entfällt':detail.alerts[0]?.title||'Hinweis zu dieser Fahrt';text('#journey-summary','Fahrtverlauf'+(detail.alerts.length?' · '+detail.alerts.length+' Hinweise':''));
   parent.append(element('h3','',detail.cancelled?'Fahrt entfällt':'Richtung '+cleanName(detail.headsign)),element('p','operator',detail.agency||'Betreiber nicht mitgeliefert'));
   for(const a of detail.alerts){parent.append(element('div','journey-alert',[a.title,a.body].filter(Boolean).join('\n')));}
-  const now=Date.now()+offset,list=element('ol','journey-stops');
+  const now=Date.now()+offset,list=element('ol','journey-stops');list.dataset.trip=selected;
   for(const stop of detail.stops){const ts=stop.departure??stop.arrival,scheduled=stop.scheduledDeparture??stop.scheduledArrival,li=element('li',(ts<now?'passed ':'')+(stop.cancelled?'cancelled':'')),label=element('span','',cleanName(stop.name));li.append(element('time','',time(ts)),label);const notes=[];if(stop.cancelled)notes.push('Halt entfällt');const p=platformText({...stop,plannedOnly:!detail.realtime},visible.find(v=>v.id===selected)?.mode);if(!stop.cancelled&&p.label)notes.push([p.label,p.note].filter(Boolean).join(' · '));if(detail.realtime&&Number.isFinite(ts)&&Number.isFinite(scheduled)&&ts-scheduled>=60000)notes.push('+'+Math.round((ts-scheduled)/60000)+' Min.');if(notes.length)label.append(element('small','',notes.join(' · ')));list.append(li);}parent.append(list);
-  const target=[...list.children].find(li=>!li.classList.contains('passed'));if(target)list.scrollTop=Math.max(0,target.offsetTop-list.offsetTop-15);
+  const target=[...list.children].find(li=>!li.classList.contains('passed'));list.scrollTop=scroll??(target?Math.max(0,target.offsetTop-list.offsetTop-15):0);
   parent.append(element('p','operator',(detail.realtime?'Mit Prognosen':'Nach Fahrplan')+' · Verlauf zuletzt '+time(detail.fetchedAt)));
 }
 function draw(forceList=false){
@@ -187,13 +188,12 @@ $('#theme-dark').onclick=()=>setTheme('dark');$('#theme-light').onclick=()=>setT
 async function init(){
   $('#city-select').replaceChildren(...Object.values(cities).map(c=>{const option=element('option','',c.name);option.value=c.id;return option;}));
   changeCity(city.id,{fromLocation:true});monitor.start();const pref=readPref('theme','dark')==='light'?'light':'dark';theme=pref;document.documentElement.dataset.theme=pref;for(const id of ['dark','light'])$('#theme-'+id).setAttribute('aria-pressed',String(pref===id));
-  try{map=await createTransitMap(city,{theme:pref,onSelect:id=>{const v=visible.find(v=>v.id===id);if(v)showDetails(v);},onMove:()=>{viewBounds=map?.getBounds()??null;updateCount();renderModes();if(tab==='vehicles')renderVehicleList();},onClear:clearSelected,onRailDetail:({active})=>{$('#track-legend').hidden=!active;},onError:message=>{text('#map-error-text',message);$('#map-error').hidden=false;}});map.raw.once('idle',()=>{timings.mapReady=performance.now()-timings.started;});map.raw.on('idle',()=>{$('#map-error').hidden=true;});map.raw.on('dragstart',()=>setFollowing(false));map.raw.on('zoomstart',e=>{if(e.originalEvent)setFollowing(false);});if(network)applyNetwork();syncNetworkFilter();map.fitBounds(city.bounds);map.setBoardStation(monitor.getStation());const position=monitor.getLocation();if(position){map.setLocation(position);if(pendingLocationFocus)map.centerLocation(position);}draw(true);}
+  try{map=await createTransitMap(city,{theme:pref,onStation:f=>monitor.choose(f,false),onSelect:id=>{const v=visible.find(v=>v.id===id);if(v)showDetails(v);},onMove:()=>{viewBounds=map?.getBounds()??null;updateCount();renderModes();if(tab==='vehicles')renderVehicleList();},onClear:clearSelected,onRailDetail:({active})=>{$('#track-legend').hidden=!active;},onError:message=>{text('#map-error-text',message);$('#map-error').hidden=false;}});map.raw.once('idle',()=>{timings.mapReady=performance.now()-timings.started;});map.raw.on('idle',()=>{$('#map-error').hidden=true;});map.raw.on('dragstart',()=>setFollowing(false));map.raw.on('zoomstart',e=>{if(e.originalEvent)setFollowing(false);});if(network)applyNetwork();syncNetworkFilter();map.fitBounds(city.bounds);map.setBoardStation(monitor.getStation());const position=monitor.getLocation();if(position){map.setLocation(position);if(pendingLocationFocus)map.centerLocation(position);}draw(true);}
   catch(e){text('#map-error-text',e.message+' Eine WebGL-fähige Browseransicht wird benötigt.');$('#map-error').hidden=false;}
 }
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',init,{once:true});else init();
-let previous=0;
-function tick(ts){if(ts-previous>=1000){previous=ts;const now=Date.now()+offset;text('#clock',time(now));text('#clock-seconds',secondsFormat.format(new Date(now)).padStart(2,'0'));text('#date',dateFormat.format(new Date(now)));if(isFresh())text('#refresh-label',`Abruf vor ${Math.max(0,Math.floor((now-snapshot.fetchedAt)/1000))} Sek. · Update alle 30 Sek.`);if(!document.hidden){draw();monitor.tick();if($('#info-dialog').open)renderPerformance();}}requestAnimationFrame(tick);}
-requestAnimationFrame(tick);setInterval(refresh,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){draw(true);refresh();}});addEventListener('online',refresh);
+function tick(){const now=Date.now()+offset;text('#clock',time(now));text('#clock-seconds',secondsFormat.format(new Date(now)).padStart(2,'0'));text('#date',dateFormat.format(new Date(now)));if(isFresh())text('#refresh-label',`Abruf vor ${Math.max(0,Math.floor((now-snapshot.fetchedAt)/1000))} Sek. · Update alle 30 Sek.`);draw();monitor.tick();if($('#info-dialog').open)renderPerformance();}
+createVisibleTicker(tick);setInterval(refresh,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});addEventListener('online',refresh);
 // Optional WebMCP. The same state transitions serve clicks and agent requests.
 if(document.modelContext?.registerTool){
   const lifecycle=new AbortController(),register=tool=>{try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}};

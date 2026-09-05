@@ -1,9 +1,10 @@
 import {createVehicleLayer} from './vehicles.js';
+import {bindMapPicking} from './map-picking.js';
 import {createRailDetail,DETAIL_ZOOM} from './rail-detail.js';
 // Static network layers stay in MapLibre; vehicle animation uses its own cached canvas.
 const collection=features=>({type:'FeatureCollection',features});
 const empty=()=>collection([]);
-export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=()=>{},onMove=()=>{},onClear=()=>{},onError=()=>{},onRailDetail=()=>{}}={}){
+export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=()=>{},onStation=()=>{},onMove=()=>{},onClear=()=>{},onError=()=>{},onRailDetail=()=>{}}={}){
   if(!window.maplibregl)throw new Error('Kartenbibliothek konnte nicht geladen werden.');
   const map=new maplibregl.Map({container:'map',style:await mapStyle(initialTheme),center:[city.center[1],city.center[0]],zoom:11.7,minZoom:9,maxZoom:18,pitch:0,attributionControl:false,collectResourceTiming:true,canvasContextAttributes:{antialias:true}});
   map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:'<a href="https://transitous.org/sources/" target="_blank">Verkehrsdaten: Transitous</a>'}),'bottom-right');
@@ -41,8 +42,9 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     }
   }
   map.on('style.load',mount);
-  map.on('click',e=>{const id=vehicleLayer.hitTest(e.point);if(id)onSelect(id);else onClear();});
-  map.on('mousemove',e=>{map.getCanvas().style.cursor=vehicleLayer.hitTest(e.point)?'pointer':'';});
+  let stationIndex=new Map();
+  const removePicking=bindMapPicking(map,{vehicles:vehicleLayer,stationById:id=>stationIndex.get(id),onVehicle:onSelect,onStation,onClear});
+  map.on('remove',removePicking);
   map.on('moveend',onMove);map.on('error',e=>{if(e.sourceId!=='detail-tracks')onError(e.error?.message||'Die Karte konnte nicht vollständig geladen werden.');});
   return {
     raw:map,
@@ -55,7 +57,7 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     centerLocation:p=>map.easeTo({center:[p.point[1],p.point[0]],zoom:p.accuracy>300?13.2:14.8,pitch:0,duration:700,padding:{top:100,bottom:innerWidth<760?380:60,left:innerWidth<760?25:370,right:60}}),
     setBoardStation:f=>{boardStation=collection(f?[f]:[]);map.getSource('board-station')?.setData(boardStation);},
     select:(v,geometry)=>{selected=v?.id??null;selectedGeometry=geometry||collection(v?v.segments.filter(s=>s.geometry==='shape').map(s=>({type:'Feature',geometry:{type:'LineString',coordinates:s.points.map(p=>[p[1],p[0]])},properties:{color:v.color}})):[]);map.getSource('selected-route')?.setData(selectedGeometry);vehicleLayer.select(selected);},
-    setNetwork:data=>{network=data.lines;stops=data.stops;map.getSource('network')?.setData(network);map.getSource('stations')?.setData(stops);},
+    setNetwork:data=>{network=data.lines;stops=data.stops;stationIndex=new Map(stops.features.filter(f=>f.properties.queryId).map(f=>[f.properties.queryId,f]));map.getSource('network')?.setData(network);map.getSource('stations')?.setData(stops);},
     // Physical tracks are infrastructure context; route filters apply to trips and stops.
     setFilter:(modes,lineKeys)=>{
       const classes=[];if(modes.includes('tram'))classes.push('transit');if(modes.some(m=>['suburban','regional','long_distance'].includes(m)))classes.push('rail');
