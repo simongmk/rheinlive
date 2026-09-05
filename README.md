@@ -3,7 +3,11 @@
 An open-source, noncommercial web app showing Cologne Stadtbahn trips on an
 OpenStreetMap map. It displays numbered moving markers, line filters, the next
 stop, current arrival forecasts and delays. The German interface adapts to
-desktop and mobile screens.
+desktop and mobile screens, with light floating panels, collapsible mobile
+filters and a compact trip detail card.
+
+The [extension plan](docs/EXPANSION.md) describes the next steps for buses,
+additional cities and larger usage. These extensions are not enabled yet.
 
 **Positions are estimated from current stop forecasts and route geometry,
 not measured GPS locations.** The map shows only trips with realtime forecasts

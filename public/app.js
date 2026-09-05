@@ -15,6 +15,12 @@ function setLines(){for(const line of city.lines){const b=el('button','line-filt
 setLines();
 $('#all-lines').onclick=()=>setActiveLines(city.lines.map(l=>l.id));
 $('#include-schedule').onchange=()=>draw();
+const panelToggle=$('#panel-toggle');
+panelToggle.onclick=()=>{
+  const expanded=panelToggle.getAttribute('aria-expanded')!=='true';
+  panelToggle.setAttribute('aria-expanded',String(expanded));
+  $('.overview').classList.toggle('expanded',expanded);
+};
 function showInfo(){ $('#info-dialog').showModal(); }
 $('#info-open').onclick=showInfo;$('#quality-open').onclick=showInfo;$('#info-close').onclick=()=>$('#info-dialog').close();
 $('#info-dialog').addEventListener('click',e=>{if(e.target===$('#info-dialog'))$('#info-dialog').close();});
@@ -36,15 +42,16 @@ function updateCount(){
   if(!snapshot||snapshot.stale||Date.now()+offset-snapshot.fetchedAt>MAX_SNAPSHOT_AGE_MS)return;
   const coverage=vehicleView(candidates.filter(inView));
   text('#quality-label',`${coverage.realtime} mit Prognose · ${coverage.schedule} nur Fahrplan`);
-  text('#feed-status',!coverage.total?'KEINE FAHRTEN IM AUSSCHNITT':!coverage.realtime?'KEINE ECHTZEITPROGNOSEN':coverage.schedule?'TEILWEISE ECHTZEITPROGNOSEN':'MIT ECHTZEITPROGNOSEN');
+  text('#feed-status',!coverage.total?'Keine Fahrten im Ausschnitt':!coverage.realtime?'Keine Echtzeitprognosen':coverage.schedule?'Echtzeitdaten · teilweise verfügbar':'Echtzeitprognosen verfügbar');
   $('#status-dot').classList.toggle('live',coverage.realtime>0);
   text('#coverage-info',coverage.total&&!coverage.realtime?'Für diese Fahrten fehlen Echtzeitprognosen. Verspätungen sind unbekannt.':$('#include-schedule').checked?'Gestrichelter Rand: Fahrt ohne Echtzeitprognose.':'Fahrten ohne Echtzeitprognose sind ausgeblendet.');
 }
 function showDetails(v){selected=v.id;detailKey=[v.id,v.segment.key,v.state,v.quality,v.segment.arrival,v.segment.geometry].join('|');$('#vehicle-detail').hidden=false;const content=$('#detail-content');content.replaceChildren();
+  for(const[id,m]of markers)m.getElement()?.querySelector('.train-dot')?.classList.toggle('selected',id===v.id);
   const line=el('span','detail-line',v.line);line.style.setProperty('--line-color',v.color);content.append(line,el('p','detail-direction',v.state==='stopped'?'AN DER HALTESTELLE':'NÄCHSTER HALT'),el('h2','',cleanName(v.state==='stopped'?v.segment.from.name:v.segment.to.name)),el('span','detail-quality',v.quality==='realtime'?'≈ Mit Echtzeitprognose':'◷ Nach Fahrplan'));
   const stops=el('div','stop-progress');for(const [stop,ts,cls]of[[v.segment.from,v.segment.departure,'previous'],[v.segment.to,v.segment.arrival,'next']]){const row=el('div',`stop-row ${cls}`);row.append(el('span','',cleanName(stop.name)),el('time','',time(ts)));stops.append(row);}content.append(stops);
   const delay=v.segment.scheduledArrival===null?null:Math.round((v.segment.arrival-v.segment.scheduledArrival)/60_000);
-  content.append(el('p','delay',v.quality==='schedule'?'Keine aktuelle Verspätungsinformation':delay===null?'Aktuelle Ankunftsprognose':delay>0?`Ankunft ${delay} Min. später als geplant`:delay<0?`Ankunft ${Math.abs(delay)} Min. früher als geplant`:'Ankunft laut Prognose pünktlich'));
+  content.append(el('p',`delay ${v.quality==='realtime'&&delay>0?'is-late':''}`,v.quality==='schedule'?'Keine aktuelle Verspätungsinformation':delay===null?'Aktuelle Ankunftsprognose':delay>0?`+${delay} Min. · Ankunft später als geplant`:delay<0?`${Math.abs(delay)} Min. früher als geplant`:'Ankunft laut Prognose pünktlich'));
   if(v.segment.geometry==='straight')content.append(el('p','delay','Streckenverlauf fehlt: Position zwischen Haltestellen geschätzt.'));
   if(selectedPath)selectedPath.remove();selectedPath=L.polyline(v.segments.map(s=>s.points),{color:v.color,weight:4,opacity:.75,dashArray:v.segment.geometry==='straight'?'6 6':undefined,interactive:false}).addTo(map);
 }
@@ -54,7 +61,7 @@ function draw(){const now=Date.now()+offset;candidates=snapshot&&!snapshot.stale
     }
     if(selected){const v=visible.find(x=>x.id===selected);if(!v)clearSelected();else if(detailKey!==[v.id,v.segment.key,v.state,v.quality,v.segment.arrival,v.segment.geometry].join('|'))showDetails(v);}
   }updateCount();
-  if(snapshot&&!snapshot.stale&&now-snapshot.fetchedAt>MAX_SNAPSHOT_AGE_MS){text('#feed-status','DATEN VERALTET');text('#quality-label','Prognosen veraltet');text('#coverage-info','Keine aktuellen Positionen verfügbar.');$('#status-dot').classList.remove('live');notify('Warte auf aktuelle Fahrtdaten','Die letzten Positionen sind zu alt und werden nicht weiter angezeigt.');}
+  if(snapshot&&!snapshot.stale&&now-snapshot.fetchedAt>MAX_SNAPSHOT_AGE_MS){text('#feed-status','Daten veraltet');text('#quality-label','Prognosen veraltet');text('#coverage-info','Keine aktuellen Positionen verfügbar.');$('#status-dot').classList.remove('live');notify('Warte auf aktuelle Fahrtdaten','Die letzten Positionen sind zu alt und werden nicht weiter angezeigt.');}
 }
 async function refresh(){if(loading||document.hidden)return;loading=true;$('#retry').disabled=true;
   try{const r=await fetch('/api/vehicles?city=cologne',{signal:AbortSignal.timeout(20_000)});const result=await r.json();if(!r.ok||result.stale)throw new Error(result.error||'Die Datenquelle ist nicht erreichbar.');
@@ -63,7 +70,7 @@ async function refresh(){if(loading||document.hidden)return;loading=true;$('#ret
     text('#dataset-info','Datenabruf: '+new Date(result.fetchedAt).toLocaleString('de-DE',{timeZone:city.timezone})+' Uhr (Köln). Quelle: Transitous / MOTIS.');
     if(!trips.length)notify('Gerade keine Fahrten gemeldet','Die Datenquelle liefert aktuell keine Stadtbahnfahrten für Köln. Das kann eine Datenlücke oder eine Betriebspause sein.');
     draw();
-  }catch(e){snapshot=null;trips=[];draw();text('#feed-status','DATEN NICHT ERREICHBAR');text('#quality-label','Keine aktuellen Fahrtdaten');text('#coverage-info','');$('#status-dot').classList.remove('live');notify('Die Verbindung fehlt gerade',e.name==='TimeoutError'?'Die Verkehrsdaten brauchen zu lange. Wir versuchen es automatisch erneut.':e.message);text('#refresh-label','Nächster Versuch in 30 Sekunden');
+  }catch(e){snapshot=null;trips=[];draw();text('#feed-status','Daten nicht erreichbar');text('#quality-label','Keine aktuellen Fahrtdaten');text('#coverage-info','');$('#status-dot').classList.remove('live');notify('Die Verbindung fehlt gerade',e.name==='TimeoutError'?'Die Verkehrsdaten brauchen zu lange. Wir versuchen es automatisch erneut.':e.message);text('#refresh-label','Nächster Versuch in 30 Sekunden');
   }finally{loading=false;$('#retry').disabled=false;}
 }
 $('#retry').onclick=refresh;

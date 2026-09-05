@@ -2,55 +2,61 @@
 <html lang="de">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#101c24"><title>Rheinlive · Köln in Bewegung</title>
-<meta name="description" content="Kölns Stadtbahnen auf einer offenen Karte. Bewegte Fahrten, Linien und nächste Halte – mit transparenter Positionsqualität.">
+<meta name="theme-color" content="#f5f6f2"><title>Rheinlive · Köln in Bewegung</title>
+<meta name="description" content="Kölns Stadtbahnen auf einer offenen Karte. Aktuelle Prognosen, Verspätungen und nächste Halte auf einen Blick.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/style.css?v=2">
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-<script type="module" src="/app.js"></script>
+<script type="module" src="/app.js?v=2"></script>
 </head>
 <body>
 <main class="app">
 <div id="map" aria-label="Interaktive Karte der Kölner Stadtbahn"></div>
 <div id="map-error" class="map-error" hidden>Karte konnte nicht geladen werden. Prüfe deine Internetverbindung und lade die Seite erneut.</div>
 <header class="topbar">
-<a class="brand" href="/" aria-label="Rheinlive Startseite"><span class="brand-mark" aria-hidden="true">r<span>•</span></span><span>rheinlive<span class="brand-dot">.</span></span></a>
-<div class="city"><span class="city-pin" aria-hidden="true">◉</span>Köln<span class="region">Stadtbahn</span></div>
-<button class="icon-button info-button" id="info-open" aria-label="Über die Daten und die App" title="Über die Daten">i</button>
+<a class="brand" href="/" aria-label="Rheinlive Startseite">
+<svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect width="40" height="40" rx="13" fill="currentColor"/><path d="M12 28V15a4 4 0 0 1 4-4h4a5 5 0 0 1 0 10h-2l10 7" stroke="#c3f16b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="12" r="3" fill="#c3f16b"/></svg>
+<span>rheinlive<span class="brand-dot">.</span></span></a>
+<div class="city"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg><span>Köln</span><span class="region">Stadtbahn</span></div>
+<button class="icon-button info-button" id="info-open" aria-label="Über die Daten und die App" title="Über Rheinlive"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v6m0-10v.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
 </header>
 <aside class="overview" aria-label="Fahrtenübersicht">
-<div class="eyebrow"><span class="status-dot" id="status-dot"></span><span id="feed-status" role="status">DATEN WERDEN GELADEN</span></div>
-<div class="clock-row"><time id="clock">--:--</time><span class="clock-seconds" id="clock-seconds">--</span></div>
-<p id="date" class="date">Köln · Europe/Berlin</p>
-<div class="count-row"><strong id="vehicle-count">–</strong><span>Fahrten auf<br>der Karte</span><span class="train-glyph" aria-hidden="true">▥</span></div>
-<button class="quality-link" id="quality-open"><span class="quality-symbol">≈</span><span id="quality-label">Positionen sind berechnet</span><span aria-hidden="true">↗</span></button>
-<label class="schedule-option"><input id="include-schedule" type="checkbox">Auch Fahrplanfahrten zeigen</label>
-<p id="coverage-info" class="coverage-info">Fahrten ohne Echtzeitprognose sind ausgeblendet.</p>
-<div class="line-heading"><span>LINIEN</span><button id="all-lines" type="button">Alle zeigen</button></div>
+<div class="overview-main">
+<div class="city-title"><p class="overline">STADTBAHN · 12 LINIEN</p><h1>Köln<span>.</span></h1></div>
+<div class="vehicle-metric"><strong id="vehicle-count">–</strong><span>Fahrten im<br class="desktop-break"> Kartenausschnitt</span><svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="10" y="5" width="20" height="25" rx="6" stroke="currentColor" stroke-width="1.6"/><path d="M10 19h20M20 6v13M14 30l-3 5m15-5 3 5m-17-1h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="15" cy="25" r="1.6" fill="currentColor"/><circle cx="25" cy="25" r="1.6" fill="currentColor"/></svg></div>
+</div>
+<div class="feed-row"><span class="status-dot" id="status-dot"></span><span id="feed-status" role="status">Verbinde mit dem Netz …</span></div>
+<button id="panel-toggle" class="panel-toggle" type="button" aria-expanded="false" aria-controls="panel-settings"><span>Linien &amp; Darstellung</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<div id="panel-settings" class="panel-settings">
+<div class="line-heading"><h2>Deine Linien</h2><button id="all-lines" type="button">Alle auswählen</button></div>
 <div id="lines" class="lines" aria-label="Linien auf der Karte auswählen"></div>
+<div class="data-settings">
+<div class="setting-row"><div><label for="include-schedule">Fahrplan ergänzen</label><span>Auch ohne Echtzeitprognose</span></div><input id="include-schedule" class="switch" type="checkbox"></div>
+<button class="quality-link" id="quality-open"><span class="quality-symbol" aria-hidden="true">≈</span><span id="quality-label">Positionen sind geschätzt</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<p id="coverage-info" class="coverage-info">Fahrten ohne Echtzeitprognose sind ausgeblendet.</p>
+</div>
+</div>
 <p id="refresh-label" class="refresh-label">Verbinde mit der Datenquelle …</p>
 </aside>
+<div class="time-card" aria-label="Aktuelle Uhrzeit in Köln"><span class="time-label">HIER &amp; JETZT</span><div class="clock-row"><time id="clock">--:--</time><span id="clock-seconds" class="clock-seconds">--</span></div><p id="date" class="date">Köln · Europe/Berlin</p></div>
 <div class="map-controls" aria-label="Kartensteuerung">
-<button id="zoom-in" class="icon-button" aria-label="Karte vergrößern" title="Vergrößern">+</button>
-<button id="zoom-out" class="icon-button" aria-label="Karte verkleinern" title="Verkleinern">−</button>
-<span class="control-separator"></span>
-<button id="recenter" class="icon-button" aria-label="Ganzes Kölner Netz anzeigen" title="Netz zentrieren">⌖</button>
+<button id="recenter" class="icon-button recenter-button" aria-label="Ganzes Kölner Netz anzeigen" title="Netz zentrieren"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+<div class="zoom-group"><button id="zoom-in" class="icon-button" aria-label="Karte vergrößern" title="Vergrößern"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><span class="control-separator"></span><button id="zoom-out" class="icon-button" aria-label="Karte verkleinern" title="Verkleinern"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button></div>
 </div>
-<section id="vehicle-detail" class="vehicle-detail" aria-label="Ausgewählte Fahrt" hidden><button id="detail-close" class="close-button" aria-label="Fahrtdetails schließen">×</button><div id="detail-content"></div></section>
-<div class="bottom-note"><span class="moving-dot" aria-hidden="true"></span><span>Köln in Bewegung</span><span class="note-divider">/</span><span>Offene Karte. Offene Daten.</span></div>
-<div class="notice" id="notice" role="status" hidden><strong id="notice-title"></strong><p id="notice-body"></p><button id="retry">Erneut laden <span aria-hidden="true">↻</span></button></div>
+<section id="vehicle-detail" class="vehicle-detail" aria-label="Ausgewählte Fahrt" hidden><div class="sheet-handle" aria-hidden="true"></div><button id="detail-close" class="close-button" aria-label="Fahrtdetails schließen"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 7 10 10M7 17 17 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><div id="detail-content"></div></section>
+<div class="map-hint"><span class="hint-dot" aria-hidden="true"></span><span>Bahn antippen für nächste Halte</span></div>
+<div class="notice" id="notice" role="status" hidden><span class="notice-icon" aria-hidden="true">!</span><div><strong id="notice-title"></strong><p id="notice-body"></p><button id="retry" type="button">Erneut verbinden <span aria-hidden="true">↻</span></button></div></div>
 </main>
 <dialog id="info-dialog" aria-labelledby="info-title">
-<div class="dialog-body"><button id="info-close" class="close-button" aria-label="Information schließen">×</button>
-<span class="eyebrow">GUT ZU WISSEN</span><h1 id="info-title">Wo ist die Bahn<br><em>wirklich?</em></h1>
-<p>Rheinlive zeigt die Kölner Stadtbahn auf einer offenen Karte. Die Position einer Fahrt wird aus den verfügbaren Fahrtdaten berechnet.</p>
-<div class="explanation"><span class="explanation-icon">≈</span><div><h2>Mit Echtzeitprognose</h2><p>Aktuelle Ankunfts- und Abfahrtszeiten verschieben die Fahrt auf ihrer Strecke. Die Position dazwischen ist eine Schätzung, kein GPS-Messpunkt.</p></div></div>
-<div class="explanation"><span class="explanation-icon planned">◷</span><div><h2>Nach Fahrplan</h2><p>Ohne aktuelle Prognose folgt die Fahrt dem Sollfahrplan. Ob sie tatsächlich fährt oder verspätet ist, ist dann unbekannt. Diese Fahrten sind standardmäßig ausgeblendet. Mit „Auch Fahrplanfahrten zeigen“ erscheinen sie mit gestricheltem Rand.</p></div></div>
-<p class="data-warning">Die verwendete Schnittstelle liefert Fahrtabschnitte und Zeiten, keine GPS-Messpunkte. Auch mit Echtzeitprognosen können Ausfälle, Umleitungen und Datenlücken fehlen. Bitte prüfe verbindliche Abfahrten bei der KVB.</p>
-<h2>Quellen &amp; offene Software</h2>
-<p><a class="source-code" href="https://github.com/simongmk/rheinlive" target="_blank" rel="noreferrer">Quellcode &amp; Feedback auf GitHub ↗</a></p>
-<ul class="sources"><li><a href="https://transitous.org/sources/" target="_blank" rel="noreferrer">Verkehrsdaten und ihre jeweiligen Lizenzen: Transitous ↗</a></li><li><a href="https://transitous.org/" target="_blank" rel="noreferrer">Offene Fahrplanauskunft: Transitous / MOTIS ↗</a></li><li><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">Kartendaten: OpenStreetMap-Mitwirkende (ODbL) ↗</a></li><li><a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Kartenbibliothek: Leaflet (BSD-2-Clause) ↗</a></li></ul>
-<p class="fine-print" id="dataset-info">Fahrtdaten werden geladen.</p><p class="fine-print">Das Alter der ursprünglichen Prognose wird von dieser Schnittstelle nicht mitgeliefert. Die App zeigt den Zeitpunkt ihrer letzten Abfrage. Eigenständiges Projekt. Kein offizielles Angebot der KVB oder des VRS. App-Code: MIT-Lizenz.</p>
+<div class="dialog-body"><button id="info-close" class="close-button" aria-label="Information schließen"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 7 10 10M7 17 17 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+<span class="overline">DIE DATEN HINTER DEN PUNKTEN</span><h1 id="info-title">Wo ist die Bahn<br><em>wirklich?</em></h1>
+<p>Rheinlive macht den Kölner Stadtbahnverkehr sichtbar. Jede Position wird aus den verfügbaren Fahrtdaten und dem Streckenverlauf berechnet.</p>
+<div class="explanation"><span class="explanation-icon">≈</span><div><h2>Mit Echtzeitprognose</h2><p>Aktuelle Ankunfts- und Abfahrtszeiten berücksichtigen Verspätungen. Die Position zwischen den Halten ist eine Schätzung, kein GPS-Messpunkt.</p></div></div>
+<div class="explanation"><span class="explanation-icon planned">◷</span><div><h2>Nach Fahrplan</h2><p>Ohne Prognose ist unbekannt, ob die Bahn tatsächlich fährt oder verspätet ist. Mit „Fahrplan ergänzen“ werden diese Fahrten sichtbar – erkennbar am gestrichelten Rand.</p></div></div>
+<p class="data-warning">Ausfälle, Umleitungen und Datenlücken können fehlen. Verbindliche Abfahrtsinformationen findest du bei der KVB.</p>
+<h2>Offene Karte. Offener Quellcode.</h2>
+<ul class="sources"><li><a href="https://github.com/simongmk/rheinlive" target="_blank" rel="noreferrer">Quellcode &amp; Feedback auf GitHub <span>↗</span></a></li><li><a href="https://transitous.org/sources/" target="_blank" rel="noreferrer">Transitous · Verkehrsdaten &amp; Lizenzen <span>↗</span></a></li><li><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap · Kartendaten (ODbL) <span>↗</span></a></li><li><a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet · Kartenbibliothek (BSD-2-Clause) <span>↗</span></a></li></ul>
+<p class="fine-print" id="dataset-info">Fahrtdaten werden geladen.</p><p class="fine-print">Das ursprüngliche Alter einer Prognose liefert die Schnittstelle nicht mit. Angezeigt wird der Zeitpunkt unserer letzten Abfrage. Eigenständiges Projekt, kein offizielles Angebot der KVB oder des VRS. App-Code: MIT-Lizenz.</p>
 </div></dialog>
 </body></html>
