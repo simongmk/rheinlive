@@ -42,3 +42,14 @@ contains eight historical departures from the public MOTIS `/api/v6/stoptimes`
 response for `de-DELFI_de:05315:11311:1:13`. Receipt time is recorded from
 the original capture file timestamp. Both are test-only and use the separate
 Transitous/DELFI data attribution and licenses described above.
+
+## Physical track and construction evidence
+
+`severin-osm-2026-09-05.json` is the actual response from
+https://overpass-api.de/api/interpreter, database timestamp
+2026-09-05T14:12:00Z. Query: `way[railway~"^(light_rail|tram|rail|construction|proposed)$"](50.927,6.952,50.933,6.964);out geom;`
+with JSON output. It records twelve OSM ways and their original nodes/tags.
+This fixture is © OpenStreetMap contributors, ODbL 1.0, **not** covered by
+the transit-fixture licenses above or the application's MIT license.
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/1-0/

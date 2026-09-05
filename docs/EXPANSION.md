@@ -17,7 +17,13 @@ Messungen und Anbieteroptionen stehen in [DATA-SOURCES.md](DATA-SOURCES.md).
    datieren und Quellenangaben beibehalten. Anschließend mit
    `node scripts/prepare-station-index.mjs` die serverseitige Monitor-Freigabeliste
    aus allen Netzdateien erneuern. Keine Fahrzeug-Fixtures ausliefern.
-4. Die Region im Auswahlmenü erscheint aus der gemeinsamen Stadt-Konfiguration.
+4. Für die Nahansicht einen vollständigen OSM-Gleisabzug mit 0,01° Rand um
+   das Gebiet abrufen und mit `node scripts/prepare-rails.mjs CITY raw-osm.json`
+   importieren. Bauabschnitte separat lassen, Größenbudget einhalten und
+   `sourceDate`/ODbL-Hinweis erhalten. Ohne Detaildatei bleibt die Basiskarte
+   verfügbar. Sehr große Regionen benötigen statt eines einzigen Abzugs
+   räumliche Kacheln.
+5. Die Region im Auswahlmenü erscheint aus der gemeinsamen Stadt-Konfiguration.
    API und Cache verwenden automatisch getrennte Schlüssel. Tests, Build und
    echte API-Prüfung vor Veröffentlichung ausführen.
 

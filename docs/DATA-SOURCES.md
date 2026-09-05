@@ -34,6 +34,37 @@ Fahrzeuge.** Eine als „Realtime“ vermarktete Karte ist dafür kein Nachweis.
 [Transitous-Dokumentation](https://transitous.org/doc/),
 [Nutzungsrichtlinie](https://transitous.org/api/).
 
+## Gleiskurven und Bauabschnitte
+
+Die Nahansicht verwendet zusätzlich einen tatsächlichen OpenStreetMap-Abzug
+vom 5. September 2026 (Overpass, `out geom`). Die Übersicht verwendet weiterhin
+OpenFreeMap. Die ursprünglichen OSM-Koordinaten vermeiden die gröbere
+Quantisierung und Vereinfachung der bis Zoom 14 gelieferten Basiskacheln.
+Eine einmalige grafische Rundung bleibt ungefähr 0,6 Meter innerhalb der
+Originalsegmente. Gemeinsame OSM-Knoten, Weichen und Endpunkte bleiben fest;
+parallele Gleise werden nicht räumlich zusammengezogen. Dies erhöht die
+Darstellungsqualität, liefert aber keine vermessene Gleis- oder GPS-Genauigkeit.
+
+**Severinstraße:** Der am 5. September gelesene OpenFreeMap-Abzug endet mit den
+Nord-Süd-Tunnelgleisen bei etwa 50.9295293/6.9570795 und
+50.9295686/6.9572487. Beide liegen innerhalb der Kachel, nicht an ihrem Rand.
+Im OSM-Abzug schließen die Ways 49809820 und 193546041 genau an dieselben
+Knoten der Betriebsabschnitte 385760001 und 385760002 an. Sie sind als
+`railway=construction`, `construction=light_rail`, `tunnel=yes` erfasst.
+Die bisher fehlende Fortsetzung war deshalb eine Auslassung der Kartenebene.
+Sie darf nicht als durchgehend befahrbare Strecke ergänzt werden: Die
+[KVB beschreibt die Unterbrechung zwischen Severinstraße und Heumarkt](https://www.kvb.koeln/unternehmen/projekte/nord-sued-stadtbahn/index.html)
+wegen des noch nicht fertiggestellten Gleiswechsels Waidmarkt.
+
+Rheinlive zeigt solche erfassten Bauabschnitte in der Nahansicht ocker
+**gestrichelt**, mit eigener Legende. Das ist eine datierte OSM-Klassifikation,
+keine aktuelle Baustellenmeldung oder zugesagte Befahrbarkeit. Geplante,
+abgebaute und stillgelegte Strecken werden nicht als Betriebsstrecken importiert.
+Die reale Severinstraßen-Antwort liegt als ODbL-Testbeleg im Quellcode; der
+reproduzierbare Import steht in `scripts/prepare-rails.mjs`. Der Browser fragt
+Overpass nicht ab. Lücken in der Quelle werden nicht durch erfundene
+Verbindungen oder verlängerte Linien verdeckt.
+
 ## Gemessene aktuelle Abdeckung
 
 ### Fernzüge ergänzt

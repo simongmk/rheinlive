@@ -11,7 +11,7 @@ only. The German interface supports desktop and mobile screens.
 - Dark and light maps, mapped rail tracks, optional bus/ferry routes, station search and map tilt.
 - City, transport-mode and line filters, plus an accessible list of visible trips.
 - Selected-trip direction, operator, stops, available alerts and platform changes.
-- One stroke per mapped rail geometry, including tunnels, with a colored selected trip.
+- One stroke per mapped rail geometry, with rounded close-up tracks, distinct construction sections and a colored selected trip.
 - Station dwell from reported arrival/departure, with duration and departure countdown.
 - Estimated movement and optional following of a selected trip.
 - One label per station, adaptive animation up to 30 fps, deferred bus network.

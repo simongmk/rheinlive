@@ -14,7 +14,7 @@ Gruppenanker zusammengefasst. Verschiedene bekannte Eltern-IDs und entfernte
 gleichnamige Haltestellen bleiben getrennt. Alle Verkehrsmittel und Linien
 bleiben für die Filter erhalten; die Live-Haltefolge behält ihre Steigdetails.
 
-Die Gleise werden jetzt unmittelbar aus der Transportation-Ebene der bereits
+In der Übersicht werden Gleise unmittelbar aus der Transportation-Ebene der bereits
 geladenen OpenFreeMap-Vektorkacheln gezeichnet: eine dünne Linie je gelieferter
 Gleisgeometrie, ohne zusätzliche Fahrtrouten je Linie oder Verkehrsmittel.
 Tunnelgleise bleiben enthalten; parallele Gleise werden nicht durch räumliche
@@ -22,6 +22,36 @@ Toleranz zusammengezogen. Die bisherigen Strich-/Umrandungsebenen der Basiskarte
 werden ersetzt. Eine ausgewählte Fahrt hebt ihren berechneten Weg separat hervor.
 Kartendaten können je Zoomstufe vereinfacht oder unvollständig sein.
 Bus-/Fährwege bleiben optionale, pro Verkehrsmittel komprimierte Routen.
+
+## Detaillierte Gleise bei naher Ansicht
+
+Ab Zoom 14,3 lädt Rheinlive genau einen regionalen Gleisabzug, sofern der
+sichtbare Ausschnitt vollständig darin liegt. Erst nach erfolgreicher
+Verarbeitung ersetzt er die normale Gleisebene; bis dahin, bei Fehlern und
+außerhalb des abgedeckten Gebiets bleibt die Basiskarte sichtbar. Ein Wechsel
+zwischen Regionen ersetzt die vorherige Detailquelle. Ausgeschaltete Gleise
+und die Übersicht lösen keinen Download aus. Wiederholte Bewegungen innerhalb
+eines bereits geladenen Gebiets bauen die Quelle nicht neu auf. Nach einem
+Fehler werden weitere Versuche eine Minute gebremst.
+
+Die Rundung wird beim Export berechnet. Laden, JSON-Verarbeitung und
+Kachelaufbereitung der Detaildatei erfolgen im MapLibre-Worker. Es gibt keine
+zusätzlichen Rechenschritte pro Fahrzeugbild. Die Detailquelle verwendet
+`maxzoom: 18` und `tolerance: 0.05`, damit die Nahansicht die feinere Geometrie
+nicht wieder grob vereinfacht. MapLibre/GPU-Speicher und tatsächliche Renderzeit
+hängen weiterhin vom Gerät ab; das ist keine Browser-FPS-Messung.
+
+| Region | Gleis-Ways | Detaildatei | Lokales gzip |
+|---|---:|---:|---:|
+| Köln | 7.838 | 3.527.381 Bytes | 1.071.520 Bytes |
+| Bonn | 1.596 | 625.178 Bytes | 195.802 Bytes |
+| Düsseldorf | 4.974 | 2.708.145 Bytes | 811.434 Bytes |
+
+Die Dateien gehören zum Nahzoom, nicht zum Startnetz unten. Tests begrenzen
+jeden Abzug auf 8 MB JSON / 1,25 MB lokales gzip. Der Informationsdialog zählt
+auch diese Transfers unter „Zusatznetze übertragen“. Die normale Kartenansicht
+bleibt während des Downloads benutzbar. Quelle und datierte Klassifikation
+der Bauabschnitte stehen in [DATA-SOURCES.md](DATA-SOURCES.md).
 
 ## Bewegung
 
