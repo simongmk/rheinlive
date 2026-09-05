@@ -8,7 +8,7 @@ await mkdir(resolve(root,'dist/server/lib'),{recursive:true});
 await mkdir(resolve(root,'dist/.openai'),{recursive:true});
 await cp(resolve(root,'public'),resolve(root,'dist/client'),{recursive:true});
 await mkdir(resolve(root,'dist/client/lib'),{recursive:true});
-for(const file of ['cities.mjs','transit.mjs','api.mjs'])await cp(resolve(root,'lib',file),resolve(root,'dist/server/lib',file));
+for(const file of ['cities.mjs','transit.mjs','trip.mjs','api.mjs'])await cp(resolve(root,'lib',file),resolve(root,'dist/server/lib',file));
 for(const file of ['cities.mjs','transit.mjs'])await cp(resolve(root,'lib',file),resolve(root,'dist/client/lib',file));
 // A public source checkout can build or run locally without private hosting metadata.
 try{await cp(resolve(root,'.openai/hosting.json'),resolve(root,'dist/.openai/hosting.json'));}catch(e){if(e.code!=='ENOENT')throw e;}

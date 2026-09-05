@@ -1,72 +1,41 @@
-# Busse und weitere Städte
+# Erweiterbarkeit
 
-Stand: 5. September 2026. Dies ist ein Ausbauplan; die veröffentlichte App
-zeigt derzeit ausschließlich die konfigurierten Kölner Stadtbahnlinien.
+Umgesetzt: Köln, Bonn und Düsseldorf mit Stadtbahn, Bussen, S-Bahn und
+Regionalzügen. Fähren werden angezeigt, wenn passende Daten vorhanden sind;
+bisher wurden für Bonn nur Fahrplanpositionen nachgewiesen. Die tatsächlichen
+Messungen und Anbieteroptionen stehen in [DATA-SOURCES.md](DATA-SOURCES.md).
 
-## Was bereits nachgewiesen ist
+## Eine weitere Stadt ergänzen
 
-Eine zusätzliche Abfrage des Transitous-Endpunkts `/api/v6/map/trips` für das
-konfigurierte Kölner Gebiet und ein dreiminütiges Zeitfenster ergab am
-2026-09-05 um 11:21:47 UTC (13:21:47 Europe/Berlin):
+1. Gebiet, Zentrum und Zeitzone in `lib/cities.mjs` definieren. Bestehende
+   Verkehrsmittel verwenden oder den gemeinsamen Modus-Katalog erweitern.
+2. Aktuelle Antworten des öffentlichen Transitous-Endpunkts mit genau diesem
+   Gebiet prüfen. Prognosen, Ausfälle, Formen und Betreiber mindestens
+   stichprobenartig kontrollieren. Gleiche Liniennummern sind keine Fahrt-IDs.
+3. Einen begrenzten Routenabzug speichern und mit
+   `node scripts/prepare-network.mjs CITY raw-routes.json` aufbereiten. Netzdatei
+   datieren und Quellenangaben beibehalten. Keine Fahrzeug-Fixtures ausliefern.
+4. Die Region im Auswahlmenü erscheint aus der gemeinsamen Stadt-Konfiguration.
+   API und Cache verwenden automatisch getrennte Schlüssel. Tests, Build und
+   echte API-Prüfung vor Veröffentlichung ausführen.
 
-- 390 unterschiedliche Busfahrt-IDs, mit mindestens einem Segment, dessen
-  Start oder Ziel innerhalb der konfigurierten Stadtgrenzen lag.
-- 351 dieser IDs hatten im abgefragten Fenster mindestens ein Segment mit
-  `realTime: true`.
+Der Browser lädt nur das Netz und die Fahrtdaten der gewählten Region. Alte
+Antworten einer zuvor gewählten Stadt werden verworfen. Gleichzeitige Nutzer
+teilen serverseitige und Edge-Caches. Regionale Antworten werden seriell
+geparst, damit die speicherbegrenzte Worker-Umgebung nicht mehrere große
+Antworten gleichzeitig verarbeitet.
 
-Das sind keine 351 gleichzeitig positionierbaren KVB-Busse. Die Abfrage
-enthält auch regionale Angebote und Ersatzverkehre; sie prüft weder den
-aktuellen Abschnitt jeder Fahrt noch deren Betreiber. Beispielsweise kamen
-Liniennamen wie 117, 157, SB20 und S6 vor. Diese Momentaufnahme wurde zur
-Machbarkeitsprüfung ausgewertet, nicht als dauerhaftes Testfixture gespeichert.
+## Verkehrsdaten aus weiteren Quellen
 
-Die Quelle liefert Prognosezeiten und Streckenverläufe. Auch Buspositionen
-wären mit diesem Adapter geschätzt; GPS-Koordinaten sind dadurch nicht belegt.
+Provider-spezifische Adapter müssen in dasselbe normalisierte Modell liefern.
+Daten dürfen erst nach Prüfung von Lizenz, Abdeckung, Identitäten und
+Zeitstempeln zusammengeführt werden. Prognosen, Fahrplan und gemessene
+VehiclePositions benötigen getrennte Qualitätstypen. Bei fehlenden Daten darf
+kein vermeintlich lebendiger Demo-Verkehr entstehen.
 
-## Nächste Ausbaustufe: Köln mit Bussen
-
-1. Betreiber und Linien anhand stabiler Quell-IDs zuordnen. Liniennamen allein
-   sind nicht eindeutig; Bus, Stadtbahn und Ersatzverkehr können dieselbe
-   Nummer oder Bezeichnung tragen.
-2. Auswahl für Stadtbahn und Busse ergänzen. Linien aus validierten Daten
-   erzeugen, statt die bisherige Stadtbahn-Whitelist auf Busse zu übertragen.
-3. Prognoseabdeckung, fehlende Strecken, Ausfälle und Aktualität pro Betreiber
-   überprüfen. Das vorhandene Ausblenden veralteter Daten bleibt erforderlich.
-4. Bei vielen Fahrzeugen Kartenobjekte über Canvas/WebGL zeichnen oder abhängig
-   von der Zoomstufe zusammenfassen. Im Detail muss jede Fahrt auswählbar bleiben.
-
-## Weitere Städte
-
-`lib/cities.mjs` enthält bereits eine Stadt-Konfiguration; der Normalisierer
-nimmt sie als Parameter. API-Aufruf, Browser und Cache-Schlüssel sind derzeit
-jedoch auf Köln festgelegt. Für mehrere Städte müssen sie ebenfalls umgestellt
-werden. Eine Konfiguration je Stadt sollte Gebiet, Zentrum, Zeitzone,
-Verkehrsmittel, Datenanbieter und geprüfte Abdeckung enthalten.
-
-Die nächste sinnvolle Prüfung wäre Bonn, danach Düsseldorf. Die Verfügbarkeit
-von Echtzeitdaten wird für jede Stadt und jeden Verkehrsträger gesondert
-nachgewiesen. Eine Stadt darf bei fehlenden Prognosen nicht als live erscheinen.
-Eine Stadt-Auswahl ersetzt dann die statische Ortsanzeige.
-
-## Größere Nutzung
-
-Der Browser sollte nur den sichtbaren Bereich und einen begrenzten Puffer
-abfragen. Der Server begrenzt erlaubte Gebiete und Zeitfenster, teilt aktuelle
-Ergebnisse zwischen Nutzern und führt getrennte Cache-Schlüssel je Region und
-Verkehrsmittel. Feed-Qualität und Ausfälle werden je Quelle beobachtet.
-
-Transitous ist ein gemeinschaftlicher Dienst für nichtkommerzielle Nutzung.
-Größere Abfragemengen müssen abgestimmt werden. Für einen großen oder
-kommerziellen Betrieb kommen eine eigene MOTIS-Instanz oder ein vereinbarter
-Datenzugang in Betracht. Nationale GTFS-Daten und deren Verarbeitung gehören
-in einen separaten Datenservice, nicht in den kleinen Web-App-Worker.
-Auch der Kartenanbieter muss zur Nutzung passen; öffentliche OSM-Tiles sind
-kein unbegrenzter Download- oder Offline-Dienst.
-
-## Primärquellen
-
-- [Transitous: API und Nutzungsbedingungen](https://transitous.org/api/)
-- [Transitous: Projekt und internationale Datenbasis](https://transitous.org/)
-- [Datenquellen und individuelle Lizenzen](https://transitous.org/sources/)
-- [MOTIS: Quellcode und API-Vertrag](https://github.com/motis-project/motis)
-- [OpenStreetMap: Tile-Nutzungsrichtlinie](https://operations.osmfoundation.org/policies/tiles/)
+Der aktuelle Browser zeichnet Fahrzeuge gemeinsam in einer GPU-Ebene, statt
+für jede Fahrt ein eigenes HTML-Element zu bewegen. Für deutlich größere
+Gebiete sind zusätzlich begrenzte Gebietskacheln und zoomabhängige Zusammenfassung
+sinnvoll. Nationale GTFS-Importe gehören in einen eigenen MOTIS-Datenservice;
+die Web-App bleibt ein schlanker Client. Größere Last oder kommerzielle Nutzung
+benötigt einen passenden Datenzugang, nicht nur weitere Stadt-Konfigurationen.

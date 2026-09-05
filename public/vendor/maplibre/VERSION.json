@@ -1,0 +1,11 @@
+{
+  "package": "maplibre-gl",
+  "version": "5.7.1",
+  "source": "https://unpkg.com/maplibre-gl@5.7.1/",
+  "license": "BSD-3-Clause",
+  "sha256": {
+    "maplibre-gl.js": "aa49ba072cb2d4621c365e501867cbc0ffead0d4a42dd79cb8f182525082451a",
+    "maplibre-gl.css": "43c1d886b5fdf0aac4e7135bd6f84b823d9f48283a648012665f9be52c01389f",
+    "LICENSE.txt": "ee5fc05a0677eaf69601d2c7db0d9ecd6cc27c3abc1d0733bc9ed34707cf8ef2"
+  }
+}

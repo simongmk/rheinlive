@@ -1,68 +1,90 @@
-# Rheinlive · Köln
+# Rheinlive
 
-An open-source, noncommercial web app showing Cologne Stadtbahn trips on an
-OpenStreetMap map. It displays numbered moving markers, line filters, the next
-stop, current arrival forecasts and delays. The German interface adapts to
-desktop and mobile screens, with light floating panels, collapsible mobile
-filters and a compact trip detail card.
+A noncommercial, open-source transit map for **Köln, Bonn and Düsseldorf**.
+Explore buses, Stadtbahn, S-Bahn and regional trains on a MapLibre vector map,
+with current stop forecasts, delays and complete trip details. Ferry services
+can appear when the source supplies them; verified Bonn examples were scheduled
+only. The German interface supports desktop and mobile screens.
 
-The [extension plan](docs/EXPANSION.md) describes the next steps for buses,
-additional cities and larger usage. These extensions are not enabled yet.
+- Dark and light maps, a dated colored route network, station search and map tilt.
+- City, transport-mode and line filters, plus an accessible list of visible trips.
+- Selected-trip direction, operator, stops, available alerts and platform changes.
+- Estimated movement and optional following of a selected trip.
 
-**Positions are estimated from current stop forecasts and route geometry,
-not measured GPS locations.** The map shows only trips with realtime forecasts
-by default; schedule-only trips can be enabled explicitly. Coverage counts
-distinguish both groups. Failed or stale snapshots stop showing positions.
+**Positions are estimated from stop forecasts and route geometry, not measured
+GPS locations.** Trips without current forecasts are hidden by default. Failed
+or stale snapshots stop showing positions. Data coverage is not guaranteed.
 
 ## Run
 
-Requires Node.js 22 or later. There are no npm package dependencies.
+Requires Node.js 22 or later. No npm installation is required. MapLibre GL JS
+5.7.1 is vendored with its license and checksums; no external script CDN is
+required. Map tiles, fonts and style JSON come from OpenFreeMap.
 
 ```sh
 npm start
-# Open http://localhost:4173
+# http://localhost:4173
 npm test
 npm run check
 npm run build
 ```
 
-Leaflet is loaded from unpkg with integrity checks. Tiles come from
-OpenStreetMap. Transit data is fetched by the backend from Transitous's MOTIS
-v6 API. Network access is required. The optional `PORT` variable changes the
-local port. A Cloudflare Workers-compatible build is emitted in `dist/server`
-and browser assets in `dist/client`; a hosted Worker needs an `ASSETS` binding.
+Network access and a WebGL-capable browser are required. The optional `PORT`
+variable changes the local port. A Cloudflare Workers-compatible build is emitted
+in `dist/server`, with browser assets in `dist/client`; the Worker needs an
+`ASSETS` binding. Source imports and data handling are shared between client and
+server. There is no account database or coupling to another application.
 
-## Data quality
+## Data pipeline
 
-The app uses current `departure` and `arrival` values to interpolate a position
-along each stop-to-stop shape. Scheduled times are retained for delay display.
-Its 30-second cache combines concurrent requests and backs off on errors.
-`fetchedAt` is when Rheinlive received data, not the original operator message
-timestamp. The latter is not provided by this map endpoint. Coordinates between
-stops remain estimates, including when a train waits or an unreported disruption
-changes its movement. If shape geometry is missing, the app labels the position
-as a straight-line estimate. There is no claim of complete network coverage.
+The server requests Transitous MOTIS `/api/v6/map/trips` for a fixed three-minute
+window in the chosen city. It validates geometry, mode and timestamps, retaining
+scheduled times to calculate delays. Concurrent reads are combined, cached for
+30 seconds and backed off after failures. Separate city keys prevent mixed data;
+serialized upstream parsing bounds memory use. The browser polls while visible
+and rejects responses from a city it has already left.
 
-A direct Cologne check on 5 September 2026 at 10:48 CEST found 95 active trips,
-84 carrying realtime forecasts, with route geometry for all 95. Some departures
-were 7 or 12 minutes behind schedule. This is a historical observation, not a
-guarantee of current coverage. A retained historical fixture tests the adapter;
-all other test inputs are synthetic. No test fixture is used by the running app.
+Selecting a currently known trip requests `/api/v6/trip` for its complete stop
+sequence and operator. Static network snapshots come from the experimental
+routes endpoint, processed separately from live data. Network geometry can be
+computed by MOTIS from OSM; it is not proof of current diversions. Network files
+carry their export date and source attribution.
+
+`fetchedAt` is when Rheinlive received the response, not the original operator
+observation timestamp. Coordinates between stops remain estimates even when a
+vehicle waits or an unreported disruption changes its movement. Missing shapes
+are disclosed as straight-line estimates.
+
+## Evidence and extension
+
+- [Checked data sources, access conditions and live coverage](docs/DATA-SOURCES.md)
+- [How to add another city or provider](docs/EXPANSION.md)
+- [Historical fixture provenance](tests/fixtures/README.md)
+
+The dated three-city check found current bus and rail forecasts and confirmed
+KVB, SWB and Rheinbahn operators through actual trip responses. Repeatable tests
+cover data normalization, stale data, delays, region isolation, concurrency,
+replacement buses, cancellation handling and published network structure.
+Historical fixtures are test-only; the app never serves them as live traffic.
 
 ## Responsible use and licenses
 
-This software is MIT licensed. Map, library and transit data have separate terms.
-Transitous is a community service permitting noncommercial open-source projects
-with light usage, a contact URL in the User-Agent and visible source attribution.
-Before a wider deployment, review its policy and coordinate higher request loads.
+App code: MIT. Vendored MapLibre: BSD-3-Clause plus notices in its license file.
+Map and transit data have separate licenses; see [network attribution](public/data/LICENSE.md).
+
+Transitous permits noncommercial open-source projects with light usage, a contact
+URL in the User-Agent and visible attribution. Higher loads must be coordinated
+before wider rollout. A larger or commercial deployment needs an appropriate
+provider agreement or its own data-import infrastructure.
 
 - [Transitous API policy](https://transitous.org/api/)
 - [Transit data sources and licenses](https://transitous.org/sources/)
 - [MOTIS API contract](https://github.com/motis-project/motis/blob/master/openapi.yaml)
+- [OpenFreeMap](https://openfreemap.org/)
 - [OpenStreetMap contributors, ODbL](https://www.openstreetmap.org/copyright)
-- [OSM tile usage](https://operations.osmfoundation.org/policies/tiles/)
-- [Leaflet, BSD-2-Clause](https://leafletjs.com/)
-- [Historical fixture provenance](tests/fixtures/README.md)
+- [OpenMapTiles](https://openmaptiles.org/)
+- [MapLibre](https://maplibre.org/)
 
-The app is independent of KVB and VRS. Report bugs or contact the maintainer
-through [GitHub Issues](https://github.com/simongmk/rheinlive/issues).
+The app is independent of the transit operators and transport associations.
+Report bugs or contact the maintainer through
+[GitHub Issues](https://github.com/simongmk/rheinlive/issues).

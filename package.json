@@ -1,9 +1,9 @@
 {
   "name": "rheinlive",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "K\u00f6lns Stadtbahnen auf einer offenen Karte",
+  "description": "Busse und Bahnen in Köln, Bonn und Düsseldorf auf einer offenen Vektorkarte",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -13,6 +13,6 @@
     "start": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check public/app.js && node --check lib/transit.mjs && node --check lib/api.mjs && node --check worker.mjs"
+    "check": "node --check public/app.js && node --check public/map.js && node --check lib/transit.mjs && node --check lib/trip.mjs && node --check lib/api.mjs && node --check worker.mjs"
   }
 }

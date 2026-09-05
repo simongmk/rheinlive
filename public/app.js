@@ -1,91 +1,158 @@
-import {city,MAX_SNAPSHOT_AGE_MS} from '/lib/cities.mjs';
+import {cities,transportModes,MAX_SNAPSHOT_AGE_MS,pointInBounds} from '/lib/cities.mjs';
 import {prepareTrips,vehiclesAt,vehicleView} from '/lib/transit.mjs';
-const $=s=>document.querySelector(s),text=(s,value)=>$(s).textContent=value;
-let map, snapshot=null,trips=[],markers=new Map(),selected=null,selectedPath=null,loading=false,offset=0,lastTick=-1,lastDraw=0,visible=[],candidates=[],detailKey=null;
-const active=new Set(city.lines.map(l=>l.id));
-const clockFormat=new Intl.DateTimeFormat('de-DE',{timeZone:city.timezone,hour:'2-digit',minute:'2-digit',hour12:false});
-const secondsFormat=new Intl.DateTimeFormat('de-DE',{timeZone:city.timezone,second:'2-digit'});
-const dateFormat=new Intl.DateTimeFormat('de-DE',{timeZone:city.timezone,weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
-const time=t=>clockFormat.format(new Date(t));
-const cleanName=s=>s.replace(/^(Köln|Koeln)[, ]+/,'');
-function el(tag,cls,content){const node=document.createElement(tag);if(cls)node.className=cls;if(content!==undefined)node.textContent=content;return node;}
+import {createTransitMap} from '/map.js';
+const $=s=>document.querySelector(s),text=(s,v)=>{$(s).textContent=v;};
+const element=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n;};
+const icon=id=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','icon');svg.setAttribute('aria-hidden','true');const use=document.createElementNS(svg.namespaceURI,'use');use.setAttribute('href','#i-'+id);svg.append(use);return svg;};
+const readPref=(key,fallback)=>{try{return localStorage.getItem('rheinlive:'+key)||fallback;}catch{return fallback;}};
+const savePref=(key,value)=>{try{localStorage.setItem('rheinlive:'+key,value);}catch{}};
+const preferredCity=readPref('city','cologne');
+let city=Object.hasOwn(cities,preferredCity)?cities[preferredCity]:cities.cologne,map=null,snapshot=null,trips=[],network=null,catalog=[],visible=[],candidates=[],selected=null,detail=null,detailId=null,detailKey='',offset=0,revision=0,loading=false,requestController=null,detailController=null,networkController=null,following=false,listLimit=50,tab='lines',lastList=0,theme='dark';
+const activeModes=new Set(['tram','suburban','regional']),hiddenLines=new Set(),cancelled=new Map();
+const timeFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit',hour12:false}),secondsFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',second:'2-digit'}),dateFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',weekday:'short',day:'numeric',month:'short'});
+const time=t=>Number.isFinite(t)?timeFormat.format(new Date(t)):'–';
+const cleanName=s=>String(s||'').replace(/^(?:Köln|Koeln|Bonn)[, ]+/,'').replace(/^D-/,'');
+const inView=v=>pointInBounds([v.lat,v.lon],city.bounds)&&(!map||map.getBounds().contains([v.lat,v.lon]));
+const isFresh=()=>snapshot&&!snapshot.stale&&Date.now()+offset-snapshot.fetchedAt<=MAX_SNAPSHOT_AGE_MS;
+const filters=v=>activeModes.has(v.mode)&&!hiddenLines.has(v.lineKey);
 function notify(title,body){text('#notice-title',title);text('#notice-body',body);$('#notice').hidden=false;}
-function setActiveLines(ids){active.clear();ids.forEach(id=>active.add(id));$('#lines').replaceChildren();setLines();draw();}
-function setLines(){for(const line of city.lines){const b=el('button','line-filter',line.id);b.style.setProperty('--line-color',line.color);b.type='button';b.setAttribute('aria-pressed',String(active.has(line.id)));b.setAttribute('aria-label',`Linie ${line.id} anzeigen`);b.addEventListener('click',()=>{if(active.has(line.id))active.delete(line.id);else active.add(line.id);b.setAttribute('aria-pressed',String(active.has(line.id)));draw();});$('#lines').append(b);}}
-setLines();
-$('#all-lines').onclick=()=>setActiveLines(city.lines.map(l=>l.id));
-$('#include-schedule').onchange=()=>draw();
-const panelToggle=$('#panel-toggle');
-panelToggle.onclick=()=>{
-  const expanded=panelToggle.getAttribute('aria-expanded')!=='true';
-  panelToggle.setAttribute('aria-expanded',String(expanded));
-  $('.overview').classList.toggle('expanded',expanded);
-};
-function showInfo(){ $('#info-dialog').showModal(); }
-$('#info-open').onclick=showInfo;$('#quality-open').onclick=showInfo;$('#info-close').onclick=()=>$('#info-dialog').close();
-$('#info-dialog').addEventListener('click',e=>{if(e.target===$('#info-dialog'))$('#info-dialog').close();});
-function clearSelected(){selected=null;detailKey=null;$('#vehicle-detail').hidden=true;if(selectedPath){selectedPath.remove();selectedPath=null;}for(const m of markers.values())m.getElement()?.querySelector('.train-dot')?.classList.remove('selected');}
+function setFollowing(value){following=value;$('#follow').setAttribute('aria-pressed',String(value));$('#follow').replaceChildren(icon('target'),document.createTextNode(value?'Folgen aktiv':'Fahrt folgen'));}
+function clearSelected(){selected=null;detail=null;detailId=null;detailKey='';detailController?.abort();$('#vehicle-detail').hidden=true;map?.select(null);setFollowing(false);}
 $('#detail-close').onclick=clearSelected;
+$('#follow').onclick=()=>{setFollowing(!following);const v=visible.find(v=>v.id===selected);if(following&&v)map?.follow(v);};
+$('#panel-toggle').onclick=()=>{const open=$('#panel-toggle').getAttribute('aria-expanded')!=='true';$('#panel-toggle').setAttribute('aria-expanded',String(open));$('.overview').classList.toggle('expanded',open);};
+function showInfo(){$('#info-dialog').showModal();}
+$('#info-open').onclick=showInfo;$('#quality-open').onclick=showInfo;$('#info-close').onclick=()=>$('#info-dialog').close();
+$('#info-dialog').onclick=e=>{if(e.target===$('#info-dialog'))$('#info-dialog').close();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')clearSelected();});
-function initMap(){if(!window.L){$('#map-error').hidden=false;return;}
-  map=L.map('map',{zoomControl:false,attributionControl:true,minZoom:10,maxZoom:18,preferCanvas:true}).setView(city.center,12);
-  const tiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://transitous.org/sources/">Verkehrsdaten</a>'}).addTo(map);
-  let errors=0;tiles.on('tileerror',()=>{if(++errors>=5)$('#map-error').hidden=false;});tiles.on('tileload',()=>{$('#map-error').hidden=true;errors=0;});
-  $('#zoom-in').onclick=()=>map.zoomIn();$('#zoom-out').onclick=()=>map.zoomOut();$('#recenter').onclick=()=>{clearSelected();map.fitBounds(city.bounds,{padding:[30,30],maxZoom:12});};
-  map.on('click',clearSelected);map.on('moveend',()=>updateCount());
+$('#map-retry').onclick=()=>location.reload();
+function renderModes(){
+  const all=isFresh()?vehiclesAt(trips,Date.now()+offset,snapshot.fetchedAt).filter(inView):[];
+  $('#modes').replaceChildren();
+  for(const mode of transportModes){
+    const b=element('button','mode-button');b.style.setProperty('--mode-color',mode.color);b.setAttribute('aria-pressed',String(activeModes.has(mode.id)));b.setAttribute('aria-label',`${mode.name} anzeigen`);
+    const count=all.filter(v=>v.mode===mode.id&&v.quality==='realtime'&&!cancelled.has(v.id)).length;
+    b.append(element('span','mode-dot'),element('span','',mode.name),element('span','mode-count',count));
+    b.onclick=()=>{activeModes.has(mode.id)?activeModes.delete(mode.id):activeModes.add(mode.id);renderModes();renderLines();draw(true);syncNetworkFilter();};$('#modes').append(b);
+  }
 }
-if(document.readyState==='complete')initMap();else window.addEventListener('load',initMap,{once:true});
-function markerIcon(v){const d=el('div',`train-dot ${v.quality==='schedule'?'planned':''} ${selected===v.id?'selected':''}`);d.style.setProperty('--line-color',v.color);d.style.setProperty('--bearing',`${v.bearing-90}deg`);d.append(el('span','number',v.line));return L.divIcon({html:d,className:'train-marker',iconSize:[32,32],iconAnchor:[16,16]});}
+function updateCatalog(){
+  const lines=new Map((network?.catalog||[]).map(l=>[l.key,l]));
+  for(const trip of trips)lines.set(trip.lineKey,{key:trip.lineKey,line:trip.line,mode:trip.mode,color:trip.color});
+  catalog=[...lines.values()].sort((a,b)=>transportModes.findIndex(m=>m.id===a.mode)-transportModes.findIndex(m=>m.id===b.mode)||a.line.localeCompare(b.line,'de',{numeric:true}));renderLines();syncNetworkFilter();
+}
+function renderLines(){
+  const query=$('#search').value.trim().toLocaleLowerCase('de'),lines=catalog.filter(l=>activeModes.has(l.mode)&&(!query||l.line.toLocaleLowerCase('de').includes(query)));
+  text('#line-count',`${lines.length} Linien`);$('#lines').replaceChildren();$('#lines-empty').hidden=lines.length>0;
+  for(const line of lines){const b=element('button','line-filter',line.line);b.style.setProperty('--line-color',line.color);b.setAttribute('aria-pressed',String(!hiddenLines.has(line.key)));const mode=transportModes.find(m=>m.id===line.mode);b.setAttribute('aria-label',`${mode.name} ${line.line} anzeigen`);b.title=mode.name+' '+line.line;b.onclick=()=>{hiddenLines.has(line.key)?hiddenLines.delete(line.key):hiddenLines.add(line.key);b.setAttribute('aria-pressed',String(!hiddenLines.has(line.key)));draw(true);syncNetworkFilter();};$('#lines').append(b);}
+  renderStopSearch(query);
+}
+function renderStopSearch(query){
+  const results=$('#stop-results');results.replaceChildren();results.hidden=true;if(query.length<2||!network)return;
+  const found=new Map();for(const f of network.stops.features){if(!f.properties.name.toLocaleLowerCase('de').includes(query))continue;const p=f.geometry.coordinates,key=f.properties.name+':'+p.map(n=>n.toFixed(3)).join(',');if(!found.has(key))found.set(key,f);if(found.size>=6)break;}
+  for(const f of found.values()){const b=element('button','stop-result');b.append(icon('pin'),document.createTextNode(f.properties.name));b.onclick=()=>{map?.raw.flyTo({center:f.geometry.coordinates,zoom:15,pitch:0,duration:700});if(innerWidth<=760){$('.overview').classList.remove('expanded');$('#panel-toggle').setAttribute('aria-expanded','false');}setFollowing(false);};results.append(b);}results.hidden=found.size===0;
+}
+$('#search').addEventListener('input',()=>{renderLines();renderVehicleList();});
+$('#all-lines').onclick=()=>{hiddenLines.clear();renderLines();draw(true);syncNetworkFilter();};
+$('#include-schedule').onchange=()=>draw(true);
+function syncNetworkFilter(){map?.setFilter([...activeModes],hiddenLines.size?catalog.filter(l=>!hiddenLines.has(l.key)).map(l=>l.key):null);}
+function switchTab(next){tab=next;for(const id of ['lines','vehicles']){$('#tab-'+id).setAttribute('aria-selected',String(next===id));$('#tab-'+id).tabIndex=next===id?0:-1;$('#'+id+'-panel').hidden=next!==id;}if(next==='vehicles')renderVehicleList();}
+for(const id of ['lines','vehicles']){$('#tab-'+id).onclick=()=>switchTab(id);$('#tab-'+id).onkeydown=e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const next=id==='lines'?'vehicles':'lines';switchTab(next);$('#tab-'+next).focus();}};}
+$('#more-vehicles').onclick=()=>{listLimit+=50;renderVehicleList();};
+function renderVehicleList(){
+  const query=$('#search').value.trim().toLocaleLowerCase('de');const list=visible.filter(inView).filter(v=>!query||`${v.line} ${v.segment.from.name} ${v.segment.to.name}`.toLocaleLowerCase('de').includes(query)).sort((a,b)=>a.line.localeCompare(b.line,'de',{numeric:true})||a.segment.arrival-b.segment.arrival);
+  const parent=$('#vehicle-list');parent.replaceChildren();if(!list.length)parent.append(element('p','empty',isFresh()?'Keine passenden Fahrten. Prüfe Filter und Kartenausschnitt.':'Warte auf aktuelle Fahrtdaten.'));
+  for(const v of list.slice(0,listLimit)){const b=element('button','vehicle-row');const badge=element('span','vehicle-badge',v.line);badge.style.setProperty('--line-color',v.color);badge.style.setProperty('--line-text',v.textColor);const label=element('span','row-label',cleanName(v.segment.to.name));label.append(element('small','',transportModes.find(m=>m.id===v.mode)?.name+' · '+(v.quality==='realtime'?'mit Prognose':'nur Fahrplan')));b.append(badge,label);const delay=delayMinutes(v);if(v.quality==='realtime'&&delay>0)b.append(element('span','row-delay','+'+delay+'′'));b.onclick=()=>{showDetails(v);map?.raw.easeTo({center:[v.lon,v.lat],zoom:Math.max(13,map.raw.getZoom()),duration:600});};parent.append(b);}$('#more-vehicles').hidden=list.length<=listLimit;
+}
 function updateCount(){
-  const inView=v=>!map||map.getBounds().contains([v.lat,v.lon]);
-  text('#vehicle-count',String(visible.filter(inView).length));
-  if(!snapshot||snapshot.stale||Date.now()+offset-snapshot.fetchedAt>MAX_SNAPSHOT_AGE_MS)return;
-  const coverage=vehicleView(candidates.filter(inView));
-  text('#quality-label',`${coverage.realtime} mit Prognose · ${coverage.schedule} nur Fahrplan`);
-  text('#feed-status',!coverage.total?'Keine Fahrten im Ausschnitt':!coverage.realtime?'Keine Echtzeitprognosen':coverage.schedule?'Echtzeitdaten · teilweise verfügbar':'Echtzeitprognosen verfügbar');
-  $('#status-dot').classList.toggle('live',coverage.realtime>0);
-  text('#coverage-info',coverage.total&&!coverage.realtime?'Für diese Fahrten fehlen Echtzeitprognosen. Verspätungen sind unbekannt.':$('#include-schedule').checked?'Gestrichelter Rand: Fahrt ohne Echtzeitprognose.':'Fahrten ohne Echtzeitprognose sind ausgeblendet.');
+  text('#vehicle-count',visible.filter(inView).length);
+  if(!isFresh())return;
+  const count=vehicleView(candidates.filter(inView));
+  text('#feed-status',count.realtime?`${count.realtime} Fahrten mit aktueller Prognose`:count.total?'Für diese Fahrten fehlen Prognosen':'Keine Fahrten im Ausschnitt');
+  text('#header-status',count.realtime?'Prognosen aktiv':'Keine Prognosen');$('#status-dot').classList.toggle('live',count.realtime>0);
+  text('#coverage-info',`${count.realtime} mit Prognose · ${count.schedule} nur Fahrplan${$('#include-schedule').checked?'': ' (ausgeblendet)'}`);
 }
-function showDetails(v){selected=v.id;detailKey=[v.id,v.segment.key,v.state,v.quality,v.segment.arrival,v.segment.geometry].join('|');$('#vehicle-detail').hidden=false;const content=$('#detail-content');content.replaceChildren();
-  for(const[id,m]of markers)m.getElement()?.querySelector('.train-dot')?.classList.toggle('selected',id===v.id);
-  const line=el('span','detail-line',v.line);line.style.setProperty('--line-color',v.color);content.append(line,el('p','detail-direction',v.state==='stopped'?'AN DER HALTESTELLE':'NÄCHSTER HALT'),el('h2','',cleanName(v.state==='stopped'?v.segment.from.name:v.segment.to.name)),el('span','detail-quality',v.quality==='realtime'?'≈ Mit Echtzeitprognose':'◷ Nach Fahrplan'));
-  const stops=el('div','stop-progress');for(const [stop,ts,cls]of[[v.segment.from,v.segment.departure,'previous'],[v.segment.to,v.segment.arrival,'next']]){const row=el('div',`stop-row ${cls}`);row.append(el('span','',cleanName(stop.name)),el('time','',time(ts)));stops.append(row);}content.append(stops);
-  const delay=v.segment.scheduledArrival===null?null:Math.round((v.segment.arrival-v.segment.scheduledArrival)/60_000);
-  content.append(el('p',`delay ${v.quality==='realtime'&&delay>0?'is-late':''}`,v.quality==='schedule'?'Keine aktuelle Verspätungsinformation':delay===null?'Aktuelle Ankunftsprognose':delay>0?`+${delay} Min. · Ankunft später als geplant`:delay<0?`${Math.abs(delay)} Min. früher als geplant`:'Ankunft laut Prognose pünktlich'));
-  if(v.segment.geometry==='straight')content.append(el('p','delay','Streckenverlauf fehlt: Position zwischen Haltestellen geschätzt.'));
-  if(selectedPath)selectedPath.remove();selectedPath=L.polyline(v.segments.map(s=>s.points),{color:v.color,weight:4,opacity:.75,dashArray:v.segment.geometry==='straight'?'6 6':undefined,interactive:false}).addTo(map);
+const delayMinutes=v=>v.segment.scheduledArrival===null?null:Math.round((v.segment.arrival-v.segment.scheduledArrival)/60000);
+function showDetails(v,{reload=true}={}){
+  const changed=selected!==v.id;if(changed){detail=null;detailId=null;setFollowing(false);$('#follow').disabled=false;}
+  selected=v.id;detailKey=[v.id,v.segment.key,v.quality,v.state].join('|');$('#vehicle-detail').hidden=false;
+  const parent=$('#detail-content');parent.replaceChildren();const badge=element('span','detail-line',v.line);badge.style.setProperty('--line-color',v.color);badge.style.setProperty('--line-text',v.textColor);
+  parent.append(badge,element('span','detail-type',transportModes.find(m=>m.id===v.mode)?.name),element('p','detail-direction',v.state==='stopped'?'AN DER HALTESTELLE':'NÄCHSTER HALT'),element('h2','',cleanName(v.state==='stopped'?v.segment.from.name:v.segment.to.name)),element('span','detail-quality'+(v.quality==='schedule'?' planned':''),v.quality==='realtime'?'≈ Position mit Prognose':'◷ Position nach Fahrplan'));
+  const rows=element('div','stop-progress');for(const [p,ts,cls]of [[v.segment.from,v.segment.departure,'previous'],[v.segment.to,v.segment.arrival,'next']]){const row=element('div','stop-row '+cls);row.append(element('span','',cleanName(p.name)),element('time','',time(ts)));rows.append(row);}parent.append(rows);
+  const delay=delayMinutes(v);parent.append(element('p','delay'+(v.quality==='realtime'&&delay>0?' is-late':''),v.quality==='schedule'?'Verspätung unbekannt':delay===null?'Aktuelle Ankunftsprognose':delay>0?`+${delay} Min. später als geplant`:delay<0?`${-delay} Min. früher als geplant`:'Ankunft laut Prognose pünktlich'));
+  if(v.segment.geometry!=='shape')parent.append(element('p','delay','Streckenabschnitt fehlt. Position auf direkter Verbindung geschätzt.'));
+  selectPath(v);if(changed||reload&&!detail)loadDetail(v);else if(detail)renderJourney();
 }
-function draw(){const now=Date.now()+offset;candidates=snapshot&&!snapshot.stale?vehiclesAt(trips,now,snapshot.fetchedAt).filter(v=>active.has(v.line)):[];visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;
-  if(map){const ids=new Set(visible.map(v=>v.id));for(const[id,m]of markers)if(!ids.has(id)){m.remove();markers.delete(id);}
-    for(const v of visible){let marker=markers.get(v.id);if(!marker){marker=L.marker([v.lat,v.lon],{icon:markerIcon(v),title:`Linie ${v.line} · ${v.segment.to.name}`,alt:`Linie ${v.line}`,keyboard:true});marker.addTo(map);marker.on('click',()=>{const latest=visible.find(x=>x.id===v.id);if(latest)showDetails(latest);});markers.set(v.id,marker);}else{marker.setLatLng([v.lat,v.lon]);const dot=marker.getElement()?.querySelector('.train-dot');if(dot){dot.classList.toggle('planned',v.quality==='schedule');dot.classList.toggle('selected',selected===v.id);dot.style.setProperty('--bearing',`${v.bearing-90}deg`);}}
-    }
-    if(selected){const v=visible.find(x=>x.id===selected);if(!v)clearSelected();else if(detailKey!==[v.id,v.segment.key,v.state,v.quality,v.segment.arrival,v.segment.geometry].join('|'))showDetails(v);}
-  }updateCount();
-  if(snapshot&&!snapshot.stale&&now-snapshot.fetchedAt>MAX_SNAPSHOT_AGE_MS){text('#feed-status','Daten veraltet');text('#quality-label','Prognosen veraltet');text('#coverage-info','Keine aktuellen Positionen verfügbar.');$('#status-dot').classList.remove('live');notify('Warte auf aktuelle Fahrtdaten','Die letzten Positionen sind zu alt und werden nicht weiter angezeigt.');}
+function selectPath(v){
+  const full=detailId===v.id&&detail&&Date.now()+offset-detail.fetchedAt<=MAX_SNAPSHOT_AGE_MS;
+  const geo=full&&detail.paths.length?{type:'FeatureCollection',features:detail.paths.map(path=>({type:'Feature',geometry:{type:'LineString',coordinates:path.map(([lat,lon])=>[lon,lat])},properties:{color:v.color}}))}:undefined;
+  map?.select(v,geo);
 }
-async function refresh(){if(loading||document.hidden)return;loading=true;$('#retry').disabled=true;
-  try{const r=await fetch('/api/vehicles?city=cologne',{signal:AbortSignal.timeout(20_000)});const result=await r.json();if(!r.ok||result.stale)throw new Error(result.error||'Die Datenquelle ist nicht erreichbar.');
-    if(!Array.isArray(result.trips)||!Number.isFinite(result.serverTime)||!Number.isFinite(result.fetchedAt))throw new Error('Die Datenquelle hat keine lesbaren Fahrtdaten geliefert.');
-    offset=result.serverTime-Date.now();snapshot=result;trips=prepareTrips(result.trips);$('#notice').hidden=true;
-    text('#dataset-info','Datenabruf: '+new Date(result.fetchedAt).toLocaleString('de-DE',{timeZone:city.timezone})+' Uhr (Köln). Quelle: Transitous / MOTIS.');
-    if(!trips.length)notify('Gerade keine Fahrten gemeldet','Die Datenquelle liefert aktuell keine Stadtbahnfahrten für Köln. Das kann eine Datenlücke oder eine Betriebspause sein.');
-    draw();
-  }catch(e){snapshot=null;trips=[];draw();text('#feed-status','Daten nicht erreichbar');text('#quality-label','Keine aktuellen Fahrtdaten');text('#coverage-info','');$('#status-dot').classList.remove('live');notify('Die Verbindung fehlt gerade',e.name==='TimeoutError'?'Die Verkehrsdaten brauchen zu lange. Wir versuchen es automatisch erneut.':e.message);text('#refresh-label','Nächster Versuch in 30 Sekunden');
-  }finally{loading=false;$('#retry').disabled=false;}
+async function loadDetail(v){
+  detailController?.abort();const controller=new AbortController();detailController=controller;const rev=revision,id=v.id;const parent=$('#journey-detail');parent.replaceChildren(element('p','','Fahrtverlauf wird geladen …'));
+  try{const r=await fetch(`/api/trip?city=${city.id}&id=${encodeURIComponent(id)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(rev!==revision||selected!==id||controller.signal.aborted)return;if(!r.ok)throw Error(data.error||'Fahrtverlauf nicht erreichbar');detail=data;detailId=id;if(data.cancelled)cancelled.set(id,Date.now());renderJourney();selectPath(visible.find(x=>x.id===id)||v);if(data.cancelled){map?.update(visible.filter(x=>x.id!==id));$('#follow').disabled=true;}else $('#follow').disabled=false;
+  }catch(e){if(controller.signal.aborted||rev!==revision||selected!==id)return;detail=null;detailId=null;parent.replaceChildren(element('p','',e.name==='TimeoutError'?'Der Fahrtverlauf braucht gerade zu lange.':e.message));const retry=element('button','text-button','Verlauf erneut laden');retry.onclick=()=>loadDetail(v);parent.append(retry);}
 }
+function renderJourney(){
+  if(!detail)return;const parent=$('#journey-detail');parent.replaceChildren();
+  parent.append(element('h3','',detail.cancelled?'Fahrt entfällt':'Richtung '+cleanName(detail.headsign)),element('p','operator',detail.agency||'Betreiber nicht mitgeliefert'));
+  for(const a of detail.alerts){parent.append(element('div','journey-alert',[a.title,a.body].filter(Boolean).join('\n')));}
+  const now=Date.now()+offset,list=element('ol','journey-stops');
+  for(const stop of detail.stops){const ts=stop.departure??stop.arrival,scheduled=stop.scheduledDeparture??stop.scheduledArrival,li=element('li',(ts<now?'passed ':'')+(stop.cancelled?'cancelled':'')),label=element('span','',cleanName(stop.name));li.append(element('time','',time(ts)),label);const notes=[];if(stop.cancelled)notes.push('Halt entfällt');if(stop.track)notes.push('Steig / Gleis '+stop.track);if(stop.track&&stop.scheduledTrack&&stop.track!==stop.scheduledTrack)notes.push('geändert von '+stop.scheduledTrack);if(detail.realtime&&Number.isFinite(ts)&&Number.isFinite(scheduled)&&ts-scheduled>=60000)notes.push('+'+Math.round((ts-scheduled)/60000)+' Min.');if(notes.length)label.append(element('small','',notes.join(' · ')));list.append(li);}parent.append(list);
+  const target=[...list.children].find(li=>!li.classList.contains('passed'));if(target)list.scrollTop=Math.max(0,target.offsetTop-list.offsetTop-15);
+  parent.append(element('p','operator',(detail.realtime?'Mit Prognosen':'Nach Fahrplan')+' · Verlauf zuletzt '+time(detail.fetchedAt)));
+}
+function draw(forceList=false){
+  const now=Date.now()+offset;for(const[id,ts]of cancelled)if(Date.now()-ts>120000)cancelled.delete(id);
+  candidates=isFresh()?vehiclesAt(trips,now,snapshot.fetchedAt).filter(v=>filters(v)&&pointInBounds([v.lat,v.lon],city.bounds)&&!cancelled.has(v.id)):[];
+  visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;map?.update(visible);
+  if(selected){const v=visible.find(v=>v.id===selected);if(!v&&!cancelled.has(selected))clearSelected();else if(v){if(detailKey!==[v.id,v.segment.key,v.quality,v.state].join('|'))showDetails(v,{reload:false});if(following)map?.follow(v);}}
+  updateCount();if(tab==='vehicles'&&(forceList||Date.now()-lastList>10000)){lastList=Date.now();renderVehicleList();}
+  if(snapshot&&!isFresh()){
+    text('#feed-status','Daten veraltet · Positionen ausgeblendet');text('#header-status','Daten veraltet');$('#status-dot').classList.remove('live');text('#coverage-info','Warte auf aktuelle Fahrtdaten.');notify('Warte auf aktuelle Fahrtdaten','Die letzten Positionen sind zu alt. Wir verbinden uns automatisch erneut.');
+  }
+  if(detail&&now-detail.fetchedAt>MAX_SNAPSHOT_AGE_MS){detail=null;detailId=null;$('#journey-detail').replaceChildren(element('p','','Fahrtverlauf veraltet. Wird beim nächsten Datenabruf erneuert.'));const v=visible.find(v=>v.id===selected);if(v)selectPath(v);}
+}
+async function refresh(){
+  if(loading||document.hidden)return;loading=true;const rev=revision;requestController=new AbortController();const controller=requestController;$('#retry').disabled=true;
+  try{const r=await fetch('/api/vehicles?city='+city.id,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(55000)])});const result=await r.json();if(rev!==revision||controller.signal.aborted)return;if(!r.ok||result.stale)throw Error(result.error||'Datenquelle nicht erreichbar');if(result.city!==city.id||!Array.isArray(result.trips)||!Number.isFinite(result.fetchedAt)||!Number.isFinite(result.serverTime))throw Error('Fahrtdaten sind nicht lesbar');offset=result.serverTime-Date.now();snapshot=result;trips=prepareTrips(result.trips);$('#notice').hidden=true;updateCatalog();draw(true);renderModes();text('#dataset-info','Verkehr: '+city.region+'. Letzter erfolgreicher Abruf: '+new Date(result.fetchedAt).toLocaleString('de-DE',{timeZone:city.timezone})+'. Quelle: Transitous / MOTIS.');if(!trips.length)notify('Gerade keine Fahrten gemeldet','Das kann eine Datenlücke oder eine Betriebspause sein.');const v=visible.find(v=>v.id===selected);if(v)loadDetail(v);
+  }catch(e){if(rev!==revision||controller.signal.aborted)return;snapshot=null;trips=[];clearSelected();draw(true);renderModes();text('#header-status','Verbindung fehlt');text('#feed-status','Verkehrsdaten nicht erreichbar');text('#coverage-info','Keine aktuellen Positionen verfügbar.');$('#status-dot').classList.remove('live');notify('Die Verbindung fehlt gerade',e.name==='TimeoutError'?'Die Datenquelle braucht zu lange. Der nächste Versuch erfolgt automatisch.':e.message);
+  }finally{if(rev===revision){loading=false;$('#retry').disabled=false;}}
+}
+async function loadNetwork(rev){
+  networkController?.abort();const controller=new AbortController();networkController=controller;text('#network-age','Liniennetz wird geladen …');
+  try{const r=await fetch('/data/network-'+city.id+'.json',{signal:controller.signal});if(!r.ok)throw Error('Netz nicht erreichbar');const data=await r.json();if(rev!==revision||controller.signal.aborted)return;network=data;map?.setNetwork(data);updateCatalog();text('#network-age','Netzstand '+new Date(data.generatedAt).toLocaleDateString('de-DE'));}
+  catch{if(rev!==revision||controller.signal.aborted)return;text('#network-age','Liniennetz nicht erreichbar');}
+}
+function changeCity(id){
+  if(!Object.hasOwn(cities,id))return;revision++;city=cities[id];savePref('city',id);$('#city-select').value=id;requestController?.abort();loading=false;clearSelected();snapshot=null;trips=[];network=null;catalog=[];hiddenLines.clear();cancelled.clear();$('#search').value='';map?.setNetwork({lines:{type:'FeatureCollection',features:[]},stops:{type:'FeatureCollection',features:[]}});map?.fitBounds(city.bounds);map?.update([]);text('#region-label',city.region.toLocaleUpperCase('de'));text('#feed-status','Aktuelle Fahrten werden geladen …');text('#header-status','Verbinden');text('#coverage-info','Warte auf aktuelle Prognosen.');text('#refresh-label','');text('#vehicle-count','–');$('#notice').hidden=true;$('#status-dot').classList.remove('live');renderModes();renderLines();renderVehicleList();loadNetwork(revision);refresh();
+}
+$('#city-select').onchange=e=>changeCity(e.target.value);
 $('#retry').onclick=refresh;
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});window.addEventListener('online',refresh);
-function tick(timestamp){const now=Date.now()+offset;const second=Math.floor(now/1000);if(lastTick!==second){lastTick=second;text('#clock',time(now));text('#clock-seconds',secondsFormat.format(new Date(now)).padStart(2,'0'));text('#date','Köln · '+dateFormat.format(new Date(now)));if(snapshot&&!snapshot.stale)text('#refresh-label',`Daten vor ${Math.max(0,Math.floor((now-snapshot.fetchedAt)/1000))} Sek. abgerufen · Update alle 30 Sek.`);}
-  if(!document.hidden&&timestamp-lastDraw>=1000){lastDraw=timestamp;draw();}requestAnimationFrame(tick);
+$('#recenter').onclick=()=>{setFollowing(false);map?.fitBounds(city.bounds);};$('#zoom-in').onclick=()=>map?.zoomIn();$('#zoom-out').onclick=()=>map?.zoomOut();
+$('#tilt').onclick=()=>{const next=$('#tilt').getAttribute('aria-pressed')!=='true';$('#tilt').setAttribute('aria-pressed',String(next));map?.setTilt(next);};
+$('#network-toggle').onclick=()=>{const next=$('#network-toggle').getAttribute('aria-pressed')!=='true';$('#network-toggle').setAttribute('aria-pressed',String(next));map?.showNetwork(next);};
+async function setTheme(next){
+  if(!map)return;$('#theme-dark').disabled=true;$('#theme-light').disabled=true;
+  try{await map.setTheme(next);theme=next;document.documentElement.dataset.theme=next;document.querySelector('meta[name="theme-color"]').content=next==='dark'?'#0c1926':'#eaf0f3';savePref('theme',next);for(const id of ['dark','light'])$('#theme-'+id).setAttribute('aria-pressed',String(next===id));}
+  catch{notify('Kartenstil nicht erreichbar','Die aktuelle Ansicht bleibt erhalten. Versuche es später erneut.');}
+  finally{$('#theme-dark').disabled=false;$('#theme-light').disabled=false;}
 }
-requestAnimationFrame(tick);refresh();setInterval(refresh,30_000);
-
-// Optional browser-native agent controls; ordinary browsers use the same UI actions.
-const context=document.modelContext;
-if(context?.registerTool){
-  const lifecycle=new AbortController();
-  const register=tool=>{try{Promise.resolve(context.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{/* Optional API is not required for the map. */}};
-  register({name:'read_visible_trains',title:'Sichtbare Stadtbahnfahrten lesen',description:'Liest die aktuell angezeigten Fahrten. Positionen sind Schätzungen aus Fahrplänen oder Prognosen, keine GPS-Messungen.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute(){return {city:city.name,fetchedAt:snapshot?.fetchedAt??null,positionType:'estimated',trains:visible.filter(v=>!map||map.getBounds().contains([v.lat,v.lon])).map(v=>({id:v.id,line:v.line,nextStop:v.segment.to.name,quality:v.quality,latitude:v.lat,longitude:v.lon}))};}});
-  register({name:'set_visible_lines',title:'Stadtbahnlinien auf der Karte auswählen',description:'Wählt die sichtbaren Linien auf der Kölner Karte. Eine leere Liste blendet alle Fahrten aus.',inputSchema:{type:'object',properties:{lines:{type:'array',items:{type:'string',enum:city.lines.map(l=>l.id)},uniqueItems:true}},required:['lines'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(!input||typeof input!=='object'||Object.keys(input).some(k=>k!=='lines')||!Array.isArray(input.lines)||input.lines.some(id=>!city.lines.some(l=>l.id===id))||new Set(input.lines).size!==input.lines.length)throw new Error('Bitte eine Liste gültiger, eindeutiger Kölner Linien angeben.');setActiveLines(input.lines);return {lines:[...active],visibleTrains:visible.length};}});
-  window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
+$('#theme-dark').onclick=()=>setTheme('dark');$('#theme-light').onclick=()=>setTheme('light');
+async function init(){
+  $('#city-select').replaceChildren(...Object.values(cities).map(c=>{const option=element('option','',c.name);option.value=c.id;return option;}));
+  changeCity(city.id);
+  try{map=await createTransitMap(city,{onSelect:id=>{const v=visible.find(v=>v.id===id);if(v)showDetails(v);},onMove:()=>{updateCount();renderModes();if(tab==='vehicles')renderVehicleList();},onClear:clearSelected,onError:message=>{text('#map-error-text',message);$('#map-error').hidden=false;}});map.raw.on('idle',()=>{$('#map-error').hidden=true;});map.raw.on('dragstart',()=>setFollowing(false));map.raw.on('zoomstart',e=>{if(e.originalEvent)setFollowing(false);});if(network)map.setNetwork(network);syncNetworkFilter();map.fitBounds(city.bounds);draw(true);const pref=readPref('theme','dark');if(pref==='light')setTheme('light');}
+  catch(e){text('#map-error-text',e.message+' Eine WebGL-fähige Browseransicht wird benötigt.');$('#map-error').hidden=false;}
+}
+if(document.readyState==='complete')init();else addEventListener('load',init,{once:true});
+let previous=0;
+function tick(ts){if(ts-previous>=1000){previous=ts;const now=Date.now()+offset;text('#clock',time(now));text('#clock-seconds',secondsFormat.format(new Date(now)).padStart(2,'0'));text('#date',dateFormat.format(new Date(now)));if(isFresh())text('#refresh-label',`Abruf vor ${Math.max(0,Math.floor((now-snapshot.fetchedAt)/1000))} Sek. · Update alle 30 Sek.`);if(!document.hidden)draw();}requestAnimationFrame(tick);}
+requestAnimationFrame(tick);setInterval(refresh,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){draw(true);refresh();}});addEventListener('online',refresh);
+// Optional WebMCP. The same state transitions serve clicks and agent requests.
+if(document.modelContext?.registerTool){
+  const lifecycle=new AbortController(),register=tool=>{try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}};
+  register({name:'read_visible_trains',title:'Sichtbare Verkehrsfahrten lesen',description:'Liest sichtbare Bus- und Bahnfahrten; Positionen sind Schätzungen, keine GPS-Messungen.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute(){return{city:city.name,fetchedAt:snapshot?.fetchedAt??null,positionType:'estimated',trains:visible.filter(inView).map(v=>({id:v.id,line:v.line,lineKey:v.lineKey,mode:v.mode,nextStop:v.segment.to.name,quality:v.quality,latitude:v.lat,longitude:v.lon}))};}});
+  register({name:'set_visible_lines',title:'Linien auf der Karte auswählen',description:'Wählt Linien anhand mode:Linie-Schlüsseln aus der sichtbaren Datenquelle; eine leere Liste blendet alle aus.',inputSchema:{type:'object',properties:{lines:{type:'array',items:{type:'string'},uniqueItems:true}},required:['lines'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||Object.keys(input).some(k=>k!=='lines')||!Array.isArray(input.lines)||input.lines.some(k=>!catalog.some(l=>l.key===k)))throw Error('Unbekannte Linienauswahl');hiddenLines.clear();for(const l of catalog)if(!input.lines.includes(l.key))hiddenLines.add(l.key);for(const key of input.lines)activeModes.add(catalog.find(l=>l.key===key).mode);renderModes();renderLines();syncNetworkFilter();draw(true);return{lines:input.lines,city:city.id,visible:visible.filter(inView).length};}});
+  addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
 }
