@@ -1,7 +1,7 @@
 # Erweiterbarkeit
 
 Umgesetzt: Köln, Bonn und Düsseldorf mit Stadtbahn, Bussen, S-Bahn und
-Regionalzügen. Fähren werden angezeigt, wenn passende Daten vorhanden sind;
+Regional- und Fernzügen (einschließlich Nachtzügen, wenn geliefert). Fähren werden angezeigt, wenn passende Daten vorhanden sind;
 bisher wurden für Bonn nur Fahrplanpositionen nachgewiesen. Die tatsächlichen
 Messungen und Anbieteroptionen stehen in [DATA-SOURCES.md](DATA-SOURCES.md).
 

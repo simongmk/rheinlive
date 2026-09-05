@@ -1,6 +1,6 @@
 // Rebuild a static, attributed network snapshot. Never creates vehicle positions.
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
-import {cities,modeFor,lineName,lineKey,lineColor,pointInBounds} from '../lib/cities.mjs';
+import {cities,modeFor,lineName,lineKey,lineColor,pointInBounds,segmentIntersectsBounds} from '../lib/cities.mjs';
 import {decodePolyline,validPoint} from '../lib/transit.mjs';
 const id=process.argv[2],input=process.argv[3];if(!cities[id]||!input)throw Error('Usage: node scripts/prepare-network.mjs city raw-routes.json');
 const city=cities[id],raw=JSON.parse(await readFile(input,'utf8'));
@@ -20,7 +20,7 @@ function clippedPieces(points){
   // MapLibre clips at the viewport; never join separate excursions into one line.
   const out=[];let current=[];
   for(let i=1;i<points.length;i++){
-    const a=points[i-1],b=points[i],inside=pointInBounds(a,city.bounds)||pointInBounds(b,city.bounds);
+    const a=points[i-1],b=points[i],inside=segmentIntersectsBounds(a,b,city.bounds);
     if(inside){if(!current.length)current.push(a);current.push(b);}else if(current.length){out.push(current);current=[];}
   }
   if(current.length)out.push(current);return out;

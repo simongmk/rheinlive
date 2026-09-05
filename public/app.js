@@ -8,7 +8,7 @@ const readPref=(key,fallback)=>{try{return localStorage.getItem('rheinlive:'+key
 const savePref=(key,value)=>{try{localStorage.setItem('rheinlive:'+key,value);}catch{}};
 const preferredCity=readPref('city','cologne');
 let city=Object.hasOwn(cities,preferredCity)?cities[preferredCity]:cities.cologne,map=null,snapshot=null,trips=[],network=null,catalog=[],visible=[],candidates=[],selected=null,detail=null,detailId=null,detailKey='',offset=0,revision=0,loading=false,requestController=null,detailController=null,networkController=null,following=false,listLimit=50,tab='lines',lastList=0,theme='dark';
-const activeModes=new Set(['tram','suburban','regional']),hiddenLines=new Set(),cancelled=new Map();
+const activeModes=new Set(['tram','suburban','regional','long_distance']),hiddenLines=new Set(),cancelled=new Map();
 const timeFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit',hour12:false}),secondsFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',second:'2-digit'}),dateFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',weekday:'short',day:'numeric',month:'short'});
 const time=t=>Number.isFinite(t)?timeFormat.format(new Date(t)):'–';
 const cleanName=s=>String(s||'').replace(/^(?:Köln|Koeln|Bonn)[, ]+/,'').replace(/^D-/,'');
@@ -37,14 +37,15 @@ function renderModes(){
   }
 }
 function updateCatalog(){
-  const lines=new Map((network?.catalog||[]).map(l=>[l.key,l]));
+  // Timetable network numbers are not individual long-distance train numbers.
+  const lines=new Map((network?.catalog||[]).filter(l=>l.mode!=='long_distance').map(l=>[l.key,l]));
   for(const trip of trips)lines.set(trip.lineKey,{key:trip.lineKey,line:trip.line,mode:trip.mode,color:trip.color});
   catalog=[...lines.values()].sort((a,b)=>transportModes.findIndex(m=>m.id===a.mode)-transportModes.findIndex(m=>m.id===b.mode)||a.line.localeCompare(b.line,'de',{numeric:true}));renderLines();syncNetworkFilter();
 }
 function renderLines(){
   const query=$('#search').value.trim().toLocaleLowerCase('de'),lines=catalog.filter(l=>activeModes.has(l.mode)&&(!query||l.line.toLocaleLowerCase('de').includes(query)));
   text('#line-count',`${lines.length} Linien`);$('#lines').replaceChildren();$('#lines-empty').hidden=lines.length>0;
-  for(const line of lines){const b=element('button','line-filter',line.line);b.style.setProperty('--line-color',line.color);b.setAttribute('aria-pressed',String(!hiddenLines.has(line.key)));const mode=transportModes.find(m=>m.id===line.mode);b.setAttribute('aria-label',`${mode.name} ${line.line} anzeigen`);b.title=mode.name+' '+line.line;b.onclick=()=>{hiddenLines.has(line.key)?hiddenLines.delete(line.key):hiddenLines.add(line.key);b.setAttribute('aria-pressed',String(!hiddenLines.has(line.key)));draw(true);syncNetworkFilter();};$('#lines').append(b);}
+  for(const line of lines){const b=element('button','line-filter'+(line.line.length>4?' long-label':''),line.line);b.style.setProperty('--line-color',line.color);b.setAttribute('aria-pressed',String(!hiddenLines.has(line.key)));const mode=transportModes.find(m=>m.id===line.mode);b.setAttribute('aria-label',`${mode.name} ${line.line} anzeigen`);b.title=mode.name+' '+line.line;b.onclick=()=>{hiddenLines.has(line.key)?hiddenLines.delete(line.key):hiddenLines.add(line.key);b.setAttribute('aria-pressed',String(!hiddenLines.has(line.key)));draw(true);syncNetworkFilter();};$('#lines').append(b);}
   renderStopSearch(query);
 }
 function renderStopSearch(query){

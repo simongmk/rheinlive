@@ -1,5 +1,11 @@
 # Historical data fixture
 
+`long-distance-2026-09-05.json` contains historical ICE/IC segments captured
+around 12:29 UTC in all three regions, including an ICE passing Bonn without
+a stop inside its rectangle. Capture times and request URLs are retained.
+It is only test evidence, never served as current traffic. The same attribution
+and separate data-license requirements described below apply.
+
 `transitous-cologne-2026-09-05.json` is a small historical API capture, received
 at 2026-09-05 08:48:38 UTC. It is used only in tests and is never served as live
 data. The original URL and capture timestamps are recorded in the file.

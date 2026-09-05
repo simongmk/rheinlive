@@ -1,0 +1,448 @@
+{
+  "kind": "historical-live-capture-test-only",
+  "source": "https://transitous.org/sources/",
+  "samples": [
+    {
+      "city": "cologne",
+      "capturedAt": "2026-09-05T12:30:08.004Z",
+      "url": "https://api.transitous.org/api/v6/map/trips?min=50.8%2C6.76&max=51.1%2C7.18&zoom=14&startTime=2026-09-05T12%3A29%3A00.000Z&endTime=2026-09-05T12%3A32%3A00.000Z&precision=5&language=de",
+      "data": [
+        {
+          "trips": [
+            {
+              "tripId": "20260905_09:31_de-DELFI_3383408987",
+              "displayName": "ICE 926"
+            }
+          ],
+          "mode": "HIGHSPEED_RAIL",
+          "distance": 379091.375,
+          "from": {
+            "name": "Köln Hbf",
+            "stopId": "de-DELFI_de:05315:11201:7:75",
+            "importance": 0.014220234006643295,
+            "lat": 50.94328699999999,
+            "lon": 6.958458,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "87",
+            "track": "87",
+            "description": "Bahnsteig Gleis 4+5",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "to": {
+            "name": "Düsseldorf Hbf",
+            "stopId": "de-DELFI_de:05111:18235:94:17",
+            "parentId": "de-DELFI_de:05111:18235",
+            "importance": 0.014727969653904438,
+            "lat": 51.219505000000005,
+            "lon": 6.794866,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "17",
+            "track": "17",
+            "description": "Gleis 17+18",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "SUBWAY",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "departure": "2026-09-05T12:10:00Z",
+          "arrival": "2026-09-05T12:31:00Z",
+          "scheduledDeparture": "2026-09-05T11:52:00Z",
+          "scheduledArrival": "2026-09-05T12:13:00Z",
+          "realTime": true,
+          "polyline": "sz|uHqani@\\]PSl@o@JMDCx@}@DGLQLMT]BEPYR_@Tg@HQFSFSDOFYDWDQ@QBOBSFw@@IDcA@a@Bm@?aA?U?{B?Q?Q@oB?W?_@?_A?aE@iI?eB?g@?}B@]?y@?gDBaC?E?y@@a@DgC@gA@gADoABa@JmB?GR}Dt@cN@M?KRuDJ{BBi@@g@Bk@?s@?Q?a@?[?YA]Ag@C_AC_@Ca@KiAGs@Im@a@}CSaBGe@WmBi@cEWoB[uBO{@Ou@Mo@Os@[mAg@iBK]M]Oe@a@gA_@_A}@mB_@s@_@q@{@uAq@}@w@aAc@i@e@g@mBsBgCkCiBoBiBkB[]g@i@m@i@i@e@[Wq@g@wDkC[Sm@e@q@e@w@i@iAw@k@a@i@a@i@e@a@a@_@_@[a@a@k@g@w@_@s@Ym@Se@m@cBYaAYkA_@}AUaAMm@Oq@e@{B]cBKm@Im@Ge@Gc@G}@Eo@Eu@GwAC{@Cw@EkCEoBCy@Cy@Ek@Ek@AGGm@Iq@Ms@Mo@Oq@Oo@[aA_@_Ak@eAEIWc@Ya@a@i@OSi@o@a@c@g@e@c@a@g@c@QOc@[]YOK_Aq@{AeAkFkDuCoBk@e@WUu@q@]]sAwAk@k@QOm@k@MOkA}@g@_@c@YUOs@a@gAi@gAi@qAs@YMKGYO_@Qu@a@OKc@YYUs@i@UQYY[]UWk@m@WUWSWQUOi@[_@QSGSGMEYGWE]Ee@Ci@Ce@@g@Dm@HUDI@o@PaAVoA\\c@JeAXcBd@a@Le@Ns@\\m@Zu@d@eBjAOJ_BjAgAx@SNYVa@^k@f@SPMLoAfAgAbAqAjAuAnA[XURe@`@}@z@sApAsArAmBpBoBxBm@r@k@t@k@t@k@t@eBbCi@v@ILyArB_ArAiA`BkD`FaApAIL_@h@yE|GEDyAtBk@v@q@z@o@r@g@f@e@d@u@l@u@h@u@d@cAj@cA`@iA^gAXuAVe@FkC\\aAHaAJa@DuANqAPkBXkBXkBX{B\\yB^w@LMBw@JwDl@oAR[FcJvAq@J_G|@aAN{J~A}GdAkEr@{Et@yGdAcDf@KBuFz@qGdAeANkDh@cC`@WDQBeAPmDh@sB\\y@L_G~@yF`AiAPIB}AVqCf@cBZkAR}GhA}GfAsDl@aC^g@Fa@HG@iG`AsCb@qBZeEp@WDK@SDuDp@K@aATsAPsANqALqAPQBE@E@yAT_En@u@JOB}AVkCb@y@LoAR_@FM@y@Lg@FaAJuANyAVcAPc@FaHnA]F{Cj@oCf@}AX{@NE@e@HkBZsBZuBZ{BZ}BZaCZSBaEf@K@[DE@oAP{BZ}BZ}@N}@Pm@L_ATm@P{@VMDm@Rk@R[NoAf@eAh@i@XQJa@Vu@b@wA`AUPs@h@s@j@gB`Bu@t@s@t@u@|@u@|@a@j@ORiA|AgAbB{AjCk@dA[n@OXk@lAi@lAg@jAq@~AuAlDsAlDYt@EHa@dAO^iAvCgBrEaA`C[z@s@bBMZ}BvFiAnCqAbDwAjDqA`DuAfDsD`JeA|BKVQ`@i@hA{@`BgApBqAvB}A|B_BtBiBtBmBnB_BvAo@f@o@f@k@`@c@XGFaBdAuAv@oAr@i@\\YLm@^kCvAqAn@aCnAkG`DeCpAeCnA_@PiB~@eCpAiCrAOHYLoAn@uFrCmJ|Ec@T_HlD}BjAcCpAcCnAqBfAsEjCIDm@ZqDnBmBbAOFc@TUL_D~AoE|BqBbAgAj@YNyAt@iCtAiB|@}H~D_I`EuE`CwAr@sBfAoHtDmE|By@`@UJkBbAaCnAw@d@oBlAyBtAgBpAYP}@t@q@h@WTmAbAs@l@sApAg@d@mBjBgChCuFrFs@t@MJCDkCjCeBbBQP{B|BGFkEhE{B|BmBjBoApA[XkBjBy@z@o@n@cAdASPeCbCuArAyHxHeAdAcAdAiAfAqApAyBxBwBxBuBrBEDoBpBUR]\\_A~@wBvBqBpBmBlB{BzB{BxBwBxByBxByBvB]\\uAvA}B|B{BzBgBhBkAhA}@~@mJlJmBlBe@b@cAbA{AxAeAfAyDzDqFnFwBxBaE~D[ZOPuBrBg@f@kAjAsBtBcA`Ao@n@sBrBo@l@a@`@yCvCuBrBsBrBo@l@eAbAWXi@f@yAzAq@r@{BzBcB`BoAnAQRqBnBmBlB{E|EkBjBg@f@a@`@c@b@sArAWVoBnBkBlBoBlBkBjBkBlBmBlBmBlBcA`AqArAeBdBiEhEmClCQPw@x@u@v@UT}B`CwBzBcFhFsBvBgDfDeBdBg@d@eEbEmBjBaE|DuApAuBtBm@l@o@l@ONuBrByBvBwB|BeDbD]^KJ}A|AaF`FaA`AIJYXGFuBrBoDpDuBtBaE`EIFQPeAdA}CtC_Az@y@t@qBdBoBfBmFtEyCjCeB|A{ArAcA|@e@`@ED]\\}DlDyApAeFrEsBlBWTwApA{AxAMLiBjBwA~AwAbBs@x@u@`Ay@dAm@x@kBlCm@|@a@n@q@dAk@~@GJ_BnCyAhCm@lA[l@gAzB_EhIaCxE{BvE}GlNGNiClFyBpECFgAzBkAbCkA`Cm@lAg@`ASb@Yj@o@rAaAnBk@lAQ`@kBxDqAhCuAtCUb@aApBgBrDkA`CqAnCoAfCe@bASb@S`@g@~@cAvBg@fA}@jB{AzCsDvHOXeAvBSb@qAhCcAzBs@zAi@rAO^Qd@]z@[~@Y~@]lAe@`BU`ACHOr@YtAUhA[pBId@OfAOjAOpAU~BMzAIlAIbBErAEvA_@~NMjFG~BSjIA\\EvBIvCEbBGfC?J[xOUlLAb@MhGSfKElCGbCItBM~AGt@Mz@SpA[|AMf@Md@Ut@Wt@Q`@Sd@CFQ\\S^[f@Y`@QVMN]^QPYVq@d@e@Xe@Te@Pe@Jc@Jc@Fc@BY?e@@MAK@_CCO?_DCy@Ae@AYEi@Gq@Oa@KSGKEGCy@_@i@YWSe@]i@c@EE[]o@u@UY{BuCQUq@{@u@eAq@{@eByB[c@"
+        },
+        {
+          "trips": [
+            {
+              "tripId": "20260905_07:22_de-DELFI_3383402670",
+              "displayName": "IC 2046"
+            }
+          ],
+          "mode": "LONG_DISTANCE",
+          "distance": 578967,
+          "from": {
+            "name": "Solingen, Hauptbahnhof",
+            "stopId": "de-DELFI_de:05122:13800:90:1",
+            "parentId": "de-DELFI_de:05122:13800",
+            "importance": 0.0032441122457385063,
+            "lat": 51.160896,
+            "lon": 7.00394,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "Gl. 1",
+            "track": "Gl. 1",
+            "description": "Bahnsteig 01",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "BUS"
+            ]
+          },
+          "to": {
+            "name": "Köln Hbf",
+            "stopId": "de-DELFI_de:05315:11201:7:77",
+            "importance": 0.014220234006643295,
+            "lat": 50.943394,
+            "lon": 6.9587010000000005,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "89",
+            "track": "89",
+            "description": "Bahnsteig Gleis 6+7",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "departure": "2026-09-05T12:29:00Z",
+          "arrival": "2026-09-05T12:49:00Z",
+          "scheduledDeparture": "2026-09-05T12:27:00Z",
+          "scheduledArrival": "2026-09-05T12:45:00Z",
+          "realTime": true,
+          "polyline": "qjgwHy}vi@l@DrBHzBJjBHlADv@DL@l@BxBJN@|CNnFV~@Dj@Dx@DnDNjETtCNtCPjBRjBRjFx@hF|@|OjClGfAXD|@PhBZtHnAvIxAl@J`C`@TDtZdF~FbAzAVbPnC|GhAt@N^F~@NdBXdBTfAJdAF~@D`A@rACrAIdAKpASJC`@Iz@S`AY~@[n@Wn@Y~Ay@zBoArAy@`IwEfBgAlLcHrCcBJGxEsCzEqCdDaBvB_AtAi@RGnBm@lCm@rB]hC_@fDa@`BUjC[p@ILC~PuBtAQlXmDf@GzEm@lOmBz[aE~HeALAXE`KkAvAOdCYpCKnC?fDL|BJvBNj@DbH\\fCPlHd@hG`@jCN|@HT@F?PBbCNX@rCR`AFr@Fz@JjAJlBVvAPzAR|ALtADz@?fBCLAJ?t@G\\EdAK`BOtDa@|AQnAMzAQr@IbGo@zC]bBQpBSJAp@I|AQ~AQvAKfAG|AG|AGdBKtAOpD_@NCfAM`BQzAQbBQtAQDA`AK~AO`BSpDa@tAQ~J_Bn@IzAUxBU~BWhJcA`Ec@pGs@hBSxAOrC[fBSxAQhBQdAMnBS|Ei@tAOdNyA|Fm@bBShI{@x@Kv@I~AQtFm@pC[~Gu@lI}@hBSfCYh@GfBSfAMfAKjBShBSjEe@dLoAzBUdCYfAMr@Ir@IjKgA`CWxBWtBUrBOhAI~AC|AE`NF^?|TNzSLpA?pA@lHDdCBvB@fC@rBB|B@|B@zB@bEB`FD|B@bC@fCBd@?vA@zB@rBB~B@dC@tB@jB@zA@\\@P?V?D?nA@t@?L@|@@fA@lABrADdBFtADz@BR@J?D?p@Dp@DdANn@LZJl@Xl@Zt@j@j@j@\\`@JL|@pA~@zAt@hAv@bA\\\\\\Z\\X^T^R^NLDLDZHLBf@Ff@Bl@?l@Gh@Gv@Wj@Wl@]j@_@vAkAXWJIpAkA^[\\YhA_AjAeA`BwApAeAfA{@~AiANKdBkA\\SVQl@[r@]f@Q`@KbCq@fAYnA]`AWn@QHAVGj@Ih@Ed@Ah@@d@B^DVDXHLBTHRF\\Ph@ZVNXPTTVTv@x@r@v@d@f@j@h@XTb@XNJt@`@^PXNJFXLpAr@fAh@fAh@r@`@TNb@Xf@^jA|@LNl@j@LJdAlA\\f@^b@LNb@d@r@j@l@d@pBtAl@^lFlDj@^p@d@XRVPJJ^Xd@^r@r@hAlAb@b@d@h@V\\Zb@Vb@Xd@Tf@Vj@L`@JZJ`@L`@Jj@Lp@Jv@Hz@JpADl@JhBHvAD~@HbAL|AB^RpCF~@HdAHv@Hr@Hl@Jl@Nr@Nr@@Hp@|CLj@R~@j@fCR|@Pp@j@dBXv@Xp@`@v@d@x@RXRZf@l@\\^VXZXl@f@rB|Af@`@DDnBxAXRlA~@dBrAXRp@f@nA`Az@p@l@d@r@j@p@l@xAvAzB~BtBxBnArAr@z@p@|@v@pAb@r@\\p@~@lB^|@`@fA\\~@X`AXdAZhAPv@Ln@Nt@PbA@LTxANfAdAfI^vCD\\VvBHp@BZF|@Dj@@\\Bl@Bn@@d@?`@?FArAAv@Cn@EfAE`AGbAKpBQvCm@jLK`CAb@Ab@Ap@AXAb@GfDAlAClCCjA?fAAnB?vB?lA?\\?|BAf@?dB?jOA~@?R?b@?nGA\\?Z?NAV?J?HGj@CZIv@E^E\\ETEXGVGTIVGTQ`@MTCD[b@MPQPe@h@_AbAeBhB"
+        }
+      ]
+    },
+    {
+      "city": "bonn",
+      "capturedAt": "2026-09-05T12:30:08.109Z",
+      "url": "https://api.transitous.org/api/v6/map/trips?min=50.62%2C6.99&max=50.82%2C7.27&zoom=14&startTime=2026-09-05T12%3A29%3A00.000Z&endTime=2026-09-05T12%3A32%3A00.000Z&precision=5&language=de",
+      "data": [
+        {
+          "trips": [
+            {
+              "tripId": "20260905_13:21_de-DELFI_3383396354",
+              "displayName": "ICE 629"
+            }
+          ],
+          "mode": "HIGHSPEED_RAIL",
+          "distance": 484193.34375,
+          "from": {
+            "name": "Siegburg Bf",
+            "stopId": "de-DELFI_de:05382:55101:7:76",
+            "importance": 0.0033359075896441936,
+            "lat": 50.793743000000006,
+            "lon": 7.202638,
+            "level": 0,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "81",
+            "track": "81",
+            "description": "Bahnsteig Gleis 6",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "to": {
+            "name": "Frankfurt (Main) Flughafen Fernbahnhof",
+            "stopId": "de-DELFI_de:06412:11511",
+            "importance": 0.005031722132116556,
+            "lat": 50.053165,
+            "lon": 8.570185,
+            "level": -1,
+            "tz": "Europe/Berlin",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "BUS"
+            ]
+          },
+          "departure": "2026-09-05T12:00:00Z",
+          "arrival": "2026-09-05T12:40:00Z",
+          "scheduledDeparture": "2026-09-05T12:00:00Z",
+          "scheduledArrival": "2026-09-05T12:40:00Z",
+          "realTime": true,
+          "polyline": "qt_uHsx}j@DIl@aAdDmF^m@PYLOHOb@o@h@u@d@s@PWLQdAaBJO`@q@fAeBlBaDrDaGVc@~CcF`DaFlAiBjBgCzAqBp@y@b@g@xAaBrBuBfAeAfAcA`@_@tAiA|EkDjDwBzDmBnD}AbDiA`Co@~Bg@zCm@nDi@xAYrHiAfHoArFkAlEeAdFwAnLuDlLuE|LsFnC{AhRkKlV}MjHaErBkApViNnE_CrAq@l@]fD}AjE}AdC{@TIvBu@lD{@fAWdBa@xBa@pCa@tEm@bBM~AKxCKxEOxFIfC?tm@j@j@@j@A|C@tEAfEItGc@xEe@nAQpAStAWvAYnAWdDy@n@QdBi@`Bi@hDoAzB_AlCmAjAk@hAm@nAq@hAq@|CmBdBkAxB_BzAkAxAkAdCyB`E{D~CgDjAsAhAsAdAoA~@oA`AqA`AsA~@qA|@sA`AyA~@}AzAeCjDmGvAoCxBiExBiEf@aAr@wAtCsF|BgEpA}BrAyBtA{BvAwB~A}B`B{BjA{AjA{AhAsAjAsA|BcC|BcCrAsApKkKfM{LlFkF`B}AnHiHLOjKeKbOkObKwLrIqMp@iAzB{Dx@_Bz@_BfGqM`@eA`D}HfB_FxAyEn@_BxA}EbByF~L_g@~BgJhCcK`HaVX_AZy@X}@Vo@h@{At@oBr@iBpAaDvB}E^w@z@iB`BaDtAgC|BaEtAaCpAsB`BeC\\g@z@mAx@iArAeBtAgBxCoDrB{BvCwCvAuAxAuAzAsAtAmAlAaAlAeAnAcAzAoAtEyDdXsX|IiKlEcHpAsBfCoEvBcEtDyH|DeJhHgQrBkFnAeDx@}BhAcDx@cCzDgMlDgL~BcIfH_X`HcWH_@vIs[xEcQTw@bBkGd@gB`DiMfLeb@fLua@BIx@_DlDyMLg@pAkFjCeLlBwI`CqL|AeItFoYbBsIvLkn@|BkKvBoJfBwGNm@v@kCxCoJfBgFbBoElB{EpBsEnBgErB}DrBmDdDkFxIkM`KiMPUfAoAd@k@rDyDvFoFjFwFvGeIbEsFnIcMhI}MfEsHbCoEd@}@jF}J|FcLfDoG~CcGrFmKbPsZxEcJdEaIj@iAlB}D~@sB`BsDdBiEjA}ChA_Dz@eCx@iCjC{In@_Cl@wB`AyDl@kCZsAdAyE|@sEx@yEx@mFvCgTdBoMfCwSrDuZ`Ggf@fA_IPsAd@sDrBgOrA{IdAkFp@sDR}@^eBpB}IpBwHzB{H|AcFd@qAjAoDfGqPzLa\\`DqIhBiFzE_NfAuDFSl@mBlBaH\\sAH[n@gChA_Ff@mCjCoNb@wCv@gFjAyIj@kFb@mEb@{En@oIReD\\qGn@wO^iKb@wKNmDRoDRuDX{D\\oEZmD\\kD^oD`@mDd@oDp@aF^eCl@qDr@cE^kB`BgI|AcHv@_Dz@}CxBuHzB_HdBcF\\y@z@aCvBgFvAaDfCiFnCqFfDaGXc@Zi@vBaDbDwEvBuCnBcC~@gApC_D~@eA~E}E\\[rYmXf@e@nEcEbGgG`DkDnDmExAoBfCkDhDgFnBaDzB{DlBmDxBkEhCuF`ByDvAoDxDuK~C_KnDaNRw@~BgKrA{GpAmHlAaIdA_Ix@gHl@iGp@wHd@eH`@eH\\aIX{JNeIDgGBuH?sA?cQGiPOqUAsAAcAAuESub@CkFEqNEiHCyW?_PJqQJwGNgHZgHd@wIz@cMlA}MfBqOHi@bBgLnAoHzAoHzAsH`BwGnA{ElCqJhB}FxBkGrDqJ~CqHl@uAhKuU`EcJn@}AfGcNx^gy@JWfC{FZq@vF{Kni@{_AdBqCVc@tA_CpEuHnCeF`D_H~AqDtD_JjAyCpAeDXo@bHyPjBeEbCmFfA_CrAgC~BcEd@w@`C}DrE{GzB_DzBsCPSfBuBdCiC|B_CnCiCfC}BnCyBrDmCrBuA|CmBxC_BlCsAvDcBjBy@~@_@fFmBdRyFXKbHcCtGmCxH}DPKzDsBlEsCrEcDrE}DdFaFbF_GpE}F^k@lDiFhEiHhEqHdEkIzD{InDuItA}DnAmDvCkJhCwJzB{JpBgKhB_LzA}KpAwKhAkLHcATwCJqAJwAJ}ALkBHcBJeBTcFR_FJiDHsDF}D@_ABaC@cB@oBFw[BqS@S@wF?yH?iBBaKBwJ@aQ@kF@cM@eEFuc@HgIl@yWFyB\\sMp@sNnAiPpBgWhDs\\`@kCxDaVtFwXpAkEbAgDDSRm@p@{BpBoGhCqHpEmLfEaJtC_G^w@Ra@Xi@lUka@x@uAbCaEpAcCxEqIn@iA~PaZzIyNrAiCrBkExEsMfDcL|B}InGmZ`AyEtAmHrA{ItCiRrAeL|AyQ~@kL@MZuFTkFNkDPmFNaGjBsuAFsHPgM@mAZmVPcNN}L`@c[@uAD}BB{BFuFNmIB}ALkERuG`@kJJ}BbAeOtAgRnAaK|A}KdC{M|BuKR_AViAxDoP`@gBfDeOf@{BzBuKpBsJfAiGzBsN~@yH~@oI\\iDb@aFXiD`@}FHqAL{BHmARoEHwBD_AJsCPeGFuCFaFDqDDuH@uB@kK?{C@eQ?uAFehAB}c@@qF?iE?iC@qOBqJ@uCDgIFeFDgBB}AHoDLcEPkEDy@H_BFeAzAuQ|AcQxD}[xCcSlBmHlAuE~BsHxC_IvDoItL_VpGeLhBoChBgCb@q@f@q@n@{@rDsE|DwEzEwFbBoB`LsMh@o@pCeD`BkBjD_EvDoEbAkAjEeFnDcEpA}ArEmFdHgInA{Az@aAfAuAvAiB\\g@|@kAtDoFpAoBpBaDrBqD~AuC|AyCjCsFfC}Fz@sBz@uBx@wBv@yBv@{B|@iCnBiGb@{A^mAJ[tJw\\rHiWx@qC~@aD~BcI|BiIxBiI|@mDt@cDx@oDt@oDlAgGfAiGzA_J~AgK~CmS@KvA_JpAuIt@yEfA_HhA}Gl@kD^qBn@gD`@oBbA}Ex@kDr@sC`A{DjAgElAcEh@gB~@sCdBeFrBuFvBoFdB}DjAgCnAkCnCsFdDoGd@}@l@iAhDoGjDqGtDcHvCsFjDsGtAiCjAwBlA_CfBeDxBcE~A{CzCeGlAiClAmCjCkGfAoC^{@j@aBhCgH~@uClAsD\\gAzAgFdCkIfCmIhUuv@j@kBfAsDtAkExAqE~AuEvAwD|AaEnAwCtAaDtBqEdBsDv@}A|@}AjBaDrBgDxBiDvAuB|A{BzC}DvBgCd@k@dBqBhBoBhBkBhBgBjBcBlBaBlB}ApB}A`D_ClDeCf{@ol@jDwBdEgC|@i@`CqAlGaDjEiBv@[vDyAbC_AfF}AxBo@tFoA`AYnBa@bCg@hDo@fGs@lFk@jEU~Ge@hGWdHQp@Ch@CrRs@vNk@PA|G]vBSjCSlDa@fBSbGcAXEzDw@hBa@t^gIbIaB|GiA`I}@jCQ|AKp@Ev@CvEKhFC|BBrBDz@@n@BjIf@bDV`L~@h@DxDZjBN~AJpCNvDJpDD|BA|BCxBGfCKhF]nFg@lDk@xFaA~@SbFcAnQcE|EiAbUiF`_@wIdGmAvGiA~@MnDa@jEa@zF]|EU\\?fHDD?vNBzDHt[r@zFWhHm@rCm@fE{@nIsBrIsCrEiB`FiC|F}CbBaArEwCNK~EqD~@w@l@g@zHwGd@_@x@s@jHcGdCuBrAmAn@g@rJeI~GaGx@q@hFoEvEaElBaBpAiA|F}EfHkG`IcIpMuPpDyEhR}Xfx@otAb@}@zEiJfB{ClAyBvAaCxBiDh@y@rAmBpD_FrAiBr@{@fIoJpFaGvD_E|CeDhBqBhE}E~AeBx@cAp@s@dAuA|ByC~AyBfA}Az@qAxAeCjQoZ|DeH~AuCxAiCrDoGvDiGxDaG~AaCd@s@|@mAhDwETYj@w@lCgD|AmBhBwBfE_FtC_DbDgDhBgBtEmEjIiHhQ{M~R{NtDoCbBoAd@]xAeAdFwD~R}N~H}F`I{FjH}EXQhIcFlIgEtIoDhO_FbCi@|PuDnDi@rD_@fJeAnEe@pCYbJ_ArKgA~Ci@tE}@zBe@bBc@dD}@dBg@jBm@~CiA|Am@fDsAxAo@`Bu@hCqAfCsAlAs@nBiA~BwAfBgA~C}BrG{EnGuF`FmEtFeGzAqB|QcVjBgCnAiBxBwCT]NS|GoJ`BwBdEmF~AmBvGqHt@{@vDaE~DkEvC}CvDcEzAcB|BkCxAgBvAcBxBqCvAkBvAkB`EwF~DaGtAuBLQnD}FpAyBlAuBlDmGnA_CzDqHJUb@y@`@w@|@eBlBwDxF}K`GkLlLgUpAmCRc@tCaGxB{EvBcFdCoG~@gC|@gCzAmEtAqE|AkF|AyFpDaOhB}Ir@wDJg@XwA~@gFjCwOdCaO@KnC}OjB_LRiALu@Hk@|BcNhCoOp@eEvAkIzAcJl@mD^yBz@eFXaBb@sCrBaNXaBRqAh@{DpBaOnBaPVyBJu@~AmNZeCx@gHTgBVwBhA{JTmB`@iDJw@r@gGDYl@qFNcAFi@D_@j@{EDe@d@{DZqCBQLaALuATyBZkDF{@B_@LoBHiAHwABu@Bc@@_@DyADkABiA@aABeA@qA@gA?oA?y@?wAAoAAgACkAAs@CiAC_AGkBI}AIiBMmBKgBM{AOcBQgBOkAMkAUaBYsBGa@]uBe@kC_@gBMu@s@gDc@qBm@qC_@aBGYk@kCwAyGcA{EUcAQw@qAcGOo@{@yD{@sDc@gBGWi@uBqAgFeBoGqAqEyIcZm@sB_A{CkAaEq@{BgEsNs@_CiAwD}ByHKc@kA{De@_ByC_KgEuNgEsN_E_N_@uAeBqF[eA}@oCcCoHwCsIsAaEmAsDq@yBs@aCo@_Cm@aC_@}A_@}A]_B]cBq@_Dk@cDCQ]kBYmBYoBYoBqA}JS_Bi@_Ee@_Em@yEOkAK{@ES_@yCAKo@eFMy@AQi@eEe@yDg@oDm@aFCQWsBWkBQiAM}@O{@AIiAwHUuAQqAMaAAKgB}OIu@OiA"
+        },
+        {
+          "trips": [
+            {
+              "tripId": "20260905_12:24_de-DELFI_3383401954",
+              "displayName": "IC 2045"
+            }
+          ],
+          "mode": "LONG_DISTANCE",
+          "distance": 578923.3125,
+          "from": {
+            "name": "Koblenz Hauptbahnhof",
+            "stopId": "de-DELFI_de:07111:010001:72:03",
+            "importance": 0.003594001056626439,
+            "lat": 50.350516999999996,
+            "lon": 7.588572,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "3",
+            "track": "3",
+            "description": "Bahnsteig 2 Gleis 2+",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "BUS"
+            ]
+          },
+          "to": {
+            "name": "Bonn Hbf",
+            "stopId": "de-DELFI_de:05314:61101:7:71",
+            "importance": 0.0032610746566206217,
+            "lat": 50.731945,
+            "lon": 7.097338,
+            "level": 0,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "78",
+            "track": "78",
+            "description": "Bahnsteig Gleis 1",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "departure": "2026-09-05T12:16:00Z",
+          "arrival": "2026-09-05T12:47:00Z",
+          "scheduledDeparture": "2026-09-05T12:13:00Z",
+          "scheduledArrival": "2026-09-05T12:43:00Z",
+          "realTime": true,
+          "polyline": "uairHwcim@s@KE?[EoC]y@M}@MaAMq@KIA_@EGAu@Iu@Kw@IYEYCKCi@Go@Ig@GMAeAMWE_BQ]Es@Ie@GcAMu@Ig@GeCUgAG}@CiA@mAB{@B_BBgBAg@CSAI?UC]Cc@GcD]QAKAoI}@SAaBQaBQIAOAMCYEMCOC_@IWIKCICKCICWIiDiA}@[cA[a@Oc@MiAa@w@[u@]k@[i@YuAs@k@Yk@We@Qc@O_@Kc@ImAQ{@EoA@sAFoAFwBHg@BsAJw@L[HYHe@N]Pi@Xg@Za@Xi@b@WTa@Xa@\\_@Xe@`@_@Za@d@_@`@}@rAa@x@_@x@]`A]`Au@nCYdAMh@{Ohl@eFjRQl@Md@ENEPSr@kCzJ{BhIKb@GTYdAy@tCiAjE{DtNsE|PsA|EK^c@`BqHvXuAdFAFu@rCoKj`@AJoEnPwBbIW|@uBpHU|@Qv@Kd@cDrLmF`SeA~DWhAc@fBa@jBe@xBc@zBMv@iA~G}@dHYlCa@pDg@vF_KrfAoDr_@I|@E`@c@nEEf@wAxOiA~K[fDYbDw@lIw@lIk@~FKhAg@tFi@|FCP?DiC~Xq@nHWlCcDf]kCbYo@lFyBxNO|@SvAiAzGeB`I]pAuAlFiEhP}If\\mCvHOd@cClGUj@[x@mAxCGLsD|IeBzDKPYp@_AlBsAdC{@|Au@hAiAnBoBxC{H`MOTi@x@qCnEaF`IsAtBi@|@GHsBdD}@fB]r@aAzBqA|Di@bBADYdAm@hCsApG[`BWzAiAbHE\\iHrf@sEp[qA|IsF|_@_CbPm@|DWpBQvAa@bEo@nGWpBWnBE\\w@tFi@vD{@dF_AfF]fBeBlImCtM{@zDYvAQv@o@pC}@pDOj@Qp@Oh@Ur@sAtEQh@w@bCk@~AELUj@i@pAg@jAa@z@eApB_@r@c@t@]j@i@v@[d@GJa@j@_@d@k@t@i@l@i@j@y@z@c@b@i@b@a@\\o@d@g@^_Ah@_DtB_Ap@_At@MJu@|@i@l@a@h@o@`Ae@x@q@nAi@rAq@jBc@|A[lAWfAUrAYlBq@bGkBpRkAjKuBnR}@|HQxAi@xCa@zAsAtD[v@}B~D_C|CoCnDkSlXoFlHsKxNSTILIHcAtAMNwRpWaWv\\aWv\\cAdAeA|@mCjBeDbBoB~@kAl@cBdAmA|@_BxAaBhBsAjB}@vAwBjDaCzDcAdBKNKPOT}HhMmDvFgDjF}BpDOTw@lA{AvBmC|DEHcDnEeDzEw@dA_@j@oBpCe@n@OTaBbC_BxBkA`B[d@uC~DKNqC~De@p@oEpGs@bAe@l@uAfBUVwBdC{BzB{CpC{AlAqAbAyNzKuA`AWTy@p@wBnB_@^uAzAmB|Bu@bA{@nA{@rAq@dAiGfLS^Q^e@z@mEdImOtXkDpG{ErI_F~IiFrJMXyBvDi@bAgBnC_C`DsCtCiMbLqJvIcCzBKJmBdBaBzA_BzA}A~AgBjBiBlBiBnBiBjBy@|@y@z@w@z@qG|GkErEaHfHaGnGoArA}DdEke@bg@s@v@yBzBwB~BoF|FeBnBe@d@eAfAiAlAaC`CmDxDoDzDeEhEsCrCqC|CqBtBk@j@m@j@i@b@YVq@p@oAjA[Z]Xw@r@kB|AoEtD{D`D{@t@oAdAu@l@y@h@_Ap@gAr@iAr@c@Tc@Xu@j@k@`@s@f@EBMJsCbBoCbBkDvB_@RSLULaDnBaQhK}FnDkKpG_MtHqCdB_JpFu@f@cAn@uA|@w@j@sAdAgBzAw@p@u@p@OLm@n@s@p@mBpBoAtA_AhA{@fA}AtBwFdIsEtG}@pAy@lAyA|BmCpEiAlBc@t@o@lAQZi@dAUf@iAvCcBtFiCxIAD_AlCWt@y@tBQb@_@~@a@z@kBvDS`@GLcBhDgB~D[t@iBtDEHsBfEsC|FkBlDsAfCq@vAqAfCe@|@m@fAmAtBYd@yAfCs@hAi@x@_AjAi@n@qAzAm@p@qB`Ck@n@EDyGxHm@p@i@h@o@n@y@r@WTe@Zq@d@kAp@oAr@kAh@c@Pg@R{A`@uA^uAVi@Ha@D_AJ]@aADw@Bq@?gACu@CaAGcAI{@Is@Mo@Oa@K[I]K]Mg@We@Wo@c@a@Ug@e@MMi@i@o@w@uA{Au@y@g@a@w@k@GE_@W]Qk@Uo@U]Iu@Qu@Ks@Ge@AMAw@Au@@W@}@D{@Lk@Jk@Nc@NIBq@VoAf@_@NuBz@kBv@kBt@uBz@}IlDcGbCqBx@q@X}F`CKDIDcAf@_DhBaAf@o@Zs@Zu@Rg@JUDUBm@Fs@Ba@@c@Ak@Cc@Ey@Mo@Ou@We@Se@Ug@[m@c@e@_@w@q@m@c@q@c@KGk@Yy@[{@Ug@Ke@G[Cw@Cc@?q@?aJBgF@uB@}C@mA@uABiBDkBHcBFsAHM@qCNyBNoAHqCLuDVa@Do@DeALgAR}@PwA\\IBy@T}DtAKDSFy@X{@Vm@Ni@Ju@Lw@Fs@Dc@@Q?E?m@Ai@Cw@Gm@Ko@OqAc@e@Mi@Og@Ku@Mq@Gy@Cu@?eA@w@Ds@F_APm@Li@LgA\\mAf@_Ad@{@j@s@h@k@b@m@j@}CtCcDzCEDeGvF}@z@qBjBoAjAoBhBg@d@SRaFtEwEjEaIpHaInHiBfBuDjDWT}@x@yFnFGDuFbFURc@^qC~B_EjD{ApAkCzB}EfEkB|AiEvDiEpDyApAaA`Aw@t@e@h@]`@mAvAi@p@a@j@eB|Bq@~@q@~@cAtAcBzB}CdEmDxEy@lAkAbBcA`Bi@~@eBtCuAfCqBpDGJuF|JEFkCzEEHEJGJ}FhKeAnBcEnHyDbHqA|B}DhHQ\\OTmHvMGJcAhBo@jAmAxBYf@Wb@Q\\Yf@s@nAgAnBS^cBvCaChEs@nAo@jAmFrJsH|MwClFINe@x@i@bAk@`AoDrGuDvG]n@qEhIsH|Mo@jA]l@{CtFaBtCwFdKOVoC`FOVOVs@nA{AnCeDbGILsDtGyA`CoBnCgArAyA~AEDwAzAiBfBQPmJjJaF`FKJeAdAQPcF`FkJjJaA~@sBrBoDnDqCnC}A~Ae@d@eDbD}B~BKH{HzHk@j@iEhEuHrHs@r@qFrFmJjJq@p@wAvA_B~Ac@`@_G~FYXqBpBIHwBvBw@v@s@p@WXm@p@]^UX_@f@]f@{@tAQ\\g@bAc@fA[z@Y`AY|@GXEPIVQx@WbAS|@]`Bw@vDWnA"
+        },
+        {
+          "trips": [
+            {
+              "tripId": "20260905_09:26_de-DELFI_3383397990",
+              "displayName": "ICE 519"
+            }
+          ],
+          "mode": "HIGHSPEED_RAIL",
+          "distance": 683440.8125,
+          "from": {
+            "name": "Köln Hbf",
+            "stopId": "de-DELFI_de:05315:11201:7:76",
+            "importance": 0.014220234006643295,
+            "lat": 50.94332,
+            "lon": 6.958548,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "88",
+            "track": "88",
+            "description": "Bahnsteig Gleis 6+7",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "to": {
+            "name": "Frankfurt (Main) Flughafen Fernbahnhof",
+            "stopId": "de-DELFI_de:06412:11511",
+            "importance": 0.005031722132116556,
+            "lat": 50.053165,
+            "lon": 8.570185,
+            "level": -1,
+            "tz": "Europe/Berlin",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "BUS"
+            ]
+          },
+          "departure": "2026-09-05T11:54:00Z",
+          "arrival": "2026-09-05T12:51:00Z",
+          "scheduledDeparture": "2026-09-05T11:54:00Z",
+          "scheduledArrival": "2026-09-05T12:49:00Z",
+          "realTime": true,
+          "polyline": "yz|uHabni@t@w@d@g@LM~@aANQXa@JO\\m@JQRc@HUL]BIF]FYBGHm@Hu@Du@HyA?I?K@W?O?[@]?mG?a@?W@_A?kO?eB@g@?}B?]?mA?wB@oB?gABkABeA@a@@[FgAFeABi@FiAB]DcA@KXwFT_EPqDJiBPuCJgAHy@LgALcALyADi@@GNqCL_CNuBLkBRkCFq@?GFo@LaBL{BRmDHsAJ_BFcADa@B_@Dk@Hs@Ju@Js@Jm@Ns@Lq@Lg@Nk@Ru@^mAx@mC~@_DBGd@{A`@uAd@{ARo@Nc@j@kBbCqHxB_Hz@mCNg@Pk@nBqGz@oCFSdA}CXw@n@eBj@yAr@iB`@gA\\aAVu@Vs@ZaAvBeHfCkI`BqFdBwF~@}CxA{EJ]H[vAsEvAkENg@Pc@X{@Z{@`AgCb@cAr@cBDIBEXm@Tg@v@aBx@cBtAwChA_ClAkCLUhA}BpAkC~BwEp@qAh@gAb@_AVe@JW|A{Cf@_A\\s@`AqB`AkBBEzAwC`B}C^q@fAsBdDgGdAqBf@}@bB}Cr@uAj@cAP]rDcH|BiE|@aBrDaH~@eB`DeGrAcC|AuC~@gBlA}B~@eB|AsCjAuBz@wAbBoCnAoBpAoBvAqBvAmB|@kA~@iA\\c@f@m@lAyArAyAfAmAhBoBvAwA`B_BxAsA`BwA\\Yt@m@`@[vB}A|B_BxBuAl@_@jAs@zBoAh@Yh@Yb@UbB{@nBcAlB_AvFoCbEuBtAo@tDiBvGeDXOfFgCn@[vAu@bBw@zAw@~@e@^QvIkEzDmBvE_CtAq@zC{Ar@_@j@]`@UnAu@nAq@rAq@pAq@PIhAi@bG{CpEyBbCcA~DgBhEwBbFcC`Ag@zImEzAu@rE{BZOpAo@zYyNdEuBRKhQyIv@_@vGcDJE`D}ArFmCpAo@f@WbB{@zAs@rFoCTMlAm@vAs@zAy@x@e@ZSd@Yh@a@pA_AxBgBVSjAiAp@o@rAyArA}AvAeBvBqCjA}AbByBxDcFjAyAtAkB|AqBxAmBzAoBhEuFjHoJt@aArI}K`DgErR_WhEsFfEuFjGeIhDsE`LyNxQaVlD}E|A_CJQj@}@p@cAr@oAv@oA`@q@\\i@lAuBf@aAl@mAx@cBLWf@gA|AaElAiD`@mAh@cBZeAj@mB`@yA^}Al@cCRu@d@qBLi@t@eDp@{CVmA\\_Bz@}Dz@{Dz@yDRaAd@wBzCmNb@mBp@aDb@oBv@oDPw@d@qBh@mBZwAn@wCNo@\\}An@wCh@eCvBwJhCsLb@mBTeAFUhAmFr@_Dv@mDj@kCjAoF^aBdA_F|AiH^_BDUBKr@cDjBqIn@wCf@aCbByHdAwElDgP~@iEnCeMtDwPBMdA{E^eBdAyExAaHz@uDTeAH]z@aEJ_@pAcGz@yD~EcU|F}WbC}KFW`AqEPu@DU`@gBFY`@iBTaAVcATy@Tw@v@_C\\aAN]d@gATg@Rk@b@mAVo@Xo@h@kAr@{Av@{AfAuBjAoBhAkBbBkCtAsBHMV]JKd@i@TY`@q@h@y@h@s@T[R]DGHMv@qAvA_ClCkEl@aAdDmF^m@PYLOHOb@o@h@u@d@s@PWLQdAaBJO`@q@fAeBlBaDrDaGVc@~CcF`DaFlAiBjBgCzAqBp@y@b@g@xAaBrBuBfAeAfAcA`@_@tAiA|EkDjDwBzDmBnD}AbDiA`Co@~Bg@zCm@nDi@xAYrHiAfHoArFkAlEeAdFwAnLuDlLuE|LsFnC{AhRkKlV}MjHaErBkApViNnE_CrAq@l@]fD}AjE}AdC{@TIvBu@lD{@fAWdBa@xBa@pCa@tEm@bBM~AKxCKxEOxFIfC?tm@j@j@@j@A|C@tEAfEItGc@xEe@nAQpAStAWvAYnAWdDy@n@QdBi@`Bi@hDoAzB_AlCmAjAk@hAm@nAq@hAq@|CmBdBkAxB_BzAkAxAkAdCyB`E{D~CgDjAsAhAsAdAoA~@oA`AqA`AsA~@qA|@sA`AyA~@}AzAeCjDmGvAoCxBiExBiEf@aAr@wAtCsF|BgEpA}BrAyBtA{BvAwB~A}B`B{BjA{AjA{AhAsAjAsA|BcC|BcCrAsApKkKfM{LlFkF`B}AnHiHLOjKeKbOkObKwLrIqMp@iAzB{Dx@_Bz@_BfGqM`@eA`D}HfB_FxAyEn@_BxA}EbByF~L_g@~BgJhCcK`HaVX_AZy@X}@Vo@h@{At@oBr@iBpAaDvB}E^w@z@iB`BaDtAgC|BaEtAaCpAsB`BeC\\g@z@mAx@iArAeBtAgBxCoDrB{BvCwCvAuAxAuAzAsAtAmAlAaAlAeAnAcAzAoAtEyDdXsX|IiKlEcHpAsBfCoEvBcEtDyH|DeJhHgQrBkFnAeDx@}BhAcDx@cCzDgMlDgL~BcIfH_X`HcWH_@vIs[xEcQTw@bBkGd@gB`DiMfLeb@fLua@BIx@_DlDyMLg@pAkFjCeLlBwI`CqL|AeItFoYbBsIvLkn@|BkKvBoJfBwGNm@v@kCxCoJfBgFbBoElB{EpBsEnBgErB}DrBmDdDkFxIkM`KiMPUfAoAd@k@rDyDvFoFjFwFvGeIbEsFnIcMhI}MfEsHbCoEd@}@jF}J|FcLfDoG~CcGrFmKbPsZxEcJdEaIj@iAlB}D~@sB`BsDdBiEjA}ChA_Dz@eCx@iCjC{In@_Cl@wB`AyDl@kCZsAdAyE|@sEx@yEx@mFvCgTdBoMfCwSrDuZ`Ggf@fA_IPsAd@sDrBgOrA{IdAkFp@sDR}@^eBpB}IpBwHzB{H|AcFd@qAjAoDfGqPzLa\\`DqIhBiFzE_NfAuDFSl@mBlBaH\\sAH[n@gChA_Ff@mCjCoNb@wCv@gFjAyIj@kFb@mEb@{En@oIReD\\qGn@wO^iKb@wKNmDRoDRuDX{D\\oEZmD\\kD^oD`@mDd@oDp@aF^eCl@qDr@cE^kB`BgI|AcHv@_Dz@}CxBuHzB_HdBcF\\y@z@aCvBgFvAaDfCiFnCqFfDaGXc@Zi@vBaDbDwEvBuCnBcC~@gApC_D~@eA~E}E\\[rYmXf@e@nEcEbGgG`DkDnDmExAoBfCkDhDgFnBaDzB{DlBmDxBkEhCuF`ByDvAoDxDuK~C_KnDaNRw@~BgKrA{GpAmHlAaIdA_Ix@gHl@iGp@wHd@eH`@eH\\aIX{JNeIDgGBuH?sA?cQGiPOqUAsAAcAAuESub@CkFEqNEiHCyW?_PJqQJwGNgHZgHd@wIz@cMlA}MfBqOHi@bBgLnAoHzAoHzAsH`BwGnA{ElCqJhB}FxBkGrDqJ~CqHl@uAhKuU`EcJn@}AfGcNx^gy@JWfC{FZq@vF{Kni@{_AdBqCVc@tA_CpEuHnCeF`D_H~AqDtD_JjAyCpAeDXo@bHyPjBeEbCmFfA_CrAgC~BcEd@w@`C}DrE{GzB_DzBsCPSfBuBdCiC|B_CnCiCfC}BnCyBrDmCrBuA|CmBxC_BlCsAvDcBjBy@~@_@fFmBdRyFXKbHcCtGmCxH}DPKzDsBlEsCrEcDrE}DdFaFbF_GpE}F^k@lDiFhEiHhEqHdEkIzD{InDuItA}DnAmDvCkJhCwJzB{JpBgKhB_LzA}KpAwKhAkLHcATwCJqAJwAJ}ALkBHcBJeBTcFR_FJiDHsDF}D@_ABaC@cB@oBFw[BqS@S@wF?yH?iBBaKBwJ@aQ@kF@cM@eEFuc@HgIl@yWFyB\\sMp@sNnAiPpBgWhDs\\`@kCxDaVtFwXpAkEbAgDDSRm@p@{BpBoGhCqHpEmLfEaJtC_G^w@Ra@Xi@lUka@x@uAbCaEpAcCxEqIn@iA~PaZzIyNrAiCrBkExEsMfDcL|B}InGmZ`AyEtAmHrA{ItCiRrAeL|AyQ~@kL@MZuFTkFNkDPmFNaGjBsuAFsHPgM@mAZmVPcNN}L`@c[@uAD}BB{BFuFNmIB}ALkERuG`@kJJ}BbAeOtAgRnAaK|A}KdC{M|BuKR_AViAxDoP`@gBfDeOf@{BzBuKpBsJfAiGzBsN~@yH~@oI\\iDb@aFXiD`@}FHqAL{BHmARoEHwBD_AJsCPeGFuCFaFDqDDuH@uB@kK?{C@eQ?uAFehAB}c@@qF?iE?iC@qOBqJ@uCDgIFeFDgBB}AHoDLcEPkEDy@H_BFeAzAuQ|AcQxD}[xCcSlBmHlAuE~BsHxC_IvDoItL_VpGeLhBoChBgCb@q@f@q@n@{@rDsE|DwEzEwFbBoB`LsMh@o@pCeD`BkBjD_EvDoEbAkAjEeFnDcEpA}ArEmFdHgInA{Az@aAfAuAvAiB\\g@|@kAtDoFpAoBpBaDrBqD~AuC|AyCjCsFfC}Fz@sBz@uBx@wBv@yBv@{B|@iCnBiGb@{A^mAJ[tJw\\rHiWx@qC~@aD~BcI|BiIxBiI|@mDt@cDx@oDt@oDlAgGfAiGzA_J~AgK~CmS@KvA_JpAuIt@yEfA_HhA}Gl@kD^qBn@gD`@oBbA}Ex@kDr@sC`A{DjAgElAcEh@gB~@sCdBeFrBuFvBoFdB}DjAgCnAkCnCsFdDoGd@}@l@iAhDoGjDqGtDcHvCsFjDsGtAiCjAwBlA_CfBeDxBcE~A{CzCeGlAiClAmCjCkGfAoC^{@j@aBhCgH~@uClAsD\\gAzAgFdCkIfCmIhUuv@j@kBfAsDtAkExAqE~AuEvAwD|AaEnAwCtAaDtBqEdBsDv@}A|@}AjBaDrBgDxBiDvAuB|A{BzC}DvBgCd@k@dBqBhBoBhBkBhBgBjBcBlBaBlB}ApB}A`D_ClDeCf{@ol@jDwBdEgC|@i@`CqAlGaDjEiBv@[vDyAbC_AfF}AxBo@tFoA`AYnBa@bCg@hDo@fGs@lFk@jEU~Ge@hGWdHQp@Ch@CrRs@vNk@PA|G]vBSjCSlDa@fBSbGcAXEzDw@hBa@t^gIbIaB|GiA`I}@jCQ|AKp@Ev@CvEKhFC|BBrBDz@@n@BjIf@bDV`L~@h@DxDZjBN~AJpCNvDJpDD|BA|BCxBGfCKhF]nFg@lDk@xFaA~@SbFcAnQcE|EiAbUiF`_@wIdGmAvGiA~@MnDa@jEa@zF]|EU\\?fHDD?vNBzDHt[r@zFWhHm@rCm@fE{@nIsBrIsCrEiB`FiC|F}CbBaArEwCNK~EqD~@w@l@g@zHwGd@_@x@s@jHcGdCuBrAmAn@g@rJeI~GaGx@q@hFoEvEaElBaBpAiA|F}EfHkG`IcIpMuPpDyEhR}Xfx@otAb@}@zEiJfB{ClAyBvAaCxBiDh@y@rAmBpD_FrAiBr@{@fIoJpFaGvD_E|CeDhBqBhE}E~AeBx@cAp@s@dAuA|ByC~AyBfA}Az@qAxAeCjQoZ|DeH~AuCxAiCrDoGvDiGxDaG~AaCd@s@|@mAhDwETYj@w@lCgD|AmBhBwBfE_FtC_DbDgDhBgBtEmEjIiHhQ{M~R{NtDoCbBoAd@]xAeAdFwD~R}N~H}F`I{FjH}EXQhIcFlIgEtIoDhO_FbCi@|PuDnDi@rD_@fJeAnEe@pCYbJ_ArKgA~Ci@tE}@zBe@bBc@dD}@dBg@jBm@~CiA|Am@fDsAxAo@`Bu@hCqAfCsAlAs@nBiA~BwAfBgA~C}BrG{EnGuF`FmEtFeGzAqB|QcVjBgCnAiBxBwCT]NS|GoJ`BwBdEmF~AmBvGqHt@{@vDaE~DkEvC}CvDcEzAcB|BkCxAgBvAcBxBqCvAkBvAkB`EwF~DaGtAuBLQnD}FpAyBlAuBlDmGnA_CzDqHJUb@y@`@w@|@eBlBwDxF}K`GkLlLgUpAmCRc@tCaGxB{EvBcFdCoG~@gC|@gCzAmEtAqE|AkF|AyFpDaOhB}Ir@wDJg@XwA~@gFjCwOdCaO@KnC}OjB_LRiALu@Hk@|BcNhCoOp@eEvAkIzAcJl@mD^yBz@eFXaBb@sCrBaNXaBRqAh@{DpBaOnBaPVyBJu@~AmNZeCx@gHTgBVwBhA{JTmB`@iDJw@r@gGDYl@qFNcAFi@D_@j@{EDe@d@{DZqCBQLaALuATyBZkDF{@B_@LoBHiAHwABu@Bc@@_@DyADkABiA@aABeA@qA@gA?oA?y@?wAAoAAgACkAAs@CiAC_AGkBI}AIiBMmBKgBM{AOcBQgBOkAMkAUaBYsBGa@]uBe@kC_@gBMu@s@gDc@qBm@qC_@aBGYk@kCwAyGcA{EUcAQw@qAcGOo@{@yD{@sDc@gBGWi@uBqAgFeBoGqAqEyIcZm@sB_A{CkAaEq@{BgEsNs@_CiAwD}ByHKc@kA{De@_ByC_KgEuNgEsN_E_N_@uAeBqF[eA}@oCcCoHwCsIsAaEmAsDq@yBs@aCo@_Cm@aC_@}A_@}A]_B]cBq@_Dk@cDCQ]kBYmBYoBYoBqA}JS_Bi@_Ee@_Em@yEOkAK{@ES_@yCAKo@eFMy@AQi@eEe@yDg@oDm@aFCQWsBe@uDY}BAEUqBkAaKIy@AKgB{OIy@MiA"
+        }
+      ]
+    },
+    {
+      "city": "duesseldorf",
+      "capturedAt": "2026-09-05T12:30:08.207Z",
+      "url": "https://api.transitous.org/api/v6/map/trips?min=51.1%2C6.62&max=51.36%2C6.95&zoom=14&startTime=2026-09-05T12%3A29%3A00.000Z&endTime=2026-09-05T12%3A32%3A00.000Z&precision=5&language=de",
+      "data": [
+        {
+          "trips": [
+            {
+              "tripId": "20260905_09:31_de-DELFI_3383408987",
+              "displayName": "ICE 926"
+            }
+          ],
+          "mode": "HIGHSPEED_RAIL",
+          "distance": 379091.375,
+          "from": {
+            "name": "Köln Hbf",
+            "stopId": "de-DELFI_de:05315:11201:7:75",
+            "importance": 0.014220234006643295,
+            "lat": 50.94328699999999,
+            "lon": 6.958458,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "87",
+            "track": "87",
+            "description": "Bahnsteig Gleis 4+5",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "to": {
+            "name": "Düsseldorf Hbf",
+            "stopId": "de-DELFI_de:05111:18235:94:17",
+            "parentId": "de-DELFI_de:05111:18235",
+            "importance": 0.014727969653904438,
+            "lat": 51.219505000000005,
+            "lon": 6.794866,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "17",
+            "track": "17",
+            "description": "Gleis 17+18",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "SUBWAY",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "departure": "2026-09-05T12:10:00Z",
+          "arrival": "2026-09-05T12:31:00Z",
+          "scheduledDeparture": "2026-09-05T11:52:00Z",
+          "scheduledArrival": "2026-09-05T12:13:00Z",
+          "realTime": true,
+          "polyline": "sz|uHqani@\\]PSl@o@JMDCx@}@DGLQLMT]BEPYR_@Tg@HQFSFSDOFYDWDQ@QBOBSFw@@IDcA@a@Bm@?aA?U?{B?Q?Q@oB?W?_@?_A?aE@iI?eB?g@?}B@]?y@?gDBaC?E?y@@a@DgC@gA@gADoABa@JmB?GR}Dt@cN@M?KRuDJ{BBi@@g@Bk@?s@?Q?a@?[?YA]Ag@C_AC_@Ca@KiAGs@Im@a@}CSaBGe@WmBi@cEWoB[uBO{@Ou@Mo@Os@[mAg@iBK]M]Oe@a@gA_@_A}@mB_@s@_@q@{@uAq@}@w@aAc@i@e@g@mBsBgCkCiBoBiBkB[]g@i@m@i@i@e@[Wq@g@wDkC[Sm@e@q@e@w@i@iAw@k@a@i@a@i@e@a@a@_@_@[a@a@k@g@w@_@s@Ym@Se@m@cBYaAYkA_@}AUaAMm@Oq@e@{B]cBKm@Im@Ge@Gc@G}@Eo@Eu@GwAC{@Cw@EkCEoBCy@Cy@Ek@Ek@AGGm@Iq@Ms@Mo@Oq@Oo@[aA_@_Ak@eAEIWc@Ya@a@i@OSi@o@a@c@g@e@c@a@g@c@QOc@[]YOK_Aq@{AeAkFkDuCoBk@e@WUu@q@]]sAwAk@k@QOm@k@MOkA}@g@_@c@YUOs@a@gAi@gAi@qAs@YMKGYO_@Qu@a@OKc@YYUs@i@UQYY[]UWk@m@WUWSWQUOi@[_@QSGSGMEYGWE]Ee@Ci@Ce@@g@Dm@HUDI@o@PaAVoA\\c@JeAXcBd@a@Le@Ns@\\m@Zu@d@eBjAOJ_BjAgAx@SNYVa@^k@f@SPMLoAfAgAbAqAjAuAnA[XURe@`@}@z@sApAsArAmBpBoBxBm@r@k@t@k@t@k@t@eBbCi@v@ILyArB_ArAiA`BkD`FaApAIL_@h@yE|GEDyAtBk@v@q@z@o@r@g@f@e@d@u@l@u@h@u@d@cAj@cA`@iA^gAXuAVe@FkC\\aAHaAJa@DuANqAPkBXkBXkBX{B\\yB^w@LMBw@JwDl@oAR[FcJvAq@J_G|@aAN{J~A}GdAkEr@{Et@yGdAcDf@KBuFz@qGdAeANkDh@cC`@WDQBeAPmDh@sB\\y@L_G~@yF`AiAPIB}AVqCf@cBZkAR}GhA}GfAsDl@aC^g@Fa@HG@iG`AsCb@qBZeEp@WDK@SDuDp@K@aATsAPsANqALqAPQBE@E@yAT_En@u@JOB}AVkCb@y@LoAR_@FM@y@Lg@FaAJuANyAVcAPc@FaHnA]F{Cj@oCf@}AX{@NE@e@HkBZsBZuBZ{BZ}BZaCZSBaEf@K@[DE@oAP{BZ}BZ}@N}@Pm@L_ATm@P{@VMDm@Rk@R[NoAf@eAh@i@XQJa@Vu@b@wA`AUPs@h@s@j@gB`Bu@t@s@t@u@|@u@|@a@j@ORiA|AgAbB{AjCk@dA[n@OXk@lAi@lAg@jAq@~AuAlDsAlDYt@EHa@dAO^iAvCgBrEaA`C[z@s@bBMZ}BvFiAnCqAbDwAjDqA`DuAfDsD`JeA|BKVQ`@i@hA{@`BgApBqAvB}A|B_BtBiBtBmBnB_BvAo@f@o@f@k@`@c@XGFaBdAuAv@oAr@i@\\YLm@^kCvAqAn@aCnAkG`DeCpAeCnA_@PiB~@eCpAiCrAOHYLoAn@uFrCmJ|Ec@T_HlD}BjAcCpAcCnAqBfAsEjCIDm@ZqDnBmBbAOFc@TUL_D~AoE|BqBbAgAj@YNyAt@iCtAiB|@}H~D_I`EuE`CwAr@sBfAoHtDmE|By@`@UJkBbAaCnAw@d@oBlAyBtAgBpAYP}@t@q@h@WTmAbAs@l@sApAg@d@mBjBgChCuFrFs@t@MJCDkCjCeBbBQP{B|BGFkEhE{B|BmBjBoApA[XkBjBy@z@o@n@cAdASPeCbCuArAyHxHeAdAcAdAiAfAqApAyBxBwBxBuBrBEDoBpBUR]\\_A~@wBvBqBpBmBlB{BzB{BxBwBxByBxByBvB]\\uAvA}B|B{BzBgBhBkAhA}@~@mJlJmBlBe@b@cAbA{AxAeAfAyDzDqFnFwBxBaE~D[ZOPuBrBg@f@kAjAsBtBcA`Ao@n@sBrBo@l@a@`@yCvCuBrBsBrBo@l@eAbAWXi@f@yAzAq@r@{BzBcB`BoAnAQRqBnBmBlB{E|EkBjBg@f@a@`@c@b@sArAWVoBnBkBlBoBlBkBjBkBlBmBlBmBlBcA`AqArAeBdBiEhEmClCQPw@x@u@v@UT}B`CwBzBcFhFsBvBgDfDeBdBg@d@eEbEmBjBaE|DuApAuBtBm@l@o@l@ONuBrByBvBwB|BeDbD]^KJ}A|AaF`FaA`AIJYXGFuBrBoDpDuBtBaE`EIFQPeAdA}CtC_Az@y@t@qBdBoBfBmFtEyCjCeB|A{ArAcA|@e@`@ED]\\}DlDyApAeFrEsBlBWTwApA{AxAMLiBjBwA~AwAbBs@x@u@`Ay@dAm@x@kBlCm@|@a@n@q@dAk@~@GJ_BnCyAhCm@lA[l@gAzB_EhIaCxE{BvE}GlNGNiClFyBpECFgAzBkAbCkA`Cm@lAg@`ASb@Yj@o@rAaAnBk@lAQ`@kBxDqAhCuAtCUb@aApBgBrDkA`CqAnCoAfCe@bASb@S`@g@~@cAvBg@fA}@jB{AzCsDvHOXeAvBSb@qAhCcAzBs@zAi@rAO^Qd@]z@[~@Y~@]lAe@`BU`ACHOr@YtAUhA[pBId@OfAOjAOpAU~BMzAIlAIbBErAEvA_@~NMjFG~BSjIA\\EvBIvCEbBGfC?J[xOUlLAb@MhGSfKElCGbCItBM~AGt@Mz@SpA[|AMf@Md@Ut@Wt@Q`@Sd@CFQ\\S^[f@Y`@QVMN]^QPYVq@d@e@Xe@Te@Pe@Jc@Jc@Fc@BY?e@@MAK@_CCO?_DCy@Ae@AYEi@Gq@Oa@KSGKEGCy@_@i@YWSe@]i@c@EE[]o@u@UY{BuCQUq@{@u@eAq@{@eByB[c@"
+        },
+        {
+          "trips": [
+            {
+              "tripId": "20260905_13:46_de-DELFI_3383395800",
+              "displayName": "IC 2200"
+            }
+          ],
+          "mode": "LONG_DISTANCE",
+          "distance": 303807.9375,
+          "from": {
+            "name": "Düsseldorf Hbf",
+            "stopId": "de-DELFI_de:05111:18235:94:17",
+            "parentId": "de-DELFI_de:05111:18235",
+            "importance": 0.014727969653904438,
+            "lat": 51.219505000000005,
+            "lon": 6.794866,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "17",
+            "track": "17",
+            "description": "Gleis 17+18",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "SUBWAY",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "to": {
+            "name": "Duisburg Hbf",
+            "stopId": "de-DELFI_de:05112:16032:95:13",
+            "parentId": "de-DELFI_de:05112:16032",
+            "importance": 0.009127047844231129,
+            "lat": 51.430237,
+            "lon": 6.77725,
+            "level": 1,
+            "tz": "Europe/Berlin",
+            "scheduledTrack": "13",
+            "track": "13",
+            "description": "Gleise 12+13",
+            "vertexType": "TRANSIT",
+            "modes": [
+              "HIGHSPEED_RAIL",
+              "LONG_DISTANCE",
+              "COACH",
+              "NIGHT_RAIL",
+              "REGIONAL_RAIL",
+              "SUBURBAN",
+              "SUBWAY",
+              "TRAM",
+              "BUS"
+            ]
+          },
+          "departure": "2026-09-05T12:21:00Z",
+          "arrival": "2026-09-05T12:34:00Z",
+          "scheduledDeparture": "2026-09-05T12:09:00Z",
+          "scheduledArrival": "2026-09-05T12:22:00Z",
+          "realTime": true,
+          "polyline": "{xrwH}bnh@OQgB_Cm@u@OQQQ[WMK_@Yu@c@YO_@Ue@[QOe@_@m@k@UUGEa@a@IG}@}@q@o@iAgAEGEC_@_@IGYU[U_@Sc@Sc@Mc@Kc@Gi@G}@AY?SBa@B[FYFg@HWHQFk@RGB[Lm@T{@VmBh@uBj@}Ab@e@Lu@Ns@NgAVo@Le@He@J}B\\m@HWDeBPg@DcCHkBHcBFyADoBDkA@{@?oACcAC{BGqCG{B?eB@qBDe@@q@BoAFeAHmAPeBXwBb@{Bl@mHpBgCr@m@LgCn@aAVmIhB}JzBkAV_C^{@Lu@HmAJcDV}CTaBLqAJQ@cGb@qBNyAJ[DoBTSBMB_AL{@N{Bb@uCh@sB`@aAPWFaANiB\\mCj@uDl@iB^kAVeAPmB^sIzAYBoFf@{F\\M@wAJyBNqF\\gCN{BNwBLsCLs@DoCHuM\\eCLqAFmBLiBLeBNmJ|@}Ht@_BPiE\\g@F{BPwDTcAHyBLkBLaBJgBLwAHcEXcBN{CVkBNaBJG@oW`BsEZiBLc@B_@B}@FqAH{AJkBJuBHeAByADgIPaDHoERaERaBFoBNwEZyHl@}APyHv@gHr@yFd@_N~@_Hb@oLr@yBLuBRqBLaNz@wJn@mG`@qF\\{BNsG`@eBLaBJgHd@eBJQ@aF\\{BNS@uBNwBLsBLeDT_AF_If@mIj@uIh@kAHeYhBmPdAgCN}Gd@iDRwDV}Lv@aCPkDRYBmEXwKp@kG`@wETkHRoDHmABaEHgCJeCJ{@D{CP{@F_@DyBLePdAuBNU@{DVqKx@O@gIn@yEXsEXeETg@BcADG?cLl@mH`@{CPgJb@YBaP|@}Hl@cCP{CToCR}Gd@oCToCPcBJk@DaBLa@ByCRoCRoCPgAHaAFoCRoCP_@DeAFeIr@s@HiFf@e@DiBPgCLi@@c@?c@As@C{@Ei@Eo@I}@QoAYoAa@kAe@aAa@m@[sEcCcIkEiB}@oBw@aAYwBk@gAWeAUkCm@kBa@g@Kg@Iu@IwAIoAGeBCa@?mF?uFBiIBG?sC@mACaBKoASaB]ICi@Og@O_@O"
+        }
+      ]
+    }
+  ]
+}

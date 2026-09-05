@@ -1,7 +1,7 @@
 # Rheinlive
 
 A noncommercial, open-source transit map for **Köln, Bonn and Düsseldorf**.
-Explore buses, Stadtbahn, S-Bahn and regional trains on a MapLibre vector map,
+Explore buses, Stadtbahn, S-Bahn, regional and long-distance trains on a MapLibre vector map,
 with current stop forecasts, delays and complete trip details. Ferry services
 can appear when the source supplies them; verified Bonn examples were scheduled
 only. The German interface supports desktop and mobile screens.

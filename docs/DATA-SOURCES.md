@@ -36,6 +36,25 @@ Fahrzeuge.** Eine als „Realtime“ vermarktete Karte ist dafür kein Nachweis.
 
 ## Gemessene aktuelle Abdeckung
 
+### Fernzüge ergänzt
+
+Der Filter **Fernzug** umfasst die dokumentierten MOTIS-Typen `HIGHSPEED_RAIL`,
+`LONG_DISTANCE` und `NIGHT_RAIL` und ist standardmäßig aktiv. ICE-/IC-Prognosen
+wurden am 5. September 2026 tatsächlich abgerufen. Die anschließende App-Prüfung
+zeigte innerhalb der Regionen vier Fernzüge in Köln, einen in Bonn und drei in
+Düsseldorf, jeweils mit Prognose. Ausgewählte Fahrtverläufe bestätigten
+**DB Fernverkehr AG** für ICE 918, ICE 315 und ICE 926; auch IC 2201 war sichtbar.
+EC und Nachtzüge werden unterstützt, waren in dieser Stichprobe aber nicht aktiv.
+
+Fahrten ohne Halt im Rechteck bleiben erhalten, wenn ihre gelieferte Streckenform
+die Region schneidet. Der Marker wird nur innerhalb der Region gezeigt. Das
+statische Fernzugnetz ist Hintergrund; dessen Liniennummern werden nicht mit
+einzelnen Zugnummern gleichgesetzt. Die Filter zeigen bekannte Zugnummern,
+und eine ausgewählte Fahrt zeigt ihren eigenen Verlauf. Auch bei Fernzügen
+handelt es sich um Prognosepositionen, nicht GPS-Messungen.
+
+### Frühere regionale Stichprobe
+
 Prüfung über die tatsächlich laufende Rheinlive-API, 5. September 2026,
 14:08:10 Europe/Berlin. Gezählt wurden aktive, innerhalb der konfigurierten
 Region positionierte Fahrten. Angaben: **mit Prognose / insgesamt**.
