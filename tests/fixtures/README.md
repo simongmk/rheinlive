@@ -53,3 +53,13 @@ This fixture is © OpenStreetMap contributors, ODbL 1.0, **not** covered by
 the transit-fixture licenses above or the application's MIT license.
 https://www.openstreetmap.org/copyright
 https://opendatacommons.org/licenses/odbl/1-0/
+
+## Unresolved departure/arrival minutes
+
+`zero-dwell-2026-09-05.json` contains three actual trips (two KVB 16 and Bus
+790) from the public MOTIS map response captured at 2026-09-05T14:39:38.470Z.
+Original stop coordinates, minute timestamps and trip IDs are preserved; only
+unrelated trips were removed. The source URL and capture time are recorded.
+This is historical test evidence, never served as current activity. Transitous,
+DELFI, OSM attribution and the separate data licenses described above apply.
+The fixture proves the timestamps supplied, not the actual time doors stayed open.

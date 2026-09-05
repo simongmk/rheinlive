@@ -53,6 +53,29 @@ auch diese Transfers unter „Zusatznetze übertragen“. Die normale Kartenansi
 bleibt während des Downloads benutzbar. Quelle und datierte Klassifikation
 der Bauabschnitte stehen in [DATA-SOURCES.md](DATA-SOURCES.md).
 
+## Halten, Bremsen und Anfahren
+
+Die Vorbereitung einer Antwort berechnet die Halteintervalle einmal pro
+Fahrt. Pro Animationsbild kommt nur die Auswertung des Zeit-/Geschwindigkeits-
+profils hinzu; Streckenlängen und die binäre Ortssuche werden weiterverwendet.
+Ein modellierter Aufenthalt endet an der mitgelieferten Abfahrtsprognose.
+Die Quelle wird dadurch nicht häufiger angefragt. Es gibt keine zusätzliche
+Anfrage pro Fahrzeug. Das stationäre Pausenzeichen wird im bestehenden,
+auf 512 Einträge begrenzten Sprite-Cache gespeichert.
+
+Tests verwenden echte historische KVB-Minutenwerte und prüfen die tatsächlichen
+Canvas-Zeichenaufrufe mit abgefangenem Zeichenkontext: identische Pixelpositionen
+über mehrere Haltebilder, anschließende zunehmende Bewegung und keine
+Kartenquellen-Updates. Das ist kein Browser-/GPU-Test. Reale Haltezeiten können
+weiter von den ausdrücklich als geschätzt markierten Modellwerten abweichen.
+
+Bei einer CPU-Stichprobe mit derselben realen Kölner Antwort und 300
+Durchläufen nach 30 Aufwärmrunden lag die reine Positionsberechnung im Median
+bei 0,107 ms statt zuvor 0,096 ms; das 95. Perzentil lag in beiden Fällen bei
+0,192 ms. Die Fahrzeugzahl wechselte mit dem ausgewerteten Zeitpunkt; ein
+Vergleichszeitpunkt enthielt 485 Positionen. Diese lokalen Node-Messwerte
+schließen Canvas, WebGL und Netzwerk aus und versprechen keine Geräte-FPS.
+
 ## Bewegung
 
 - Eigene transparente Canvas-Ebene; keine GeoJSON-Übertragung an MapLibre pro

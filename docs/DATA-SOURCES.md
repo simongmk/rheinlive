@@ -34,6 +34,49 @@ Fahrzeuge.** Eine als „Realtime“ vermarktete Karte ist dafür kein Nachweis.
 [Transitous-Dokumentation](https://transitous.org/doc/),
 [Nutzungsrichtlinie](https://transitous.org/api/).
 
+## Stillstehende Icons und Anfahren
+
+Eine tatsächliche Kölner Kartenantwort vom 5. September 2026, 14:39:38 UTC,
+enthielt 179 zusammenhängende Stadtbahn-Haltepaare: **177 mit identischer
+Ankunfts- und Abfahrtsminute**, nur zwei mit positiver Zeit dazwischen. Bei
+Bussen waren es 597 gleiche Minuten von 610 Paaren. Auch ein gesonderter
+aktueller Fahrtverlauf der Linie 16 lieferte für Wesseling Süd, Urfeld und
+Widdig gleiche Minuten, trotz regulären Ein-/Ausstiegs. Allein die vorhandenen
+Zeiten linear zu interpolieren ließ die Icons deshalb praktisch durchfahren.
+Das belegt fehlende zeitliche Auflösung, nicht eine tatsächliche Durchfahrt.
+
+Die Animation berücksichtigt nun:
+
+- Positive gemeldete Ankunft-/Abfahrtsintervalle unverändert als Aufenthalt.
+- Bei gleicher Minute einen **modellierten** Aufenthalt, endend an der
+  vorhandenen Abfahrtsprognose. Richtwerte: Stadtbahn 20 s, Bus 15 s,
+  S-Bahn 25 s, Regionalzug 30 s, Fernzug 45 s. Dies sind ausdrücklich
+  Darstellungsannahmen, keine gemessenen oder statistisch kalibrierten Werte.
+- Höchstens 25 % der vorherigen Fahrzeit; mindestens 15 s bleiben zum Fahren.
+  Ein konservatives Geschwindigkeitsbudget verkürzt oder verhindert zusätzliche
+  Standzeit bei kurzen/schnellen Abschnitten. Unter 3 s wird kein Halt ergänzt.
+- Anfahren und Bremsen mit einem integrierten Geschwindigkeitsprofil, ohne
+  Überschwingen, Rückwärtsbewegung oder Verschieben nachfolgender Abfahrten.
+  Kleine Form-Endpunktabweichungen bis 15 m werden am mitgelieferten Halt
+  verankert, um einen Sprung vom Gleisverlauf zum Haltepunkt zu vermeiden.
+- Ein Pausenzeichen am stationären Icon; Details unterscheiden „Aufenthalt
+  geschätzt“ von einem Aufenthalt laut Prognose/Fahrplan. Der Losgeh-Monitor
+  verwendet weiterhin direkt die Abfahrtsprognosen, nie modellierte Zeiten.
+
+Das Modell gilt ausschließlich zwischen zwei tatsächlich gelieferten,
+zusammenhängenden Fahrtabschnitten. Es erzeugt keine Halte an bloß
+vorbeifahrenden Stationen, keine fehlenden Fahrten und keine verlängerte
+Gültigkeit alter Prognosen. Unterschiedliche Prognosequalität, widersprüchliche
+Zeiten, sekundengenau unterschiedliche Werte und unbekannte Folgesegmente
+begründen keinen zusätzlichen Modellhalt. Vollständige Fahrtverläufe werden
+weiterhin nur für die ausgewählte Fahrt abgefragt, nicht für jedes Fahrzeug.
+
+Dies verbessert die Bewegungsdarstellung, **belegt aber keine genaueren
+realen Positionen**. Tatsächliche Türöffnungszeiten, Anfahrkurven und spontane
+Zwischenhalte bleiben ohne Messdaten unbekannt. Ein Testabzug mit KVB 16 und
+Bus 790 liegt in `tests/fixtures/zero-dwell-2026-09-05.json`; er wird niemals
+als aktueller Verkehr ausgeliefert.
+
 ## Gleiskurven und Bauabschnitte
 
 Die Nahansicht verwendet zusätzlich einen tatsächlichen OpenStreetMap-Abzug

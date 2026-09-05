@@ -19,7 +19,7 @@ test('an outgoing forecast cannot make an unpredicted arrival a forecast-based d
   assert.equal(positionAt(trip({...incoming,realTime:false}),T+10000,T).quality,'schedule');
   assert.equal(positionAt(trip(incoming,{...outgoing,realTime:false}),T+10000,T).quality,'schedule');
 });
-test('zero dwell, conflicting timestamps and disconnected stops never create waiting time',()=>{
+test('estimated zero-minute dwell never delays departure; conflicting or disconnected stops do not create a hold',()=>{
   assert.equal(positionAt(trip(incoming,leg('b','c',0,60000)),T+1000,T).state,'moving');
   assert.equal(positionAt(trip(incoming,leg('b','c',-10000,60000)),T+1000,T).state,'moving');
   assert.equal(positionAt(trip(incoming,leg('x','c',60000,120000)),T+1000,T),null);

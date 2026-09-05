@@ -12,7 +12,7 @@ only. The German interface supports desktop and mobile screens.
 - City, transport-mode and line filters, plus an accessible list of visible trips.
 - Selected-trip direction, operator, stops, available alerts and platform changes.
 - One stroke per mapped rail geometry, with rounded close-up tracks, distinct construction sections and a colored selected trip.
-- Station dwell from reported arrival/departure, with duration and departure countdown.
+- Icons brake, wait at stations and accelerate again; reported stays take priority over explicitly estimated short dwells.
 - Estimated movement and optional following of a selected trip.
 - One label per station, adaptive animation up to 30 fps, deferred bus network.
 - Local load/animation measurements in the information dialog.
@@ -57,8 +57,9 @@ computed by MOTIS from OSM; it is not proof of current diversions. Network files
 carry their export date and source attribution.
 
 `fetchedAt` is when Rheinlive received the response, not the original operator
-observation timestamp. Coordinates between stops remain estimates even when a
-vehicle waits or an unreported disruption changes its movement. Missing shapes
+observation timestamp. Coordinates between stops remain estimates. Equal arrival/departure minutes
+receive a bounded estimated stay before the unchanged departure forecast.
+Braking and acceleration are modeled; unreported disruptions remain unknown. Missing shapes
 are disclosed as straight-line estimates.
 
 The departure monitor separately requests `/api/v6/stoptimes` for one selected

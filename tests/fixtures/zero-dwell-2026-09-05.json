@@ -1,0 +1,452 @@
+{
+  "kind": "historical-live-capture-test-only",
+  "receivedAt": 1788619178470,
+  "sourceUrl": "https://api.transitous.org/api/v6/map/trips?min=50.8%2C6.76&max=51.1%2C7.18&zoom=14&startTime=2026-09-05T14%3A38%3A00.000Z&endTime=2026-09-05T14%3A41%3A00.000Z&precision=5&language=de",
+  "data": [
+    {
+      "trips": [
+        {
+          "tripId": "20260905_15:47_de-DELFI_3380406409",
+          "displayName": "16"
+        }
+      ],
+      "routeColor": "07ada5",
+      "mode": "TRAM",
+      "distance": 37049.9140625,
+      "from": {
+        "name": "Wesseling Wesseling",
+        "stopId": "de-DELFI_de:05362:85111:1:12",
+        "importance": 0.00009635587775846943,
+        "lat": 50.82266,
+        "lon": 6.979838000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "12",
+        "track": "12",
+        "description": "Wesseling",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Wesseling Süd",
+        "stopId": "de-DELFI_de:05362:85110:1:12",
+        "importance": 0.000041190658521372825,
+        "lat": 50.81198499999999,
+        "lon": 6.999511,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "14",
+        "track": "14",
+        "description": "Bahnsteig 2",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM"
+        ]
+      },
+      "departure": "2026-09-05T14:37:00Z",
+      "arrival": "2026-09-05T14:39:00Z",
+      "scheduledDeparture": "2026-09-05T14:37:00Z",
+      "scheduledArrival": "2026-09-05T14:39:00Z",
+      "realTime": true,
+      "polyline": "uheuHagri@L]h@_BvBoG|@gCFSv@wBbAmClA_DnAgDzEgMTi@bGyO|FqOvBoF|@mBv@wApAoB`HkJPW|DoF`@k@"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_15:47_de-DELFI_3380406409",
+          "displayName": "16"
+        }
+      ],
+      "routeColor": "07ada5",
+      "mode": "TRAM",
+      "distance": 37049.9140625,
+      "from": {
+        "name": "Wesseling Süd",
+        "stopId": "de-DELFI_de:05362:85110:1:12",
+        "importance": 0.000041190658521372825,
+        "lat": 50.81198499999999,
+        "lon": 6.999511,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "14",
+        "track": "14",
+        "description": "Bahnsteig 2",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM"
+        ]
+      },
+      "to": {
+        "name": "Wesseling Urfeld",
+        "stopId": "de-DELFI_de:05362:85410:1:12",
+        "importance": 0.00004705919127445668,
+        "lat": 50.803555,
+        "lon": 7.010695,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "14",
+        "track": "14",
+        "description": "Bahnsteig B",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T14:39:00Z",
+      "arrival": "2026-09-05T14:40:00Z",
+      "scheduledDeparture": "2026-09-05T14:39:00Z",
+      "scheduledArrival": "2026-09-05T14:40:00Z",
+      "realTime": true,
+      "polyline": "}ecuH}avi@HMl@{@rB{CnCeEPYp^gj@`BeCf@m@f@m@V[FGFGzBcC"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_15:47_de-DELFI_3380406409",
+          "displayName": "16"
+        }
+      ],
+      "routeColor": "07ada5",
+      "mode": "TRAM",
+      "distance": 37049.9140625,
+      "from": {
+        "name": "Wesseling Urfeld",
+        "stopId": "de-DELFI_de:05362:85410:1:12",
+        "importance": 0.00004705919127445668,
+        "lat": 50.803555,
+        "lon": 7.010695,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "14",
+        "track": "14",
+        "description": "Bahnsteig B",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Bornheim Widdig",
+        "stopId": "de-DELFI_de:05382:53614:1:12",
+        "importance": 0.000041190658521372825,
+        "lat": 50.79050000000001,
+        "lon": 7.023271,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "14",
+        "track": "14",
+        "description": "Bahnsteig 2",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM"
+        ]
+      },
+      "departure": "2026-09-05T14:40:00Z",
+      "arrival": "2026-09-05T14:42:00Z",
+      "scheduledDeparture": "2026-09-05T14:40:00Z",
+      "scheduledArrival": "2026-09-05T14:42:00Z",
+      "realTime": true,
+      "polyline": "gqauH}gxi@DEzFkGjIcJTWnH_IlCqCnCcC~NcLj@a@xEuDpBeBzFyFdCgCfCiC"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_16:27_de-DELFI_3380406407",
+          "displayName": "16"
+        }
+      ],
+      "routeColor": "07ada5",
+      "mode": "TRAM",
+      "distance": 37049.9140625,
+      "from": {
+        "name": "Köln Ebertplatz",
+        "stopId": "de-DELFI_de:05315:11810:1:14",
+        "importance": 0.00030357655487023294,
+        "lat": 50.950399999999995,
+        "lon": 6.958933999999999,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "14",
+        "track": "14",
+        "description": "Bahnsteig Gleis 3",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Breslauer Platz/Hbf",
+        "stopId": "de-DELFI_de:05315:11212:1:12",
+        "importance": 0.014220234006643295,
+        "lat": 50.944379999999995,
+        "lon": 6.958665000000001,
+        "level": -2,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "18",
+        "track": "18",
+        "description": "Bahnsteig Gleis 3",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "HIGHSPEED_RAIL",
+          "LONG_DISTANCE",
+          "COACH",
+          "NIGHT_RAIL",
+          "REGIONAL_RAIL",
+          "SUBURBAN",
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T14:36:00Z",
+      "arrival": "2026-09-05T14:38:00Z",
+      "scheduledDeparture": "2026-09-05T14:36:00Z",
+      "scheduledArrival": "2026-09-05T14:38:00Z",
+      "realTime": true,
+      "polyline": "_g~uHidni@d@XvA`AhAb@~Ez@hKfB|@JN?P?REPERGVIf@]`@]nAyAh@u@JO"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_16:27_de-DELFI_3380406407",
+          "displayName": "16"
+        }
+      ],
+      "routeColor": "07ada5",
+      "mode": "TRAM",
+      "distance": 37049.9140625,
+      "from": {
+        "name": "Köln Breslauer Platz/Hbf",
+        "stopId": "de-DELFI_de:05315:11212:1:12",
+        "importance": 0.014220234006643295,
+        "lat": 50.944379999999995,
+        "lon": 6.958665000000001,
+        "level": -2,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "18",
+        "track": "18",
+        "description": "Bahnsteig Gleis 3",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "HIGHSPEED_RAIL",
+          "LONG_DISTANCE",
+          "COACH",
+          "NIGHT_RAIL",
+          "REGIONAL_RAIL",
+          "SUBURBAN",
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Dom/Hbf",
+        "stopId": "de-DELFI_de:05315:11211:1:12",
+        "importance": 0.00020845542894676328,
+        "lat": 50.94178399999999,
+        "lon": 6.956688000000001,
+        "level": -2,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "12",
+        "track": "12",
+        "description": "Bahnsteig Gleis 2",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T14:38:00Z",
+      "arrival": "2026-09-05T14:40:00Z",
+      "scheduledDeparture": "2026-09-05T14:38:00Z",
+      "scheduledArrival": "2026-09-05T14:40:00Z",
+      "realTime": true,
+      "polyline": "ka}uHsbni@FKFI`@s@lAuBPUPQPOTKPERAXAL?F@H@LDLHJFJHJHHJPTN\\N\\Ph@Pl@Jb@Jj@F`@DXB`@Bp@?DDbBFfB"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_16:27_de-DELFI_3380406407",
+          "displayName": "16"
+        }
+      ],
+      "routeColor": "07ada5",
+      "mode": "TRAM",
+      "distance": 37049.9140625,
+      "from": {
+        "name": "Köln Dom/Hbf",
+        "stopId": "de-DELFI_de:05315:11211:1:12",
+        "importance": 0.00020845542894676328,
+        "lat": 50.94178399999999,
+        "lon": 6.956688000000001,
+        "level": -2,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "12",
+        "track": "12",
+        "description": "Bahnsteig Gleis 2",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Appellhofplatz",
+        "stopId": "de-DELFI_de:05315:11209:1:12",
+        "importance": 0.0002989384229294956,
+        "lat": 50.939342,
+        "lon": 6.950526,
+        "level": -2,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "13",
+        "track": "13",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM"
+        ]
+      },
+      "departure": "2026-09-05T14:40:00Z",
+      "arrival": "2026-09-05T14:42:00Z",
+      "scheduledDeparture": "2026-09-05T14:40:00Z",
+      "scheduledArrival": "2026-09-05T14:42:00Z",
+      "realTime": true,
+      "polyline": "cq|uHivmi@@`@?THdCHjCHfBL`Ch@tGHvADnADd@DZBPBLFRHRLTFLLPPNLHj@PH@JBH?P@j@C\\CL?ZCbAG"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_16:12_de-DELFI_3379508655",
+          "displayName": "790"
+        }
+      ],
+      "mode": "BUS",
+      "distance": 4080.405517578125,
+      "from": {
+        "name": "Monheim (Rhein), Lankwitzer Weg",
+        "stopId": "de-DELFI_de:05158:19342:0:1",
+        "importance": 0.000021767367798020132,
+        "lat": 51.082737,
+        "lon": 6.8900239999999995,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "1",
+        "track": "1",
+        "description": "für Steig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Monheim (Rhein), Treptower Str.",
+        "stopId": "de-DELFI_de:05158:19343:0:1",
+        "importance": 0.000021767367798020132,
+        "lat": 51.08403,
+        "lon": 6.894928999999999,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "1",
+        "track": "1",
+        "description": "für Steig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T14:37:00Z",
+      "arrival": "2026-09-05T14:38:00Z",
+      "scheduledDeparture": "2026-09-05T14:26:00Z",
+      "scheduledArrival": "2026-09-05T14:27:00Z",
+      "realTime": true,
+      "polyline": "cbxvHsu`i@AKAICMG[CMAIMi@W{Ak@_Di@yCg@yCMaAIc@AIY_BSsA"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_16:12_de-DELFI_3379508655",
+          "displayName": "790"
+        }
+      ],
+      "mode": "BUS",
+      "distance": 4080.405517578125,
+      "from": {
+        "name": "Monheim (Rhein), Treptower Str.",
+        "stopId": "de-DELFI_de:05158:19343:0:1",
+        "importance": 0.000021767367798020132,
+        "lat": 51.08403,
+        "lon": 6.894928999999999,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "1",
+        "track": "1",
+        "description": "für Steig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Monheim (Rhein), Erich-Klausener-Str.",
+        "stopId": "de-DELFI_de:05158:19792:0:1",
+        "importance": 0.00003138149622827768,
+        "lat": 51.084762999999995,
+        "lon": 6.8976869999999995,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "1",
+        "track": "1",
+        "description": "für Steig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T14:38:00Z",
+      "arrival": "2026-09-05T14:39:00Z",
+      "scheduledDeparture": "2026-09-05T14:27:00Z",
+      "scheduledArrival": "2026-09-05T14:28:00Z",
+      "realTime": true,
+      "polyline": "ejxvHitai@q@}DSmAIg@Kg@QeAUwAMm@"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_16:12_de-DELFI_3379508655",
+          "displayName": "790"
+        }
+      ],
+      "mode": "BUS",
+      "distance": 4080.405517578125,
+      "from": {
+        "name": "Monheim (Rhein), Erich-Klausener-Str.",
+        "stopId": "de-DELFI_de:05158:19792:0:1",
+        "importance": 0.00003138149622827768,
+        "lat": 51.084762999999995,
+        "lon": 6.8976869999999995,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "1",
+        "track": "1",
+        "description": "für Steig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Monheim (Rhein), Mona Mare",
+        "stopId": "de-DELFI_de:05158:19790:1:1",
+        "importance": 0.00003138149622827768,
+        "lat": 51.08673,
+        "lon": 6.901379000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "1",
+        "track": "1",
+        "description": "für Steig1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T14:39:00Z",
+      "arrival": "2026-09-05T14:40:00Z",
+      "scheduledDeparture": "2026-09-05T14:28:00Z",
+      "scheduledArrival": "2026-09-05T14:29:00Z",
+      "realTime": true,
+      "polyline": "wnxvHqebi@Mm@CKAESq@EMSk@O]IQmAkCa@y@Wg@IQ[m@MWc@{@CEIQ[m@S_@O["
+    }
+  ]
+}
