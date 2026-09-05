@@ -78,6 +78,22 @@ schließen Canvas, WebGL und Netzwerk aus und versprechen keine Geräte-FPS.
 
 ## Bewegung
 
+Ein aktiver Drag kann in MapLibre weiterhin als Bewegung gelten, obwohl die
+gedrückte Maus stillsteht und keine neuen Kartenbilder entstehen. Die eigene
+Animationsuhr läuft deshalb auch während eines Drags weiter. Tatsächliche
+Kamerabewegungen markieren die Projektion als geändert; das folgende Kartenbild
+zeichnet die Icons synchron neu, auch beim letzten Bild nach dem Loslassen.
+Diese Zeichnung zählt bereits für den Animationstakt. Reine Kachel-/Stilbilder
+lösen keine weitere Fahrzeugzeichnung aus. Die Leistungsbremse bewertet die
+gemessene CPU-Zeichenzeit, nicht die Abstände zwischen Mausereignissen.
+
+Eine deterministische Canvas-Prüfung mit 500 Fahrzeugen erzeugt bei gehaltener
+Maustaste ohne Kartenbilder 60 Fahrzeugbilder in zwei simulierten Sekunden.
+Bei 120 Kamerabildern zeichnen beide Reihenfolgen der RAF-/Karten-Callbacks
+genau 120 Fahrzeugbilder, ohne zusätzliche Animationszeichnungen. Langsame
+Eingaben drosseln den Takt nicht; tatsächliche teure Zeichnungen tun es weiterhin.
+Das prüft den Scheduler und die Koordinaten, nicht reale Browser-/GPU-FPS.
+
 - Eigene transparente Canvas-Ebene; keine GeoJSON-Übertragung an MapLibre pro
   Animationsbild und kein eigenes DOM-Element pro Fahrzeug.
 - Fahrzeugsymbole werden einmal gezeichnet und aus einem auf 512 Einträge

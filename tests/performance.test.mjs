@@ -24,16 +24,42 @@ test('published networks have one Severinstraße label and defer all bus geometr
 test('animation slows down under sustained load and recovers after sustained headroom',()=>{
   const b=new FrameBudget();let ts=0;for(let i=0;i<12;i++){ts+=50;b.record(ts,15);}assert.equal(b.fps,12);for(let i=0;i<450;i++){ts+=1000/b.fps;b.record(ts,1);}assert.equal(b.fps,30);
 });
+test('sparse inexpensive camera frames do not trigger the load throttle',()=>{
+  const b=new FrameBudget();for(let i=1;i<=30;i++)b.record(i*150,1);assert.equal(b.fps,30);
+});
 
 function harness(){
-  let now=Date.parse('2026-09-05T12:00:00Z'),ms=0,seq=0,pan=0;const tasks=new Map(),listeners=new Map(),handlers=new Map(),draws=[];
-  const context={globalAlpha:1,setTransform(){},scale(){},clearRect(){draws.length=0;},beginPath(){},arc(){},fill(){},stroke(){},fillText(){},drawImage(_node,x,y){draws.push({x,y,alpha:this.globalAlpha});}};
+  let now=Date.parse('2026-09-05T12:00:00Z'),ms=0,seq=0,pan=0,paints=0;const tasks=new Map(),listeners=new Map(),handlers=new Map(),draws=[];
+  const context={globalAlpha:1,setTransform(){},scale(){},clearRect(){draws.length=0;paints++;},beginPath(){},arc(){},fill(){},stroke(){},fillText(){},drawImage(_node,x,y){draws.push({x,y,alpha:this.globalAlpha});}};
   const doc={hidden:false,createElement:()=>({style:{},setAttribute(){},getContext:()=>({...context}),remove(){}}),addEventListener:(e,f)=>listeners.set(e,f),removeEventListener:e=>listeners.delete(e)};
   const map={getCanvas:()=>({clientWidth:1000,clientHeight:800}),getCanvasContainer:()=>({appendChild(){}}),getZoom:()=>12,getBounds:()=>({contains:()=>true}),project:([lon,lat])=>({x:500+(lon-7)*1000+pan,y:400+(lat-51)*1000}),isMoving:()=>false,on:(e,f)=>handlers.set(e,f),off:e=>handlers.delete(e)};
   const layer=createVehicleLayer(map,{document:doc,clock:()=>now,perf:{now:()=>ms},raf:f=>{tasks.set(++seq,f);return seq;},caf:id=>tasks.delete(id)});
   const trips=prepareTrips(Array.from({length:500},(_,i)=>({id:'t'+i,line:String(i%5),mode:'tram',color:'#ff0000',textColor:'#ffffff',quality:'realtime',segments:[{departure:now,arrival:now+60000,realtime:true,points:[[51,7],[51,7.06]],from:{id:'a'},to:{id:'b'}}]})));
-  return {layer,trips,doc,tasks,listeners,draws,map,handlers,now:()=>now,setTime:(n,t)=>{now=n;ms=t;},frame:()=>{const pending=[...tasks.values()];tasks.clear();for(const f of pending)f(ms);},pan:x=>{pan=x;}};
+  return {layer,trips,doc,tasks,listeners,draws,map,handlers,now:()=>now,paints:()=>paints,setTime:(n,t)=>{now=n;ms=t;},frame:()=>{const pending=[...tasks.values()];tasks.clear();for(const f of pending)f(ms);},pan:x=>{pan=x;}};
 }
+test('vehicles keep animating at 30 fps while a drag is held still without map renders',()=>{
+  const h=harness(),start=h.now();h.map.isMoving=()=>true;h.layer.update(h.trips,start,start);
+  const before=h.paints(),initialX=h.draws[0].x;for(let i=1;i<=120;i++){const ms=i*1000/60;h.setTime(start+ms,ms);h.frame();}
+  assert.equal(h.paints()-before,60);assert.ok(h.draws[0].x>initialX);assert.equal(h.layer.stats().targetFps,30);
+  assert.equal(h.layer.stats().sprites,5);assert.equal(h.tasks.size,1);h.layer.destroy();
+});
+test('camera renders stay aligned without duplicate animation paints in either callback order',()=>{
+  for(const clockFirst of [true,false]){
+    const h=harness(),start=h.now();h.map.isMoving=()=>true;h.layer.update(h.trips,start,start);
+    h.setTime(start+500,500);h.layer.update(h.trips,start,start+500);const before=h.paints();
+    for(let i=1;i<=120;i++){
+      const ms=500+i*1000/60;h.setTime(start+ms,ms);if(clockFirst)h.frame();
+      h.pan(i);h.handlers.get('move')?.();h.handlers.get('render')();if(!clockFirst)h.frame();
+      assert.equal(h.layer.hitTest({x:500+i+ms/1000,y:400}),'t0');
+    }
+    assert.equal(h.paints()-before,120);assert.equal(h.layer.stats().targetFps,30);assert.equal(h.tasks.size,1);
+    h.map.isMoving=()=>false;h.pan(200);h.handlers.get('move')?.();h.handlers.get('render')();
+    assert.equal(h.layer.hitTest({x:702.5,y:400}),'t0','final camera frame still reprojects');
+    const settled=h.paints();for(let i=0;i<20;i++)h.handlers.get('render')();assert.equal(h.paints(),settled,'tile/style renders do not repaint vehicles');
+    h.setTime(start+2600,2600);h.frame();assert.equal(h.paints(),settled+1,'idle animation resumes');
+    h.layer.destroy();assert.equal(h.tasks.size,0);assert.equal(h.handlers.size,0);
+  }
+});
 test('500 vehicles reuse five sprites and animate without source rebuilds or network requests',()=>{
   const h=harness(),start=h.now();h.layer.update(h.trips,start,start);h.setTime(start+500,500);h.frame();assert.equal(h.layer.stats().visible,500);assert.equal(h.layer.stats().sprites,5);assert.equal(h.layer.hitTest({x:500,y:400}),'t0');
   h.setTime(start+30000,30000);h.layer.update(h.trips,start,start+30000);assert.equal(h.layer.hitTest({x:530,y:400}),'t0');assert.equal(h.layer.stats().sprites,5);assert.equal(h.tasks.size,1);h.layer.destroy();assert.equal(h.tasks.size,0);
