@@ -33,8 +33,10 @@ Zeitstempeln zusammengeführt werden. Prognosen, Fahrplan und gemessene
 VehiclePositions benötigen getrennte Qualitätstypen. Bei fehlenden Daten darf
 kein vermeintlich lebendiger Demo-Verkehr entstehen.
 
-Der aktuelle Browser zeichnet Fahrzeuge gemeinsam in einer GPU-Ebene, statt
-für jede Fahrt ein eigenes HTML-Element zu bewegen. Für deutlich größere
+Der Browser zeichnet Fahrzeuge auf einer eigenen Canvas-Ebene mit
+wiederverwendeten Symbolen und einer adaptiven Bildrate bis 30 B/s. Dadurch
+werden die statischen Kartenquellen nicht bei jedem Animationsschritt neu
+aufgebaut. Busgeometrie wird erst bei aktivem Busfilter geladen. Für deutlich größere
 Gebiete sind zusätzlich begrenzte Gebietskacheln und zoomabhängige Zusammenfassung
 sinnvoll. Nationale GTFS-Importe gehören in einen eigenen MOTIS-Datenservice;
 die Web-App bleibt ein schlanker Client. Größere Last oder kommerzielle Nutzung

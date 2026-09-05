@@ -13,6 +13,6 @@
     "start": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check public/app.js && node --check public/map.js && node --check lib/transit.mjs && node --check lib/trip.mjs && node --check lib/api.mjs && node --check worker.mjs"
+    "check": "node --check public/app.js && node --check public/map.js && node --check lib/transit.mjs && node --check lib/trip.mjs && node --check lib/api.mjs && node --check worker.mjs && node --check public/vehicles.js && node --check lib/network.mjs"
   }
 }

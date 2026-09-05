@@ -7,3 +7,5 @@
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 
 .line-filter.long-label{grid-column:span 2;overflow-wrap:anywhere;padding-inline:6px}.vehicle-badge{flex-shrink:0}
+
+.performance-details{margin:25px 0;padding:16px;background:var(--raised);border-radius:12px;font-size:14px}.performance-details summary{cursor:pointer}.performance-details dl{display:grid;grid-template-columns:1fr auto;gap:12px;margin:20px 0}.performance-details dt{color:var(--muted)}.performance-details dd{margin:0;font-variant-numeric:tabular-nums}.performance-details p{font-size:12px;line-height:1.6;color:var(--muted)}

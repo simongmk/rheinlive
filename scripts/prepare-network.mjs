@@ -2,6 +2,7 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {cities,modeFor,lineName,lineKey,lineColor,pointInBounds,segmentIntersectsBounds} from '../lib/cities.mjs';
 import {decodePolyline,validPoint} from '../lib/transit.mjs';
+import {groupStations,compactLines} from '../lib/network.mjs';
 const id=process.argv[2],input=process.argv[3];if(!cities[id]||!input)throw Error('Usage: node scripts/prepare-network.mjs city raw-routes.json');
 const city=cities[id],raw=JSON.parse(await readFile(input,'utf8'));
 if(!Array.isArray(raw.routes)||!Array.isArray(raw.polylines)||!Array.isArray(raw.stops))throw Error('Invalid network response');
@@ -44,5 +45,7 @@ for(const route of raw.routes){
   }
 }
 const collection=features=>({type:'FeatureCollection',features});
-const data={city:id,generatedAt:new Date().toISOString(),kind:'static-network-not-live-vehicles',source:'Transitous / MOTIS, DELFI and OpenStreetMap contributors',sourceUrl:'https://transitous.org/sources/',geometry:'Timetable routes and MOTIS-computed paths, not proof of current diversions.',lines:collection([...features.values()]),stops:collection([...stops.values()]),catalog:[...lines.values()]};
-await mkdir('public/data',{recursive:true});await writeFile('public/data/network-'+id+'.json',JSON.stringify(data));console.log(JSON.stringify({city:id,lines:lines.size,paths:features.size,stops:stops.size,bytes:JSON.stringify(data).length}));
+const compact=compactLines([...features.values()]),generatedAt=new Date().toISOString();
+const data={city:id,generatedAt,kind:'static-network-not-live-vehicles',source:'Transitous / MOTIS, DELFI and OpenStreetMap contributors',sourceUrl:'https://transitous.org/sources/',geometry:'Timetable routes and MOTIS-computed paths, not proof of current diversions.',lines:collection(compact.features.filter(f=>f.properties.mode!=='bus')),stops:groupStations([...stops.values()]),catalog:[...lines.values()],parts:{bus:'/data/network-'+id+'-bus.json?v=5'}};
+const bus={city:id,generatedAt,kind:'static-network-part',lines:collection(compact.features.filter(f=>f.properties.mode==='bus'))};
+await mkdir('public/data',{recursive:true});await writeFile('public/data/network-'+id+'-bus.json',JSON.stringify(bus));await writeFile('public/data/network-'+id+'.json',JSON.stringify(data));console.log(JSON.stringify({city:id,lines:lines.size,paths:compact.features.length,stops:data.stops.features.length,initialBytes:Buffer.byteLength(JSON.stringify(data)),busBytes:Buffer.byteLength(JSON.stringify(bus))}));

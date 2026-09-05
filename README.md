@@ -10,6 +10,8 @@ only. The German interface supports desktop and mobile screens.
 - City, transport-mode and line filters, plus an accessible list of visible trips.
 - Selected-trip direction, operator, stops, available alerts and platform changes.
 - Estimated movement and optional following of a selected trip.
+- One label per station, adaptive animation up to 30 fps, deferred bus network.
+- Local load/animation measurements in the information dialog.
 
 **Positions are estimated from stop forecasts and route geometry, not measured
 GPS locations.** Trips without current forecasts are hidden by default. Failed
@@ -60,6 +62,7 @@ are disclosed as straight-line estimates.
 - [Checked data sources, access conditions and live coverage](docs/DATA-SOURCES.md)
 - [How to add another city or provider](docs/EXPANSION.md)
 - [Historical fixture provenance](tests/fixtures/README.md)
+- [Loading and animation performance](docs/PERFORMANCE.md)
 
 The dated three-city check found current bus and rail forecasts and confirmed
 KVB, SWB and Rheinbahn operators through actual trip responses. Repeatable tests

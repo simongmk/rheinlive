@@ -8,11 +8,13 @@ const readPref=(key,fallback)=>{try{return localStorage.getItem('rheinlive:'+key
 const savePref=(key,value)=>{try{localStorage.setItem('rheinlive:'+key,value);}catch{}};
 const preferredCity=readPref('city','cologne');
 let city=Object.hasOwn(cities,preferredCity)?cities[preferredCity]:cities.cologne,map=null,snapshot=null,trips=[],network=null,catalog=[],visible=[],candidates=[],selected=null,detail=null,detailId=null,detailKey='',offset=0,revision=0,loading=false,requestController=null,detailController=null,networkController=null,following=false,listLimit=50,tab='lines',lastList=0,theme='dark';
+const networkCache=new Map(),timings={started:performance.now(),firstVehicles:null,mapReady:null,networkMs:null,feedMs:null};
 const activeModes=new Set(['tram','suburban','regional','long_distance']),hiddenLines=new Set(),cancelled=new Map();
 const timeFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit',hour12:false}),secondsFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',second:'2-digit'}),dateFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',weekday:'short',day:'numeric',month:'short'});
 const time=t=>Number.isFinite(t)?timeFormat.format(new Date(t)):'–';
 const cleanName=s=>String(s||'').replace(/^(?:Köln|Koeln|Bonn)[, ]+/,'').replace(/^D-/,'');
-const inView=v=>pointInBounds([v.lat,v.lon],city.bounds)&&(!map||map.getBounds().contains([v.lat,v.lon]));
+let viewBounds=null;
+const inView=v=>pointInBounds([v.lat,v.lon],city.bounds)&&(!viewBounds||viewBounds.contains([v.lat,v.lon]));
 const isFresh=()=>snapshot&&!snapshot.stale&&Date.now()+offset-snapshot.fetchedAt<=MAX_SNAPSHOT_AGE_MS;
 const filters=v=>activeModes.has(v.mode)&&!hiddenLines.has(v.lineKey);
 function notify(title,body){text('#notice-title',title);text('#notice-body',body);$('#notice').hidden=false;}
@@ -21,7 +23,7 @@ function clearSelected(){selected=null;detail=null;detailId=null;detailKey='';de
 $('#detail-close').onclick=clearSelected;
 $('#follow').onclick=()=>{setFollowing(!following);const v=visible.find(v=>v.id===selected);if(following&&v)map?.follow(v);};
 $('#panel-toggle').onclick=()=>{const open=$('#panel-toggle').getAttribute('aria-expanded')!=='true';$('#panel-toggle').setAttribute('aria-expanded',String(open));$('.overview').classList.toggle('expanded',open);};
-function showInfo(){$('#info-dialog').showModal();}
+function showInfo(){renderPerformance();$('#info-dialog').showModal();}
 $('#info-open').onclick=showInfo;$('#quality-open').onclick=showInfo;$('#info-close').onclick=()=>$('#info-dialog').close();
 $('#info-dialog').onclick=e=>{if(e.target===$('#info-dialog'))$('#info-dialog').close();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')clearSelected();});
@@ -56,7 +58,7 @@ function renderStopSearch(query){
 $('#search').addEventListener('input',()=>{renderLines();renderVehicleList();});
 $('#all-lines').onclick=()=>{hiddenLines.clear();renderLines();draw(true);syncNetworkFilter();};
 $('#include-schedule').onchange=()=>draw(true);
-function syncNetworkFilter(){map?.setFilter([...activeModes],hiddenLines.size?catalog.filter(l=>!hiddenLines.has(l.key)).map(l=>l.key):null);}
+function syncNetworkFilter(){map?.setFilter([...activeModes],hiddenLines.size?catalog.filter(l=>activeModes.has(l.mode)&&!hiddenLines.has(l.key)).map(l=>l.key):null);loadBusPart(revision);}
 function switchTab(next){tab=next;for(const id of ['lines','vehicles']){$('#tab-'+id).setAttribute('aria-selected',String(next===id));$('#tab-'+id).tabIndex=next===id?0:-1;$('#'+id+'-panel').hidden=next!==id;}if(next==='vehicles')renderVehicleList();}
 for(const id of ['lines','vehicles']){$('#tab-'+id).onclick=()=>switchTab(id);$('#tab-'+id).onkeydown=e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const next=id==='lines'?'vehicles':'lines';switchTab(next);$('#tab-'+next).focus();}};}
 $('#more-vehicles').onclick=()=>{listLimit+=50;renderVehicleList();};
@@ -104,9 +106,10 @@ function renderJourney(){
   parent.append(element('p','operator',(detail.realtime?'Mit Prognosen':'Nach Fahrplan')+' · Verlauf zuletzt '+time(detail.fetchedAt)));
 }
 function draw(forceList=false){
+  viewBounds=map?.getBounds()??null;
   const now=Date.now()+offset;for(const[id,ts]of cancelled)if(Date.now()-ts>120000)cancelled.delete(id);
   candidates=isFresh()?vehiclesAt(trips,now,snapshot.fetchedAt).filter(v=>filters(v)&&pointInBounds([v.lat,v.lon],city.bounds)&&!cancelled.has(v.id)):[];
-  visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;map?.update(visible);
+  visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;map?.update(visible,snapshot?.fetchedAt,now);
   if(selected){const v=visible.find(v=>v.id===selected);if(!v&&!cancelled.has(selected))clearSelected();else if(v){if(detailKey!==[v.id,v.segment.key,v.quality,v.state].join('|'))showDetails(v,{reload:false});if(following)map?.follow(v);}}
   updateCount();if(tab==='vehicles'&&(forceList||Date.now()-lastList>10000)){lastList=Date.now();renderVehicleList();}
   if(snapshot&&!isFresh()){
@@ -115,15 +118,35 @@ function draw(forceList=false){
   if(detail&&now-detail.fetchedAt>MAX_SNAPSHOT_AGE_MS){detail=null;detailId=null;$('#journey-detail').replaceChildren(element('p','','Fahrtverlauf veraltet. Wird beim nächsten Datenabruf erneuert.'));const v=visible.find(v=>v.id===selected);if(v)selectPath(v);}
 }
 async function refresh(){
-  if(loading||document.hidden)return;loading=true;const rev=revision;requestController=new AbortController();const controller=requestController;$('#retry').disabled=true;
-  try{const r=await fetch('/api/vehicles?city='+city.id,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(55000)])});const result=await r.json();if(rev!==revision||controller.signal.aborted)return;if(!r.ok||result.stale)throw Error(result.error||'Datenquelle nicht erreichbar');if(result.city!==city.id||!Array.isArray(result.trips)||!Number.isFinite(result.fetchedAt)||!Number.isFinite(result.serverTime))throw Error('Fahrtdaten sind nicht lesbar');offset=result.serverTime-Date.now();snapshot=result;trips=prepareTrips(result.trips);$('#notice').hidden=true;updateCatalog();draw(true);renderModes();text('#dataset-info','Verkehr: '+city.region+'. Letzter erfolgreicher Abruf: '+new Date(result.fetchedAt).toLocaleString('de-DE',{timeZone:city.timezone})+'. Quelle: Transitous / MOTIS.');if(!trips.length)notify('Gerade keine Fahrten gemeldet','Das kann eine Datenlücke oder eine Betriebspause sein.');const v=visible.find(v=>v.id===selected);if(v)loadDetail(v);
+  if(loading||document.hidden)return;loading=true;const rev=revision,started=performance.now();requestController=new AbortController();const controller=requestController;$('#retry').disabled=true;
+  try{const r=await fetch('/api/vehicles?city='+city.id,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(55000)])});const result=await r.json();if(rev!==revision||controller.signal.aborted)return;if(!r.ok||result.stale)throw Error(result.error||'Datenquelle nicht erreichbar');if(result.city!==city.id||!Array.isArray(result.trips)||!Number.isFinite(result.fetchedAt)||!Number.isFinite(result.serverTime))throw Error('Fahrtdaten sind nicht lesbar');timings.feedMs=performance.now()-started;offset=result.serverTime-Date.now();snapshot=result;trips=prepareTrips(result.trips);$('#notice').hidden=true;updateCatalog();draw(true);renderModes();text('#dataset-info','Verkehr: '+city.region+'. Letzter erfolgreicher Abruf: '+new Date(result.fetchedAt).toLocaleString('de-DE',{timeZone:city.timezone})+'. Quelle: Transitous / MOTIS.');if(!trips.length)notify('Gerade keine Fahrten gemeldet','Das kann eine Datenlücke oder eine Betriebspause sein.');const v=visible.find(v=>v.id===selected);if(v)loadDetail(v);
   }catch(e){if(rev!==revision||controller.signal.aborted)return;snapshot=null;trips=[];clearSelected();draw(true);renderModes();text('#header-status','Verbindung fehlt');text('#feed-status','Verkehrsdaten nicht erreichbar');text('#coverage-info','Keine aktuellen Positionen verfügbar.');$('#status-dot').classList.remove('live');notify('Die Verbindung fehlt gerade',e.name==='TimeoutError'?'Die Datenquelle braucht zu lange. Der nächste Versuch erfolgt automatisch.':e.message);
   }finally{if(rev===revision){loading=false;$('#retry').disabled=false;}}
 }
+function applyNetwork(){
+  if(!network)return;const bus=networkCache.get(city.id)?.bus;
+  map?.setNetwork({...network,lines:bus?{type:'FeatureCollection',features:[...network.lines.features,...bus.lines.features]}:network.lines});
+}
+async function loadBusPart(rev){
+  const id=city.id,record=networkCache.get(id);if(!network||!record||!activeModes.has('bus')||record.bus||record.pending)return;
+  const controller=networkController;record.pending=true;
+  try{const r=await fetch(network.parts.bus,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});if(!r.ok)throw Error('Busnetz fehlt');const data=await r.json();if(rev!==revision||controller.signal.aborted)return;if(data.city!==id||!Array.isArray(data.lines?.features))throw Error('Busnetz nicht lesbar');record.bus=data;applyNetwork();text('#network-age','Netzstand '+new Date(network.generatedAt).toLocaleDateString('de-DE'));}
+  catch{if(rev===revision&&!controller.signal.aborted)text('#network-age','Busnetz fehlt gerade · Fahrten bleiben verfügbar');}
+  finally{record.pending=false;}
+}
 async function loadNetwork(rev){
-  networkController?.abort();const controller=new AbortController();networkController=controller;text('#network-age','Liniennetz wird geladen …');
-  try{const r=await fetch('/data/network-'+city.id+'.json',{signal:controller.signal});if(!r.ok)throw Error('Netz nicht erreichbar');const data=await r.json();if(rev!==revision||controller.signal.aborted)return;network=data;map?.setNetwork(data);updateCatalog();text('#network-age','Netzstand '+new Date(data.generatedAt).toLocaleDateString('de-DE'));}
-  catch{if(rev!==revision||controller.signal.aborted)return;text('#network-age','Liniennetz nicht erreichbar');}
+  networkController?.abort();const controller=new AbortController();networkController=controller;text('#network-age','Liniennetz wird geladen …');const id=city.id,started=performance.now();
+  try{let record=networkCache.get(id);if(!record){const r=await fetch('/data/network-'+id+'.json?v=5',{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});if(!r.ok)throw Error('Netz nicht erreichbar');const data=await r.json();if(data.city!==id)throw Error('Falsches Netz');record={data,bus:null,pending:false};}
+    if(rev!==revision||controller.signal.aborted)return;networkCache.delete(id);networkCache.set(id,record);if(networkCache.size>2)networkCache.delete(networkCache.keys().next().value);
+    network=record.data;timings.networkMs=performance.now()-started;applyNetwork();updateCatalog();text('#network-age','Netzstand '+new Date(network.generatedAt).toLocaleDateString('de-DE'));loadBusPart(rev);
+  }catch{if(rev!==revision||controller.signal.aborted)return;text('#network-age','Liniennetz nicht erreichbar');}
+}
+function renderPerformance(){
+  const stats=map?.performance(),seconds=n=>n===null?'noch nicht verfügbar':(n/1000).toFixed(2)+' s';
+  text('#perf-first',seconds(stats?.firstFrameAt!=null?stats.firstFrameAt-timings.started:null));text('#perf-map',seconds(timings.mapReady));text('#perf-network',seconds(timings.networkMs));text('#perf-feed',seconds(timings.feedMs));
+  text('#perf-frames',stats?stats.observedFps+' B/s · Ziel '+stats.targetFps+' B/s':'noch nicht verfügbar');text('#perf-draw',stats?stats.drawMs+' ms':'–');
+  const entries=performance.getEntriesByType('resource').filter(e=>e.name.startsWith(location.origin+'/data/network-'));
+  text('#perf-transfer',entries.length?(entries.reduce((n,e)=>n+e.transferSize,0)/1024).toFixed(0)+' KB':'noch nicht verfügbar');
 }
 function changeCity(id){
   if(!Object.hasOwn(cities,id))return;revision++;city=cities[id];savePref('city',id);$('#city-select').value=id;requestController?.abort();loading=false;clearSelected();snapshot=null;trips=[];network=null;catalog=[];hiddenLines.clear();cancelled.clear();$('#search').value='';map?.setNetwork({lines:{type:'FeatureCollection',features:[]},stops:{type:'FeatureCollection',features:[]}});map?.fitBounds(city.bounds);map?.update([]);text('#region-label',city.region.toLocaleUpperCase('de'));text('#feed-status','Aktuelle Fahrten werden geladen …');text('#header-status','Verbinden');text('#coverage-info','Warte auf aktuelle Prognosen.');text('#refresh-label','');text('#vehicle-count','–');$('#notice').hidden=true;$('#status-dot').classList.remove('live');renderModes();renderLines();renderVehicleList();loadNetwork(revision);refresh();
@@ -142,13 +165,13 @@ async function setTheme(next){
 $('#theme-dark').onclick=()=>setTheme('dark');$('#theme-light').onclick=()=>setTheme('light');
 async function init(){
   $('#city-select').replaceChildren(...Object.values(cities).map(c=>{const option=element('option','',c.name);option.value=c.id;return option;}));
-  changeCity(city.id);
-  try{map=await createTransitMap(city,{onSelect:id=>{const v=visible.find(v=>v.id===id);if(v)showDetails(v);},onMove:()=>{updateCount();renderModes();if(tab==='vehicles')renderVehicleList();},onClear:clearSelected,onError:message=>{text('#map-error-text',message);$('#map-error').hidden=false;}});map.raw.on('idle',()=>{$('#map-error').hidden=true;});map.raw.on('dragstart',()=>setFollowing(false));map.raw.on('zoomstart',e=>{if(e.originalEvent)setFollowing(false);});if(network)map.setNetwork(network);syncNetworkFilter();map.fitBounds(city.bounds);draw(true);const pref=readPref('theme','dark');if(pref==='light')setTheme('light');}
+  changeCity(city.id);const pref=readPref('theme','dark')==='light'?'light':'dark';theme=pref;document.documentElement.dataset.theme=pref;for(const id of ['dark','light'])$('#theme-'+id).setAttribute('aria-pressed',String(pref===id));
+  try{map=await createTransitMap(city,{theme:pref,onSelect:id=>{const v=visible.find(v=>v.id===id);if(v)showDetails(v);},onMove:()=>{viewBounds=map?.getBounds()??null;updateCount();renderModes();if(tab==='vehicles')renderVehicleList();},onClear:clearSelected,onError:message=>{text('#map-error-text',message);$('#map-error').hidden=false;}});map.raw.once('idle',()=>{timings.mapReady=performance.now()-timings.started;});map.raw.on('idle',()=>{$('#map-error').hidden=true;});map.raw.on('dragstart',()=>setFollowing(false));map.raw.on('zoomstart',e=>{if(e.originalEvent)setFollowing(false);});if(network)applyNetwork();syncNetworkFilter();map.fitBounds(city.bounds);draw(true);}
   catch(e){text('#map-error-text',e.message+' Eine WebGL-fähige Browseransicht wird benötigt.');$('#map-error').hidden=false;}
 }
-if(document.readyState==='complete')init();else addEventListener('load',init,{once:true});
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',init,{once:true});else init();
 let previous=0;
-function tick(ts){if(ts-previous>=1000){previous=ts;const now=Date.now()+offset;text('#clock',time(now));text('#clock-seconds',secondsFormat.format(new Date(now)).padStart(2,'0'));text('#date',dateFormat.format(new Date(now)));if(isFresh())text('#refresh-label',`Abruf vor ${Math.max(0,Math.floor((now-snapshot.fetchedAt)/1000))} Sek. · Update alle 30 Sek.`);if(!document.hidden)draw();}requestAnimationFrame(tick);}
+function tick(ts){if(ts-previous>=1000){previous=ts;const now=Date.now()+offset;text('#clock',time(now));text('#clock-seconds',secondsFormat.format(new Date(now)).padStart(2,'0'));text('#date',dateFormat.format(new Date(now)));if(isFresh())text('#refresh-label',`Abruf vor ${Math.max(0,Math.floor((now-snapshot.fetchedAt)/1000))} Sek. · Update alle 30 Sek.`);if(!document.hidden){draw();if($('#info-dialog').open)renderPerformance();}}requestAnimationFrame(tick);}
 requestAnimationFrame(tick);setInterval(refresh,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){draw(true);refresh();}});addEventListener('online',refresh);
 // Optional WebMCP. The same state transitions serve clicks and agent requests.
 if(document.modelContext?.registerTool){
