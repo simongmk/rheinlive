@@ -154,3 +154,11 @@ Minutengenaue Prognosen verraten jedoch keine sekundengenaue Türöffnung,
 Beschleunigung oder ungeplante Zwischenstopps. Unbekannte Aufenthalte werden
 nicht mit pauschalen 20 oder 30 Sekunden ergänzt. Details und Alterungsgrenzen
 stehen in [PERFORMANCE.md](PERFORMANCE.md).
+
+## Abfahrtsmonitor und Fußwege
+
+Der neue Monitor verwendet zwei zusätzliche öffentliche MOTIS-Endpunkte:
+`/api/v6/stoptimes` für den ausgewählten Halt und `/api/v1/one-to-many` mit
+WALK für Gehzeiten zu einer begrenzten Stationsauswahl. Echte Abfahrten und
+Fußwegantworten wurden geprüft. Verhalten, Anfragegrenzen, Standortverarbeitung
+und Navigationslinks sind in [MONITOR.md](MONITOR.md) dokumentiert.

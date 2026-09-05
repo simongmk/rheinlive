@@ -8,9 +8,9 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
   map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:'<a href="https://transitous.org/sources/" target="_blank">Verkehrsdaten: Transitous</a>'}),'bottom-right');
   map.addControl(new maplibregl.ScaleControl({maxWidth:100,unit:'metric'}),'bottom-left');
   const vehicleLayer=createVehicleLayer(map);vehicleLayer.setBounds(city.bounds);vehicleLayer.setTheme(initialTheme);map.on('remove',()=>vehicleLayer.destroy());
-  let selected=null,network=empty(),stops=empty(),selectedGeometry=empty(),theme=initialTheme,networkOn=true,tilted=false,filter=['literal',true],stationFilter=['literal',true],trackFilter=['in',['get','class'],['literal',['rail','transit']]];
+  let selected=null,network=empty(),stops=empty(),selectedGeometry=empty(),userLocation=empty(),boardStation=empty(),theme=initialTheme,networkOn=true,tilted=false,filter=['literal',true],stationFilter=['literal',true],trackFilter=['in',['get','class'],['literal',['rail','transit']]];
   function mount(){
-    for(const [id,data]of [['network',network],['stations',stops],['selected-route',selectedGeometry]])map.addSource(id,{type:'geojson',data});
+    for(const [id,data]of [['network',network],['stations',stops],['selected-route',selectedGeometry],['user-location',userLocation],['board-station',boardStation]])map.addSource(id,{type:'geojson',data});
     map.addLayer({id:'buildings-3d',type:'fill-extrusion',source:'openmaptiles','source-layer':'building',minzoom:13,layout:{visibility:tilted?'visible':'none'},paint:{'fill-extrusion-color':theme==='dark'?'#28465a':'#c7d7e1','fill-extrusion-height':['coalesce',['get','render_height'],0],'fill-extrusion-base':['coalesce',['get','render_min_height'],0],'fill-extrusion-opacity':.8}});
     // One stroke per supplied physical rail feature. Never merge nearby parallel tracks
     // or draw a second copy for every route using a track. Tunnel tracks stay included.
@@ -21,6 +21,9 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     map.addLayer({id:'station-labels',type:'symbol',source:'stations',minzoom:13.5,layout:{'text-field':['get','name'],'text-font':['Noto Sans Regular'],'text-size':12,'text-offset':[0,1.1],'text-anchor':'top','text-max-width':12},paint:{'text-color':theme==='dark'?'#b7cbd5':'#4b6473','text-halo-color':theme==='dark'?'#102130':'#ffffff','text-halo-width':1.4}});
     map.addLayer({id:'selected-route-glow',type:'line',source:'selected-route',paint:{'line-color':['get','color'],'line-width':11,'line-opacity':.2,'line-blur':3}});
     map.addLayer({id:'selected-route-line',type:'line',source:'selected-route',paint:{'line-color':['get','color'],'line-width':4,'line-opacity':.95}});
+    map.addLayer({id:'board-station-dot',type:'circle',source:'board-station',paint:{'circle-radius':7,'circle-color':'#ff826b','circle-stroke-color':'#ffffff','circle-stroke-width':2}});
+    map.addLayer({id:'user-location-halo',type:'circle',source:'user-location',paint:{'circle-radius':18,'circle-color':'#428fff','circle-opacity':.18}});
+    map.addLayer({id:'user-location-dot',type:'circle',source:'user-location',paint:{'circle-radius':6,'circle-color':'#428fff','circle-stroke-color':'#ffffff','circle-stroke-width':2}});
     applyFilter();
   }
   function applyFilter(){for(const id of ['track-lines','network-glow','network-lines','station-dots','station-labels'])if(map.getLayer(id)){map.setLayoutProperty(id,'visibility',networkOn?'visible':'none');map.setFilter(id,id==='track-lines'?trackFilter:id.startsWith('station-')?stationFilter:filter);}}
@@ -35,6 +38,9 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     fitBounds:(bounds)=>{vehicleLayer.setBounds(bounds);map.fitBounds([[bounds[0][1],bounds[0][0]],[bounds[1][1],bounds[1][0]]],{padding:{top:100,right:60,bottom:innerWidth<760?250:70,left:innerWidth<760?40:390},maxZoom:12.3});},
     update:(next,fetchedAt,now)=>vehicleLayer.update(next,fetchedAt,now),
     performance:()=>vehicleLayer.stats(),
+    setLocation:p=>{userLocation=collection(p?[{type:'Feature',properties:{},geometry:{type:'Point',coordinates:[p.point[1],p.point[0]]}}]:[]);map.getSource('user-location')?.setData(userLocation);},
+    centerLocation:p=>map.easeTo({center:[p.point[1],p.point[0]],zoom:p.accuracy>300?13.2:14.8,pitch:0,duration:700,padding:{top:100,bottom:innerWidth<760?380:60,left:innerWidth<760?25:370,right:60}}),
+    setBoardStation:f=>{boardStation=collection(f?[f]:[]);map.getSource('board-station')?.setData(boardStation);},
     select:(v,geometry)=>{selected=v?.id??null;selectedGeometry=geometry||collection(v?v.segments.filter(s=>s.geometry==='shape').map(s=>({type:'Feature',geometry:{type:'LineString',coordinates:s.points.map(p=>[p[1],p[0]])},properties:{color:v.color}})):[]);map.getSource('selected-route')?.setData(selectedGeometry);vehicleLayer.select(selected);},
     setNetwork:data=>{network=data.lines;stops=data.stops;map.getSource('network')?.setData(network);map.getSource('stations')?.setData(stops);},
     // Physical tracks are infrastructure context; route filters apply to trips and stops.

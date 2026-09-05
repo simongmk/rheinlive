@@ -14,7 +14,9 @@ Messungen und Anbieteroptionen stehen in [DATA-SOURCES.md](DATA-SOURCES.md).
    stichprobenartig kontrollieren. Gleiche Liniennummern sind keine Fahrt-IDs.
 3. Einen begrenzten Routenabzug speichern und mit
    `node scripts/prepare-network.mjs CITY raw-routes.json` aufbereiten. Netzdatei
-   datieren und Quellenangaben beibehalten. Keine Fahrzeug-Fixtures ausliefern.
+   datieren und Quellenangaben beibehalten. Anschließend mit
+   `node scripts/prepare-station-index.mjs` die serverseitige Monitor-Freigabeliste
+   aus allen Netzdateien erneuern. Keine Fahrzeug-Fixtures ausliefern.
 4. Die Region im Auswahlmenü erscheint aus der gemeinsamen Stadt-Konfiguration.
    API und Cache verwenden automatisch getrennte Schlüssel. Tests, Build und
    echte API-Prüfung vor Veröffentlichung ausführen.

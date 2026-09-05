@@ -6,6 +6,8 @@ with current stop forecasts, delays and complete trip details. Ferry services
 can appear when the source supplies them; verified Bonn examples were scheduled
 only. The German interface supports desktop and mobile screens.
 
+- Location-aware nearby stops and a departure monitor with a leave-home countdown.
+- Walking time from the footpath network, adjustable time/buffer, Apple/Google walking links and DB journey planning.
 - Dark and light maps, mapped rail tracks, optional bus/ferry routes, station search and map tilt.
 - City, transport-mode and line filters, plus an accessible list of visible trips.
 - Selected-trip direction, operator, stops, available alerts and platform changes.
@@ -58,6 +60,16 @@ carry their export date and source attribution.
 observation timestamp. Coordinates between stops remain estimates even when a
 vehicle waits or an unreported disruption changes its movement. Missing shapes
 are disclosed as straight-line estimates.
+
+The departure monitor separately requests `/api/v6/stoptimes` for one selected
+source-observed station ID, coalesced and cached for 30 seconds. A location
+permission selects a supported region and up to six nearby stations. A bounded
+`/api/v1/one-to-many` WALK query calculates footpath durations, sent through
+our `/api/walk` POST endpoint. Origin coordinates are not included in replies
+or retained in application caches. They are sent to Transitous for the query.
+Manual walking time and buffer are saved only on the device. A stale location
+requires recalculation; missing routes never fall back to an invented straight-line
+walking time. See [monitor behavior and limits](docs/MONITOR.md).
 
 ## Evidence and extension
 

@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Busse und Bahnen in Köln, Bonn und Düsseldorf auf einer offenen Vektorkarte",
+  "description": "Busse und Bahnen in K\u00f6ln, Bonn und D\u00fcsseldorf auf einer offenen Vektorkarte",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -13,6 +13,6 @@
     "start": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check public/app.js && node --check public/map.js && node --check lib/transit.mjs && node --check lib/trip.mjs && node --check lib/api.mjs && node --check worker.mjs && node --check public/vehicles.js && node --check lib/network.mjs"
+    "check": "node --check public/app.js && node --check public/map.js && node --check lib/transit.mjs && node --check lib/trip.mjs && node --check lib/api.mjs && node --check worker.mjs && node --check public/vehicles.js && node --check lib/network.mjs && node --check public/monitor.js && node --check lib/monitor.mjs && node --check lib/monitor-api.mjs"
   }
 }

@@ -1,6 +1,7 @@
 import {cities,transportModes,MAX_SNAPSHOT_AGE_MS,pointInBounds} from '/lib/cities.mjs';
 import {prepareTrips,vehiclesAt,vehicleView} from '/lib/transit.mjs';
 import {createTransitMap} from '/map.js';
+import {createDepartureMonitor} from '/monitor.js';
 const $=s=>document.querySelector(s),text=(s,v)=>{$(s).textContent=v;};
 const element=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n;};
 const icon=id=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','icon');svg.setAttribute('aria-hidden','true');const use=document.createElementNS(svg.namespaceURI,'use');use.setAttribute('href','#i-'+id);svg.append(use);return svg;};
@@ -14,6 +15,8 @@ const timeFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',hour:
 const time=t=>Number.isFinite(t)?timeFormat.format(new Date(t)):'–';
 const cleanName=s=>String(s||'').replace(/^(?:Köln|Koeln|Bonn)[, ]+/,'').replace(/^D-/,'');
 let viewBounds=null;
+let pendingLocationFocus=false;
+const monitor=createDepartureMonitor({onCity:id=>changeCity(id,{fromLocation:true}),onLocation:(p,focus)=>{clearSelected();map?.setLocation(p);if(focus){pendingLocationFocus=true;map?.centerLocation(p);}},onStation:(f,focus)=>{clearSelected();map?.setBoardStation(f);if(focus)map?.raw.flyTo({center:f.geometry.coordinates,zoom:15,pitch:0,duration:700});},onExplore:()=>clearSelected()});
 const inView=v=>pointInBounds([v.lat,v.lon],city.bounds)&&(!viewBounds||viewBounds.contains([v.lat,v.lon]));
 const isFresh=()=>snapshot&&!snapshot.stale&&Date.now()+offset-snapshot.fetchedAt<=MAX_SNAPSHOT_AGE_MS;
 const filters=v=>activeModes.has(v.mode)&&!hiddenLines.has(v.lineKey);
@@ -53,7 +56,7 @@ function renderLines(){
 function renderStopSearch(query){
   const results=$('#stop-results');results.replaceChildren();results.hidden=true;if(query.length<2||!network)return;
   const found=new Map();for(const f of network.stops.features){if(!f.properties.name.toLocaleLowerCase('de').includes(query))continue;const p=f.geometry.coordinates,key=f.properties.name+':'+p.map(n=>n.toFixed(3)).join(',');if(!found.has(key))found.set(key,f);if(found.size>=6)break;}
-  for(const f of found.values()){const b=element('button','stop-result');b.append(icon('pin'),document.createTextNode(f.properties.name));b.onclick=()=>{map?.raw.flyTo({center:f.geometry.coordinates,zoom:15,pitch:0,duration:700});if(innerWidth<=760){$('.overview').classList.remove('expanded');$('#panel-toggle').setAttribute('aria-expanded','false');}setFollowing(false);};results.append(b);}results.hidden=found.size===0;
+  for(const f of found.values()){const b=element('button','stop-result');b.append(icon('pin'),document.createTextNode(f.properties.name));b.onclick=()=>{monitor.choose(f,true);if(innerWidth<=760){$('.overview').classList.remove('expanded');$('#panel-toggle').setAttribute('aria-expanded','false');}setFollowing(false);};results.append(b);}results.hidden=found.size===0;
 }
 $('#search').addEventListener('input',()=>{renderLines();renderVehicleList();});
 $('#all-lines').onclick=()=>{hiddenLines.clear();renderLines();draw(true);syncNetworkFilter();};
@@ -141,9 +144,9 @@ async function loadBusPart(rev){
 }
 async function loadNetwork(rev){
   networkController?.abort();const controller=new AbortController();networkController=controller;text('#network-age','Liniennetz wird geladen …');const id=city.id,started=performance.now();
-  try{let record=networkCache.get(id);if(!record){const r=await fetch('/data/network-'+id+'.json?v=6',{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});if(!r.ok)throw Error('Netz nicht erreichbar');const data=await r.json();if(data.city!==id)throw Error('Falsches Netz');record={data,bus:null,pending:false};}
+  try{let record=networkCache.get(id);if(!record){const r=await fetch('/data/network-'+id+'.json?v=7',{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});if(!r.ok)throw Error('Netz nicht erreichbar');const data=await r.json();if(data.city!==id)throw Error('Falsches Netz');record={data,bus:null,pending:false};}
     if(rev!==revision||controller.signal.aborted)return;networkCache.delete(id);networkCache.set(id,record);if(networkCache.size>2)networkCache.delete(networkCache.keys().next().value);
-    network=record.data;timings.networkMs=performance.now()-started;applyNetwork();updateCatalog();text('#network-age','Netzstand '+new Date(network.generatedAt).toLocaleDateString('de-DE'));loadBusPart(rev);
+    network=record.data;timings.networkMs=performance.now()-started;applyNetwork();updateCatalog();monitor.setNetwork(network);text('#network-age','Netzstand '+new Date(network.generatedAt).toLocaleDateString('de-DE'));loadBusPart(rev);
   }catch{if(rev!==revision||controller.signal.aborted)return;text('#network-age','Liniennetz nicht erreichbar');}
 }
 function renderPerformance(){
@@ -153,7 +156,8 @@ function renderPerformance(){
   const entries=performance.getEntriesByType('resource').filter(e=>e.name.startsWith(location.origin+'/data/network-'));
   text('#perf-transfer',entries.length?(entries.reduce((n,e)=>n+e.transferSize,0)/1024).toFixed(0)+' KB':'noch nicht verfügbar');
 }
-function changeCity(id){
+function changeCity(id,{fromLocation=false}={}){
+  monitor.setCity(id,{manual:!fromLocation});if(!fromLocation)pendingLocationFocus=false;map?.setBoardStation(null);
   if(!Object.hasOwn(cities,id))return;revision++;city=cities[id];savePref('city',id);$('#city-select').value=id;requestController?.abort();loading=false;clearSelected();snapshot=null;trips=[];network=null;catalog=[];hiddenLines.clear();cancelled.clear();$('#search').value='';map?.setNetwork({lines:{type:'FeatureCollection',features:[]},stops:{type:'FeatureCollection',features:[]}});map?.fitBounds(city.bounds);map?.update([]);text('#region-label',city.region.toLocaleUpperCase('de'));text('#feed-status','Aktuelle Fahrten werden geladen …');text('#header-status','Verbinden');text('#coverage-info','Warte auf aktuelle Prognosen.');text('#refresh-label','');text('#vehicle-count','–');$('#notice').hidden=true;$('#status-dot').classList.remove('live');renderModes();renderLines();renderVehicleList();loadNetwork(revision);refresh();
 }
 $('#city-select').onchange=e=>changeCity(e.target.value);
@@ -170,13 +174,13 @@ async function setTheme(next){
 $('#theme-dark').onclick=()=>setTheme('dark');$('#theme-light').onclick=()=>setTheme('light');
 async function init(){
   $('#city-select').replaceChildren(...Object.values(cities).map(c=>{const option=element('option','',c.name);option.value=c.id;return option;}));
-  changeCity(city.id);const pref=readPref('theme','dark')==='light'?'light':'dark';theme=pref;document.documentElement.dataset.theme=pref;for(const id of ['dark','light'])$('#theme-'+id).setAttribute('aria-pressed',String(pref===id));
-  try{map=await createTransitMap(city,{theme:pref,onSelect:id=>{const v=visible.find(v=>v.id===id);if(v)showDetails(v);},onMove:()=>{viewBounds=map?.getBounds()??null;updateCount();renderModes();if(tab==='vehicles')renderVehicleList();},onClear:clearSelected,onError:message=>{text('#map-error-text',message);$('#map-error').hidden=false;}});map.raw.once('idle',()=>{timings.mapReady=performance.now()-timings.started;});map.raw.on('idle',()=>{$('#map-error').hidden=true;});map.raw.on('dragstart',()=>setFollowing(false));map.raw.on('zoomstart',e=>{if(e.originalEvent)setFollowing(false);});if(network)applyNetwork();syncNetworkFilter();map.fitBounds(city.bounds);draw(true);}
+  changeCity(city.id,{fromLocation:true});monitor.start();const pref=readPref('theme','dark')==='light'?'light':'dark';theme=pref;document.documentElement.dataset.theme=pref;for(const id of ['dark','light'])$('#theme-'+id).setAttribute('aria-pressed',String(pref===id));
+  try{map=await createTransitMap(city,{theme:pref,onSelect:id=>{const v=visible.find(v=>v.id===id);if(v)showDetails(v);},onMove:()=>{viewBounds=map?.getBounds()??null;updateCount();renderModes();if(tab==='vehicles')renderVehicleList();},onClear:clearSelected,onError:message=>{text('#map-error-text',message);$('#map-error').hidden=false;}});map.raw.once('idle',()=>{timings.mapReady=performance.now()-timings.started;});map.raw.on('idle',()=>{$('#map-error').hidden=true;});map.raw.on('dragstart',()=>setFollowing(false));map.raw.on('zoomstart',e=>{if(e.originalEvent)setFollowing(false);});if(network)applyNetwork();syncNetworkFilter();map.fitBounds(city.bounds);map.setBoardStation(monitor.getStation());const position=monitor.getLocation();if(position){map.setLocation(position);if(pendingLocationFocus)map.centerLocation(position);}draw(true);}
   catch(e){text('#map-error-text',e.message+' Eine WebGL-fähige Browseransicht wird benötigt.');$('#map-error').hidden=false;}
 }
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',init,{once:true});else init();
 let previous=0;
-function tick(ts){if(ts-previous>=1000){previous=ts;const now=Date.now()+offset;text('#clock',time(now));text('#clock-seconds',secondsFormat.format(new Date(now)).padStart(2,'0'));text('#date',dateFormat.format(new Date(now)));if(isFresh())text('#refresh-label',`Abruf vor ${Math.max(0,Math.floor((now-snapshot.fetchedAt)/1000))} Sek. · Update alle 30 Sek.`);if(!document.hidden){draw();if($('#info-dialog').open)renderPerformance();}}requestAnimationFrame(tick);}
+function tick(ts){if(ts-previous>=1000){previous=ts;const now=Date.now()+offset;text('#clock',time(now));text('#clock-seconds',secondsFormat.format(new Date(now)).padStart(2,'0'));text('#date',dateFormat.format(new Date(now)));if(isFresh())text('#refresh-label',`Abruf vor ${Math.max(0,Math.floor((now-snapshot.fetchedAt)/1000))} Sek. · Update alle 30 Sek.`);if(!document.hidden){draw();monitor.tick();if($('#info-dialog').open)renderPerformance();}}requestAnimationFrame(tick);}
 requestAnimationFrame(tick);setInterval(refresh,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){draw(true);refresh();}});addEventListener('online',refresh);
 // Optional WebMCP. The same state transitions serve clicks and agent requests.
 if(document.modelContext?.registerTool){

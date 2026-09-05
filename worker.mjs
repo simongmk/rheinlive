@@ -3,7 +3,7 @@ import {handleApi} from './lib/api.mjs';
 const headers={
   'X-Content-Type-Options':'nosniff',
   'Referrer-Policy':'strict-origin-when-cross-origin',
-  'Permissions-Policy':'geolocation=(), camera=(), microphone=()',
+  'Permissions-Policy':'geolocation=(self), camera=(), microphone=()',
   'Content-Security-Policy':"default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; connect-src 'self' https://tiles.openfreemap.org; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self' https://chatgpt.com https://chat.openai.com",
 };
 /** Cache only the transit snapshot; serverTime is stamped when each response leaves. */

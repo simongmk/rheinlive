@@ -33,3 +33,12 @@ Rheinlive contact User-Agent. Operators include Kölner VB, Stadtwerke Bonn and
 Rheinbahn Bus. These files are test evidence, never current production data.
 Source licenses: https://transitous.org/sources/ (German realtime inputs include
 CC BY-SA 4.0; timetable inputs include CC BY 4.0; computed OSM geometry is ODbL).
+
+## Station dwell and departure monitor
+
+`transitous-dwell-2026-09-05.json` contains three real RB26/S11 waiting
+intervals from the 13:18 UTC map response. `departures-severin-2026-09-05.json`
+contains eight historical departures from the public MOTIS `/api/v6/stoptimes`
+response for `de-DELFI_de:05315:11311:1:13`. Receipt time is recorded from
+the original capture file timestamp. Both are test-only and use the separate
+Transitous/DELFI data attribution and licenses described above.

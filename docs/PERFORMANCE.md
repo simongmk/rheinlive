@@ -120,3 +120,18 @@ Fehlende oder gleichzeitige Ankunft/Abfahrt erzeugen keine erfundene Wartezeit.
 Längere Aufenthalte sind nur darstellbar, solange beide Zeitgrenzen frisch
 vorliegen. Es werden keine zusätzlichen Einzelabfragen für alle Fahrzeuge
 gestartet und keine Prognosen öfter als bisher abgefragt.
+
+## Abfahrtsmonitor: zusätzlicher Aufwand
+
+Die Netzdateien enthalten zusätzlich die originalen Stations-IDs für gezielte
+Abfahrtsabfragen. Dadurch beträgt das aktuelle Startnetz 567.282 / 295.898 /
+414.610 Bytes in Köln / Bonn / Düsseldorf. Die frühere Größentabelle oben
+beschreibt die Gleisumstellung vor dieser Monitor-Ergänzung. Die IDs erweitern
+die Stationssuche und müssen nicht separat geladen werden.
+
+Nur der gewählte Halt wird alle 30 Sekunden abgefragt; die Antworten werden
+serverseitig mit begrenztem Cache und Warteschlange geteilt. Gehzeiten für
+höchstens sechs Kandidaten kommen aus einer gemeinsamen Fußwegabfrage nach
+Standortabruf bzw. bewusster Neuberechnung. Der Sekunden-Countdown aktualisiert
+nur Texte und Zustände, ohne Netzaufrufe pro Sekunde. Geolocation läuft einmal
+beim Öffnen und erneut auf Anforderung, nicht als dauerndes GPS-Tracking.
