@@ -49,7 +49,7 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     getBounds:()=>{const bounds=map.getBounds();return {contains:([lat,lon])=>bounds.contains([lon,lat])};},
     zoomIn:()=>map.zoomIn(),zoomOut:()=>map.zoomOut(),
     fitBounds:(bounds)=>{vehicleLayer.setBounds(bounds);map.fitBounds([[bounds[0][1],bounds[0][0]],[bounds[1][1],bounds[1][0]]],{padding:{top:100,right:60,bottom:innerWidth<760?250:70,left:innerWidth<760?40:390},maxZoom:12.3});},
-    update:(next,fetchedAt,now)=>vehicleLayer.update(next,fetchedAt,now),
+    update:(next,fetchedAt,now,options)=>vehicleLayer.update(next,fetchedAt,now,options),
     performance:()=>({...vehicleLayer.stats(),railTransferBytes:railDetail.stats().transferBytes}),
     setLocation:p=>{userLocation=collection(p?[{type:'Feature',properties:{},geometry:{type:'Point',coordinates:[p.point[1],p.point[0]]}}]:[]);map.getSource('user-location')?.setData(userLocation);},
     centerLocation:p=>map.easeTo({center:[p.point[1],p.point[0]],zoom:p.accuracy>300?13.2:14.8,pitch:0,duration:700,padding:{top:100,bottom:innerWidth<760?380:60,left:innerWidth<760?25:370,right:60}}),

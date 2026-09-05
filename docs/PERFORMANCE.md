@@ -188,3 +188,30 @@ höchstens sechs Kandidaten kommen aus einer gemeinsamen Fußwegabfrage nach
 Standortabruf bzw. bewusster Neuberechnung. Der Sekunden-Countdown aktualisiert
 nur Texte und Zustände, ohne Netzaufrufe pro Sekunde. Geolocation läuft einmal
 beim Öffnen und erneut auf Anforderung, nicht als dauerndes GPS-Tracking.
+
+
+## Kurze Übergänge, kompakte Oberfläche (05.09.2026)
+
+Neue Icons blenden über 450 ms ein, auslaufende über 650 ms aus (Smoothstep).
+Am Ende eines bekannten Abschnitts erreicht das Icon dessen gemeldeten Endpunkt
+und bleibt während des Ausblendens stehen. Das ist ein visueller Übergang,
+keine extrapolierte Weiterfahrt oder zusätzlich behauptete Betriebszeit.
+Eine zurückkehrende Fahrt-ID dreht ihren Übergang um, ohne ein zweites Icon.
+Polling startet bestehende Übergänge nicht neu. Ausblendende Icons sind nicht
+anklickbar und zählen nicht als aktuelle Fahrzeuge. Der Canvas-Sprite wird
+weiterverwendet; nur seine Deckkraft ändert sich. Maximal 512 entfernte Icons
+bleiben kurz für Übergänge gespeichert. Es gibt keine zusätzlichen Netzabfragen.
+
+Veraltete Beobachtungen, Abfrageausfälle, bestätigte Ausfälle und Stadtwechsel
+entfernen Icons sofort. Unsichtbare Tabs leeren die Übergänge und stoppen die
+Animation. Ohne aktive oder ausblendende Icons endet die Schleife. Die
+Systemeinstellung für reduzierte Bewegung deaktiviert Ein-/Ausblendungen.
+Canvas-Vertragstests prüfen Deckkraft im Zeitverlauf, feststehende Endpunkte,
+fehlende Klickziele, wiederkehrende IDs, Abbruchzustände und Speichergrenzen.
+
+Die Hauptansicht enthält kurze Statusangaben und Bedienelemente. Der vollständige
+Fahrtverlauf ist aufklappbar; Gleiswechsel, Störungen und Ausfälle bleiben davor
+sichtbar. Positionsschätzung und geschätzte Halte bleiben knapp markiert.
+Abrufalter, Quellen und Methodik stehen in der Dateninfo. Der Monitor aktualisiert
+seine gesunde Anzeige ohne jede Sekunde wechselnde Abruf-Erklärung. Bei fehlenden
+oder alten Prognosen bleiben Handlungs- und Fehlerhinweise erhalten.

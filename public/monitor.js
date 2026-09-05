@@ -20,9 +20,9 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
   function effectiveWalk(){return walkMode==='automatic'&&Date.now()-walkAt>300000?null:minutes($('#walk-minutes'),60);}
   function applyWalk(){
     const saved=pref('walk:'+stationId()),known=walks.get(stationId());
-    if(saved!==null&&/^\d+$/.test(saved)&&Number(saved)<=60){$('#walk-minutes').value=saved;walkMode='manual';status('walk-status','Deine Gehzeit. Zugang zum Bahnsteig beim Puffer berücksichtigen.');}
-    else if(Number.isFinite(known?.seconds)){const n=Math.ceil(known.seconds/60);$('#walk-minutes').value=String(n);walkMode='automatic';walkAt=location?.timestamp??Date.now();status('walk-status','Ca. '+n+' Min. über Fußwege'+(known.meters!=null?' · '+Math.round(known.meters)+' m':'')+'. Zugang zum Gleis kann länger dauern.');}
-    else{$('#walk-minutes').value='';walkMode='unknown';status('walk-status',location?'Fußweg noch nicht verfügbar. Gehzeit selbst eintragen oder berechnen.':'Deine Gehzeit bis zur Haltestelle eintragen.');}
+    if(saved!==null&&/^\d+$/.test(saved)&&Number(saved)<=60){$('#walk-minutes').value=saved;walkMode='manual';status('walk-status','Gehzeit gespeichert.');}
+    else if(Number.isFinite(known?.seconds)){const n=Math.ceil(known.seconds/60);$('#walk-minutes').value=String(n);walkMode='automatic';walkAt=location?.timestamp??Date.now();status('walk-status','Fußweg ca. '+n+' Min.'+(known.meters!=null?' · '+Math.round(known.meters)+' m':''));}
+    else{$('#walk-minutes').value='';walkMode='unknown';status('walk-status',location?'Gehzeit eintragen oder berechnen.':'Gehzeit eintragen.');}
     $('.walk-config').open=walkMode==='unknown';$('#walk-recalculate').hidden=!location||cityAt(location.point)?.id!==cityId;cardKey='';renderBoard();
   }
   function choose(f,focus=false,requestWalk=true){
@@ -30,7 +30,7 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
     const parent=$('#navigation-links');parent.replaceChildren();for(const link of navigationLinks({lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]})){const a=el('a','',link.label+' ↗');a.href=link.url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}
     renderNear();applyWalk();onStation(f,focus);refresh();if(requestWalk&&location&&!walks.has(stationId()))calculateWalks(false);
   }
-  $('#walk-minutes').oninput=()=>{const n=minutes($('#walk-minutes'),60);walkMode=n===null?'unknown':'manual';$('#walk-minutes').setAttribute('aria-invalid',String(n===null));if(n!==null)save('walk:'+stationId(),n);status('walk-status',n===null?'Gehzeit zwischen 0 und 60 Minuten eintragen.':'Deine Gehzeit. Der Puffer kommt zusätzlich dazu.');cardKey='';renderBoard();};
+  $('#walk-minutes').oninput=()=>{const n=minutes($('#walk-minutes'),60);walkMode=n===null?'unknown':'manual';$('#walk-minutes').setAttribute('aria-invalid',String(n===null));if(n!==null)save('walk:'+stationId(),n);status('walk-status',n===null?'Gehzeit zwischen 0 und 60 Minuten eintragen.':'Gehzeit gespeichert.');cardKey='';renderBoard();};
   const savedBuffer=pref('buffer');if(savedBuffer!==null&&/^\d+$/.test(savedBuffer)&&Number(savedBuffer)<=15)$('#buffer-minutes').value=savedBuffer;
   $('#buffer-minutes').oninput=()=>{const n=minutes($('#buffer-minutes'),15);$('#buffer-minutes').setAttribute('aria-invalid',String(n===null));if(n!==null)save('buffer',n);cardKey='';renderBoard();};
   $('#walk-recalculate').onclick=()=>{try{localStorage.removeItem('rheinlive:walk:'+stationId());}catch{}requestLocation(false);};
@@ -38,7 +38,7 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
   function updateDirections(){const select=$('#departure-direction'),before=select.value,groups=new Map();for(const e of board.departures)if(!groups.has(e.directionKey))groups.set(e.directionKey,e.line+' → '+e.headsign);select.replaceChildren(el('option','','Alle Linien & Richtungen'));select.firstChild.value='';for(const [key,label]of groups){const o=el('option','',label);o.value=key;select.append(o);}if(groups.has(before))select.value=before;}
   async function refresh(force=false){
     if(!active||document.hidden||!station||boardLoading||!force&&board&&Date.now()+boardOffset-board.fetchedAt<30000)return;
-    boardController?.abort();const c=new AbortController();boardController=c;const id=stationId(),city=cityId;boardLoading=true;$('#board-retry').hidden=true;status('board-status','Abfahrtsprognosen werden geladen …');
+    boardController?.abort();const c=new AbortController();boardController=c;const id=stationId(),city=cityId;boardLoading=true;$('#board-retry').hidden=true;if(!board)status('board-status','Abfahrten laden …');
     try{const r=await fetch('/api/departures?'+new URLSearchParams({city,stopId:id}),{signal:AbortSignal.any([c.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(c.signal.aborted||id!==stationId()||city!==cityId)return;if(!r.ok||data.stale||data.stopId!==id||data.city!==city||!Array.isArray(data.departures)||!Number.isFinite(data.fetchedAt)||!Number.isFinite(data.serverTime))throw Error(data.error||'Abfahrten gerade nicht verfügbar.');board=data;boardOffset=data.serverTime-Date.now();updateDirections();cardKey='';renderBoard();}
     catch(e){if(c.signal.aborted)return;board=null;cardKey='';renderBoard();status('board-status',e.name==='TimeoutError'?'Abfahrten brauchen gerade zu lange.':e.message);$('#board-retry').hidden=false;}
     finally{if(boardController===c)boardLoading=false;}
@@ -46,11 +46,11 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
   function readiness(e){return departureReadiness(e,{now:Date.now()+boardOffset,fetchedAt:board?.fetchedAt,walkMinutes:effectiveWalk(),bufferMinutes:minutes($('#buffer-minutes'),15)});}
   const label=r=>({stale:'Prognose veraltet',cancelled:'Fällt aus','no-boarding':'Einstieg nicht möglich',departed:'Abfahrt vorbei',schedule:'Nur Fahrplan','no-walk':'Gehzeit prüfen',tight:'Puffer unterschritten',leave:'Jetzt bereitmachen',ready:'Bis zum Losgehen'}[r.state]);
   function renderBoard(){
-    const walk=effectiveWalk(),buffer=minutes($('#buffer-minutes'),15);status('walk-summary',walk===null?'Gehzeit & Puffer einstellen':walk+' Min. Gehzeit + '+(buffer??'–')+' Min. Puffer');
+    const walk=effectiveWalk(),buffer=minutes($('#buffer-minutes'),15);status('walk-summary',walk===null?'Gehzeit & Puffer einstellen':walk+' Min. zu Fuß · '+(buffer??'–')+' Min. Puffer');
     const parent=$('#departure-cards'),list=$('#departure-list');if(!station)return;
     if(!board){parent.replaceChildren();list.replaceChildren();cardKey='';return;}
     const now=Date.now()+boardOffset,stale=now-board.fetchedAt>120000,filter=$('#departure-direction').value;
-    status('board-status',stale?'Prognosen veraltet – Countdown pausiert.':board.departures.filter(e=>e.realtime&&!e.cancelled&&e.departure>now).length+' Abfahrten mit Prognose · Abruf vor '+Math.max(0,Math.floor((now-board.fetchedAt)/1000))+' Sek.');
+    status('board-status',stale?'Prognose veraltet · Countdown pausiert':'');
     $('#board-retry').hidden=!stale;
     if(walkMode==='automatic'&&Date.now()-walkAt>300000)status('walk-status','Standort älter als fünf Minuten. Neu bestimmen oder Gehzeit selbst eintragen.');
     const upcoming=board.departures.filter(e=>e.departure>now&&(!filter||e.directionKey===filter));
@@ -59,7 +59,7 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
     const key=[board.fetchedAt,filter,effectiveWalk(),$('#buffer-minutes').value,stale,...primary.map(e=>e.id),...upcoming.map(e=>e.id)].join('|');
     if(key!==cardKey){cardKey=key;parent.replaceChildren();list.replaceChildren();
       for(const e of primary){const card=el('article','departure-card'),head=el('div','departure-head'),badge=el('span','departure-badge',e.line);badge.style.background=e.color;badge.style.color=e.textColor;head.append(badge,el('h3','',e.headsign));card.append(head,el('strong','leave-countdown','–'),el('p','leave-label',''),el('p','departure-meta','Abfahrt '+time.format(e.departure)+(e.realtime&&e.scheduledDeparture!=null&&e.departure!==e.scheduledDeparture?' · '+(e.departure>e.scheduledDeparture?'+':'')+Math.round((e.departure-e.scheduledDeparture)/60000)+' Min.':'')));card.dataset.event=e.id;const p=platformText({...e.stop,plannedOnly:!e.realtime},e.mode);const platform=[p.label,p.note].filter(Boolean).join(' · ')||e.stop.description;if(platform)card.append(el('p','departure-platform',platform));parent.append(card);}
-      if(!primary.length)parent.append(el('p','monitor-note',upcoming.some(e=>e.cancelled)?'Die gemeldeten Fahrten fallen aus.':'Keine passenden Abfahrten gemeldet. Andere Richtung oder Haltestelle wählen.'));
+      if(!primary.length)parent.append(el('p','monitor-note',upcoming.some(e=>e.cancelled)?'Die gemeldeten Fahrten fallen aus.':'Keine passenden Abfahrten.'));
       for(const e of upcoming){const row=el('div','departure-row'),badge=el('span','departure-badge',e.line);badge.style.background=e.color;badge.style.color=e.textColor;const body=el('span','departure-row-text',e.headsign),note=el('small','','');body.append(note);row.append(badge,body,el('time','',time.format(e.departure)));row.dataset.event=e.id;list.append(row);}
     }
     for(const card of parent.querySelectorAll('[data-event]')){const e=primary.find(e=>e.id===card.dataset.event),r=readiness(e);card.dataset.state=r.state;card.querySelector('.leave-countdown').textContent=['ready','leave'].includes(r.state)?countdown(r.seconds):r.state==='tight'?'Knapp':r.state==='schedule'?'◷':'–';card.querySelector('.leave-label').textContent=label(r);}
@@ -77,11 +77,11 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
     }catch(e){if(controller.signal.aborted)return;if(autoSelect&&!station&&near[0])choose(near[0].feature,false,false);status('walk-status','Fußweg nicht berechenbar. Gehzeit bitte selbst eintragen.');}
   }
   function requestLocation(focus=true){
-    const seq=++geoRevision;$('#locate').disabled=true;$('#location-browser').hidden=true;status('location-status','Standort wird bestimmt. Bitte im Browser freigeben.');
-    const fail=error=>{if(seq!==geoRevision)return;$('#locate').disabled=false;status('location-status',error?.code===1?'Standort nicht freigegeben. Browserfreigabe prüfen oder Halt suchen und Gehzeit eintragen.':'Standort gerade nicht verfügbar. Erneut versuchen oder Haltestelle suchen.');if(error?.code===1){$('#location-browser').href=window.location.origin;$('#location-browser').hidden=false;}};
+    const seq=++geoRevision;$('#locate').disabled=true;$('#location-browser').hidden=true;status('location-status','Standort suchen …');
+    const fail=error=>{if(seq!==geoRevision)return;$('#locate').disabled=false;status('location-status',error?.code===1?'Standort nicht freigegeben. Haltestelle suchen.':'Standort gerade nicht verfügbar. Erneut versuchen oder Haltestelle suchen.');if(error?.code===1){$('#location-browser').href=window.location.origin;$('#location-browser').hidden=false;}};
     if(!navigator.geolocation){fail();return;}
     navigator.geolocation.getCurrentPosition(result=>{
-      if(seq!==geoRevision)return;$('#locate').disabled=false;const p=result.coords,point=[p.latitude,p.longitude],region=cityAt(point);if(!point.every(Number.isFinite)||!Number.isFinite(p.accuracy)||p.accuracy<0||!Number.isFinite(result.timestamp)){fail();return;}location={point,accuracy:p.accuracy,timestamp:result.timestamp};walks.clear();if(walkMode==='automatic'){walkMode='unknown';$('#walk-minutes').value='';renderBoard();}status('location-status','Standort gefunden · Genauigkeit ca. '+Math.round(p.accuracy)+' m');
+      if(seq!==geoRevision)return;$('#locate').disabled=false;const p=result.coords,point=[p.latitude,p.longitude],region=cityAt(point);if(!point.every(Number.isFinite)||!Number.isFinite(p.accuracy)||p.accuracy<0||!Number.isFinite(result.timestamp)){fail();return;}location={point,accuracy:p.accuracy,timestamp:result.timestamp};walks.clear();if(walkMode==='automatic'){walkMode='unknown';$('#walk-minutes').value='';renderBoard();}status('location-status','');
       if(!region){onLocation(location,focus);status('location-status','Hier gibt es noch keine Verkehrsdaten. Aktuell sind Köln, Bonn und Düsseldorf verfügbar.');return;}
       if(region.id!==cityId){onCity(region.id);}else if(network)calculateWalks(!station);onLocation(location,focus);
     },fail,{enableHighAccuracy:false,timeout:12000,maximumAge:30000});

@@ -25,6 +25,7 @@ function notify(title,body){text('#notice-title',title);text('#notice-body',body
 function setFollowing(value){following=value;$('#follow').setAttribute('aria-pressed',String(value));$('#follow').replaceChildren(icon('target'),document.createTextNode(value?'Folgen aktiv':'Fahrt folgen'));}
 function clearSelected(){selected=null;detail=null;detailId=null;detailKey='';detailController?.abort();$('#vehicle-detail').hidden=true;map?.select(null);setFollowing(false);}
 $('#detail-close').onclick=clearSelected;
+$('#journey-fold').addEventListener('toggle',()=>{if(!$('#journey-fold').open)return;const list=$('.journey-stops'),next=list?.querySelector('li:not(.passed)');if(next)list.scrollTop=Math.max(0,next.offsetTop-list.offsetTop-15);});
 $('#follow').onclick=()=>{setFollowing(!following);const v=visible.find(v=>v.id===selected);if(following&&v)map?.follow(v);};
 $('#panel-toggle').onclick=()=>{const open=$('#panel-toggle').getAttribute('aria-expanded')!=='true';$('#panel-toggle').setAttribute('aria-expanded',String(open));$('.overview').classList.toggle('expanded',open);};
 function showInfo(){renderPerformance();$('#info-dialog').showModal();}
@@ -75,14 +76,14 @@ function updateCount(){
   text('#vehicle-count',visible.filter(inView).length);
   if(!isFresh())return;
   const count=vehicleView(candidates.filter(inView));
-  text('#feed-status',count.realtime?`${count.realtime} Fahrten mit aktueller Prognose`:count.total?'Für diese Fahrten fehlen Prognosen':'Keine Fahrten im Ausschnitt');
+  text('#feed-status',count.realtime?`${count.realtime} mit Prognose`:count.total?'Nur Fahrplan':'Keine Fahrten');
   text('#header-status',count.realtime?'Prognosen aktiv':'Keine Prognosen');$('#status-dot').classList.toggle('live',count.realtime>0);
   text('#coverage-info',`${count.realtime} mit Prognose · ${count.schedule} nur Fahrplan${$('#include-schedule').checked?'': ' (ausgeblendet)'}`);
 }
 const delayMinutes=v=>v.segment.scheduledArrival===null?null:Math.round((v.segment.arrival-v.segment.scheduledArrival)/60000);
 const selectionKey=v=>[v.id,v.segment.key,v.segment.arrival,v.segment.observedAt,v.quality,v.state,v.dwell?.arrival,v.dwell?.departure,v.dwell?.kind,v.segment.from.track,v.segment.to.track].join('|');
 const duration=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return s<60?s+' Sek.':Math.floor(s/60)+' Min.'+(s%60?' '+s%60+' Sek.':'');};
-function updateDwell(v){const node=$('#dwell-remaining');if(node&&v.dwell)node.textContent='Abfahrt '+(v.quality==='realtime'?'voraussichtlich':'laut Fahrplan')+' in '+duration(v.dwell.departure-Date.now()-offset);}
+function updateDwell(v){const node=$('#dwell-remaining');if(node&&v.dwell)node.textContent='Ⅱ Abfahrt in '+duration(v.dwell.departure-Date.now()-offset);}
 function renderPlatforms(v){
   const context={detail,detailId,now:Date.now()+offset,fetchedAt:snapshot?.fetchedAt};
   const stops={from:platformForStop(v,'from',context),to:platformForStop(v,'to',context)};
@@ -91,16 +92,18 @@ function renderPlatforms(v){
   for(const side of ['from','to']){const row=$('#platform-'+side);if(!row)continue;const p=platformText(stops[side],v.mode);row.textContent=[p.label,p.note].filter(Boolean).join(' · ');row.classList.toggle('changed',p.changed);row.hidden=!p.label;}
 }
 function showDetails(v,{reload=true}={}){
-  const changed=selected!==v.id;if(changed){detail=null;detailId=null;setFollowing(false);$('#follow').disabled=false;}
+  const changed=selected!==v.id;if(changed){detail=null;detailId=null;$('#journey-fold').open=false;$('#trip-alert').hidden=true;setFollowing(false);$('#follow').disabled=false;}
   selected=v.id;detailKey=selectionKey(v);$('#vehicle-detail').hidden=false;
   const parent=$('#detail-content');parent.replaceChildren();const badge=element('span','detail-line',v.line);badge.style.setProperty('--line-color',v.color);badge.style.setProperty('--line-text',v.textColor);
   const platform=element('div','detail-platform');platform.id='detail-platform';platform.setAttribute('role','status');
-  parent.append(badge,element('span','detail-type',transportModes.find(m=>m.id===v.mode)?.name),element('p','detail-direction',v.state==='stopped'?(v.dwell?.kind==='estimated'?'HALT GESCHÄTZT':'VORAUSSICHTLICH AM HALT'):'NÄCHSTER HALT'),element('h2','',cleanName(v.state==='stopped'?v.segment.from.name:v.segment.to.name)),platform,element('span','detail-quality'+(v.quality==='schedule'?' planned':''),v.quality==='realtime'?'≈ Position mit Prognose':'◷ Position nach Fahrplan'));
-  const rows=element('div','stop-progress'),times=v.dwell?[[v.dwell.kind==='estimated'?'Ankunft geschätzt':'Ankunft am Halt',v.dwell.arrival,'previous'],['Abfahrt vom Halt',v.dwell.departure,'next']]:[[cleanName(v.segment.from.name),v.segment.departure,'previous'],[cleanName(v.segment.to.name),v.segment.arrival,'next']];
+  const quality=element('button','detail-quality'+(v.quality==='schedule'?' planned':''),v.quality==='realtime'?'≈ Geschätzt':'◷ Fahrplan');quality.onclick=showInfo;quality.setAttribute('aria-label',v.quality==='realtime'?'Position aus Prognosen geschätzt. Dateninfo öffnen':'Position nach Fahrplan. Dateninfo öffnen');
+  parent.append(badge,element('span','detail-type',transportModes.find(m=>m.id===v.mode)?.name),element('p','detail-direction',v.state==='stopped'?'AM HALT':'NÄCHSTER HALT'),element('h2','',cleanName(v.state==='stopped'?v.segment.from.name:v.segment.to.name)),platform,quality);
+  const rows=element('div','stop-progress'),times=v.dwell?[[v.dwell.kind==='estimated'?'Ankunft ≈':'Ankunft',v.dwell.arrival,'previous'],['Abfahrt',v.dwell.departure,'next']]:[[cleanName(v.segment.from.name),v.segment.departure,'previous'],[cleanName(v.segment.to.name),v.segment.arrival,'next']];
   for(const [label,ts,cls]of times){const row=element('div','stop-row '+cls),labelNode=element('span','stop-label',label);if(!v.dwell){const p=element('small','stop-platform');p.id='platform-'+(cls==='previous'?'from':'to');labelNode.append(p);}row.append(labelNode,element('time','',time(ts)));rows.append(row);}parent.append(rows);renderPlatforms(v);
-  if(v.dwell){parent.append(element('p','delay','Aufenthalt '+(v.dwell.kind==='estimated'?'geschätzt':v.quality==='realtime'?'laut Prognose':'laut Fahrplan')+': '+(v.dwell.kind==='estimated'?'etwa ':'')+duration(v.dwell.durationMs)));const remaining=element('p','delay');remaining.id='dwell-remaining';parent.append(remaining);updateDwell(v);if(v.dwell.kind==='estimated')parent.append(element('p','delay','Die Quelle liefert dieselbe Ankunfts- und Abfahrtsminute. Die Standzeit ist modelliert, nicht gemessen.'));}
-  const delay=delayMinutes(v);parent.append(element('p','delay'+(v.quality==='realtime'&&delay>0?' is-late':''),v.quality==='schedule'?'Verspätung unbekannt':delay===null?'Aktuelle Ankunftsprognose':delay>0?`+${delay} Min. später als geplant`:delay<0?`${-delay} Min. früher als geplant`:'Ankunft laut Prognose pünktlich'));
-  if(v.segment.geometry!=='shape')parent.append(element('p','delay','Streckenabschnitt fehlt. Position auf direkter Verbindung geschätzt.'));
+  if(v.dwell){const remaining=element('p','dwell-status');remaining.id='dwell-remaining';parent.append(remaining);updateDwell(v);if(v.dwell.kind==='estimated')parent.append(element('span','dwell-estimate','≈ Halt geschätzt'));}
+  const delay=delayMinutes(v);if(v.quality==='realtime'&&delay!==null)parent.append(element('p','delay'+(delay>0?' is-late':''),delay>0?`+${delay} Min.`:delay<0?`${delay} Min.`:'Pünktlich'));
+  if(v.segment.geometry!=='shape'){const note=element('button','geometry-note','≈ Direkte Verbindung');note.title='Streckenform fehlt. Dateninfo öffnen';note.onclick=showInfo;parent.append(note);}
+
   selectPath(v);if(changed||reload&&!detail)loadDetail(v);else if(detail)renderJourney();
 }
 function selectPath(v){
@@ -110,11 +113,11 @@ function selectPath(v){
 }
 async function loadDetail(v){
   detailController?.abort();const controller=new AbortController();detailController=controller;const rev=revision,id=v.id;const parent=$('#journey-detail');parent.replaceChildren(element('p','','Fahrtverlauf wird geladen …'));
-  try{const r=await fetch(`/api/trip?city=${city.id}&id=${encodeURIComponent(id)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(rev!==revision||selected!==id||controller.signal.aborted)return;if(!r.ok)throw Error(data.error||'Fahrtverlauf nicht erreichbar');detail=data;detailId=id;if(data.cancelled)cancelled.set(id,Date.now());renderJourney();const current=visible.find(x=>x.id===id)||v;renderPlatforms(current);selectPath(current);if(data.cancelled){map?.update(visible.filter(x=>x.id!==id));$('#follow').disabled=true;}else $('#follow').disabled=false;
-  }catch(e){if(controller.signal.aborted||rev!==revision||selected!==id)return;detail=null;detailId=null;const current=visible.find(x=>x.id===id)||v;renderPlatforms(current);selectPath(current);parent.replaceChildren(element('p','',e.name==='TimeoutError'?'Der Fahrtverlauf braucht gerade zu lange.':e.message));const retry=element('button','text-button','Verlauf erneut laden');retry.onclick=()=>loadDetail(v);parent.append(retry);}
+  try{const r=await fetch(`/api/trip?city=${city.id}&id=${encodeURIComponent(id)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(rev!==revision||selected!==id||controller.signal.aborted)return;if(!r.ok)throw Error(data.error||'Fahrtverlauf nicht erreichbar');detail=data;detailId=id;if(data.cancelled)cancelled.set(id,Date.now());renderJourney();const current=visible.find(x=>x.id===id)||v;renderPlatforms(current);selectPath(current);if(data.cancelled){map?.update(visible.filter(x=>x.id!==id),undefined,undefined,{discard:[id]});$('#follow').disabled=true;}else $('#follow').disabled=false;
+  }catch(e){if(controller.signal.aborted||rev!==revision||selected!==id)return;detail=null;detailId=null;$('#trip-alert').hidden=true;text('#journey-summary','Fahrtverlauf');const current=visible.find(x=>x.id===id)||v;renderPlatforms(current);selectPath(current);parent.replaceChildren(element('p','',e.name==='TimeoutError'?'Der Fahrtverlauf braucht gerade zu lange.':e.message));const retry=element('button','text-button','Verlauf erneut laden');retry.onclick=()=>loadDetail(v);parent.append(retry);}
 }
 function renderJourney(){
-  if(!detail)return;const parent=$('#journey-detail');parent.replaceChildren();
+  if(!detail)return;const parent=$('#journey-detail');parent.replaceChildren();const notice=$('#trip-alert');notice.hidden=!detail.cancelled&&!detail.alerts.length;notice.textContent=detail.cancelled?'Fahrt entfällt':detail.alerts[0]?.title||'Hinweis zu dieser Fahrt';text('#journey-summary','Fahrtverlauf'+(detail.alerts.length?' · '+detail.alerts.length+' Hinweise':''));
   parent.append(element('h3','',detail.cancelled?'Fahrt entfällt':'Richtung '+cleanName(detail.headsign)),element('p','operator',detail.agency||'Betreiber nicht mitgeliefert'));
   for(const a of detail.alerts){parent.append(element('div','journey-alert',[a.title,a.body].filter(Boolean).join('\n')));}
   const now=Date.now()+offset,list=element('ol','journey-stops');
@@ -126,13 +129,13 @@ function draw(forceList=false){
   viewBounds=map?.getBounds()??null;
   const now=Date.now()+offset;for(const[id,ts]of cancelled)if(Date.now()-ts>120000)cancelled.delete(id);
   candidates=isFresh()?vehiclesAt(trips,now,snapshot.fetchedAt).filter(v=>filters(v)&&pointInBounds([v.lat,v.lon],city.bounds)&&!cancelled.has(v.id)):[];
-  visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;map?.update(visible,snapshot?.fetchedAt,now);
+  visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;map?.update(visible,snapshot?.fetchedAt,now,{immediate:!isFresh()});
   if(selected){const v=visible.find(v=>v.id===selected);if(!v&&!cancelled.has(selected))clearSelected();else if(v){if(detailKey!==selectionKey(v))showDetails(v,{reload:false});updateDwell(v);if(following)map?.follow(v);}}
   updateCount();if(tab==='vehicles'&&(forceList||Date.now()-lastList>10000)){lastList=Date.now();renderVehicleList();}
   if(snapshot&&!isFresh()){
     text('#feed-status','Daten veraltet · Positionen ausgeblendet');text('#header-status','Daten veraltet');$('#status-dot').classList.remove('live');text('#coverage-info','Warte auf aktuelle Fahrtdaten.');notify('Warte auf aktuelle Fahrtdaten','Die letzten Positionen sind zu alt. Wir verbinden uns automatisch erneut.');
   }
-  if(detail&&!freshDetail(detail,now)){detail=null;detailId=null;$('#journey-detail').replaceChildren(element('p','','Fahrtverlauf veraltet. Wird beim nächsten Datenabruf erneuert.'));const v=visible.find(v=>v.id===selected);if(v){renderPlatforms(v);selectPath(v);}}
+  if(detail&&!freshDetail(detail,now)){detail=null;detailId=null;$('#trip-alert').hidden=true;$('#journey-detail').replaceChildren(element('p','','Fahrtverlauf veraltet. Wird beim nächsten Datenabruf erneuert.'));const v=visible.find(v=>v.id===selected);if(v){renderPlatforms(v);selectPath(v);}}
 }
 async function refresh(){
   if(loading||document.hidden)return;loading=true;const rev=revision,started=performance.now();requestController=new AbortController();const controller=requestController;$('#retry').disabled=true;

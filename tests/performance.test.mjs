@@ -27,19 +27,59 @@ test('animation slows down under sustained load and recovers after sustained hea
 
 function harness(){
   let now=Date.parse('2026-09-05T12:00:00Z'),ms=0,seq=0,pan=0;const tasks=new Map(),listeners=new Map(),handlers=new Map(),draws=[];
-  const context={setTransform(){},scale(){},clearRect(){draws.length=0;},beginPath(){},arc(){},fill(){},stroke(){},fillText(){},drawImage(_node,x,y){draws.push({x,y});}};
+  const context={globalAlpha:1,setTransform(){},scale(){},clearRect(){draws.length=0;},beginPath(){},arc(){},fill(){},stroke(){},fillText(){},drawImage(_node,x,y){draws.push({x,y,alpha:this.globalAlpha});}};
   const doc={hidden:false,createElement:()=>({style:{},setAttribute(){},getContext:()=>({...context}),remove(){}}),addEventListener:(e,f)=>listeners.set(e,f),removeEventListener:e=>listeners.delete(e)};
   const map={getCanvas:()=>({clientWidth:1000,clientHeight:800}),getCanvasContainer:()=>({appendChild(){}}),getZoom:()=>12,getBounds:()=>({contains:()=>true}),project:([lon,lat])=>({x:500+(lon-7)*1000+pan,y:400+(lat-51)*1000}),isMoving:()=>false,on:(e,f)=>handlers.set(e,f),off:e=>handlers.delete(e)};
   const layer=createVehicleLayer(map,{document:doc,clock:()=>now,perf:{now:()=>ms},raf:f=>{tasks.set(++seq,f);return seq;},caf:id=>tasks.delete(id)});
   const trips=prepareTrips(Array.from({length:500},(_,i)=>({id:'t'+i,line:String(i%5),mode:'tram',color:'#ff0000',textColor:'#ffffff',quality:'realtime',segments:[{departure:now,arrival:now+60000,realtime:true,points:[[51,7],[51,7.06]],from:{id:'a'},to:{id:'b'}}]})));
-  return {layer,trips,doc,tasks,listeners,draws,map,handlers,now:()=>now,setTime:(n,t)=>{now=n;ms=t;},pan:x=>{pan=x;}};
+  return {layer,trips,doc,tasks,listeners,draws,map,handlers,now:()=>now,setTime:(n,t)=>{now=n;ms=t;},frame:()=>{const pending=[...tasks.values()];tasks.clear();for(const f of pending)f(ms);},pan:x=>{pan=x;}};
 }
 test('500 vehicles reuse five sprites and animate without source rebuilds or network requests',()=>{
-  const h=harness(),start=h.now();h.layer.update(h.trips,start,start);assert.equal(h.layer.stats().visible,500);assert.equal(h.layer.stats().sprites,5);assert.equal(h.layer.hitTest({x:500,y:400}),'t0');
+  const h=harness(),start=h.now();h.layer.update(h.trips,start,start);h.setTime(start+500,500);h.frame();assert.equal(h.layer.stats().visible,500);assert.equal(h.layer.stats().sprites,5);assert.equal(h.layer.hitTest({x:500,y:400}),'t0');
   h.setTime(start+30000,30000);h.layer.update(h.trips,start,start+30000);assert.equal(h.layer.hitTest({x:530,y:400}),'t0');assert.equal(h.layer.stats().sprites,5);assert.equal(h.tasks.size,1);h.layer.destroy();assert.equal(h.tasks.size,0);
 });
 test('hidden tabs cancel animation, expired snapshots clear hit targets, and region bounds clip vehicles',()=>{
   const h=harness(),start=h.now();h.layer.update(h.trips,start,start);h.doc.hidden=true;h.listeners.get('visibilitychange')();assert.equal(h.tasks.size,0);assert.equal(h.layer.hitTest({x:500,y:400}),null);
   h.doc.hidden=false;h.setTime(start+121000,121000);h.listeners.get('visibilitychange')();assert.equal(h.layer.stats().visible,0);
   h.setTime(start,0);h.layer.setBounds([[50,6],[50.5,6.5]]);h.layer.update(h.trips,start,start);assert.equal(h.layer.stats().visible,0);h.layer.destroy();
+});
+test('new icons fade in once; polling does not restart their opacity',()=>{
+  const h=harness(),start=h.now(),v=h.trips.slice(0,1);h.layer.update(v,start,start);
+  assert.equal(h.draws[0].alpha,0);assert.equal(h.layer.hitTest({x:500,y:400}),null);
+  h.setTime(start+225,225);h.frame();assert.equal(h.draws[0].alpha,.5);
+  h.layer.update(v,start,start+225);assert.equal(h.draws[0].alpha,.5);
+  h.setTime(start+450,450);h.frame();assert.equal(h.draws[0].alpha,1);h.layer.destroy();
+});
+test('terminal icons reach their endpoint and fade out without motion or hit targets',()=>{
+  const h=harness(),start=h.now(),v=h.trips.slice(0,1);h.layer.update(v,start,start);
+  h.setTime(start+59900,59900);h.frame();
+  h.setTime(start+60050,60050);h.frame();const endpoint={...h.draws[0]};assert.equal(endpoint.alpha,1);
+  assert.equal(h.layer.hitTest({x:560,y:400}),null);
+  h.setTime(start+60375,60375);h.layer.update([],start,start+60375);
+  assert.equal(h.draws[0].x,endpoint.x);assert.equal(h.draws[0].y,endpoint.y);assert.equal(h.draws[0].alpha,.5);
+  h.setTime(start+60700,60700);h.frame();assert.equal(h.draws.length,0);assert.equal(h.layer.stats().transitions,0);assert.equal(h.tasks.size,0);h.layer.destroy();
+});
+test('a removed and returning ID reverses its fade instead of drawing two icons',()=>{
+  const h=harness(),start=h.now(),v=h.trips.slice(0,1);h.layer.update(v,start,start);
+  h.setTime(start+1000,1000);h.frame();h.layer.update([],start,start+1000);
+  h.setTime(start+1325,1325);h.frame();assert.equal(h.draws[0].alpha,.5);
+  h.layer.update(v,start,start+1325);assert.equal(h.draws.length,1);assert.equal(h.draws[0].alpha,.5);
+  h.setTime(start+1775,1775);h.frame();assert.equal(h.draws[0].alpha,1);assert.equal(h.layer.stats().transitions,1);h.layer.destroy();
+});
+test('outages, expired observations, cancellations and city changes remove exits immediately',()=>{
+  for(const reason of ['outage','stale','cancelled','city']){
+    const h=harness(),start=h.now(),v=h.trips.slice(0,1);h.layer.update(v,start,start);h.setTime(start+1000,1000);h.frame();
+    if(reason==='outage')h.layer.update([],start,start+1000,{immediate:true});
+    if(reason==='cancelled')h.layer.update([],start,start+1000,{discard:['t0']});
+    if(reason==='stale'){h.layer.update([],start,start+1000);h.setTime(start+121000,121000);h.frame();}
+    if(reason==='city'){h.layer.setBounds([[50,6],[52,8]]);h.layer.setBounds([[53,6],[54,8]]);}
+    assert.equal(h.draws.length,0,reason);assert.equal(h.layer.stats().transitions,0,reason);h.layer.destroy();
+  }
+});
+test('reduced motion skips fades and rapid filter churn bounds retained exits',()=>{
+  const before=globalThis.matchMedia;globalThis.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
+  try{const h=harness(),start=h.now();h.layer.update(h.trips.slice(0,1),start,start);assert.equal(h.draws[0].alpha,1);h.layer.update([],start,start);assert.equal(h.draws.length,0);h.layer.destroy();}finally{globalThis.matchMedia=before;}
+  const h=harness(),start=h.now();h.layer.update(h.trips,start,start);h.setTime(start+500,500);h.frame();
+  for(let batch=0;batch<4;batch++){const next=h.trips.map(v=>({...v,id:v.id+'-'+batch}));h.layer.update(next,start,start+500);assert.ok(h.layer.stats().transitions<=1012);}
+  h.layer.destroy();assert.equal(h.tasks.size,0);
 });
