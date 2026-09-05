@@ -1,0 +1,18 @@
+{
+  "name": "rheinlive",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "K\u00f6lns Stadtbahnen auf einer offenen Karte",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "start": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check public/app.js && node --check lib/transit.mjs && node --check lib/api.mjs && node --check worker.mjs"
+  }
+}

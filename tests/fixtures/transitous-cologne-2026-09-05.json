@@ -1,0 +1,350 @@
+{
+  "kind": "historical-live-capture-test-only",
+  "requestedAt": 1788598117516,
+  "receivedAt": 1788598118465,
+  "source": "https://api.transitous.org/api/v6/map/trips?min=50.8%2C6.76&max=51.1%2C7.18&zoom=14&startTime=2026-09-05T08%3A47%3A00.000Z&endTime=2026-09-05T08%3A50%3A00.000Z&precision=5&language=de",
+  "licenseUrl": "https://transitous.org/sources/",
+  "data": [
+    {
+      "trips": [
+        {
+          "tripId": "20260905_10:04_de-DELFI_3380412714",
+          "displayName": "18"
+        }
+      ],
+      "routeColor": "85d1f5",
+      "mode": "TRAM",
+      "distance": 29464.65625,
+      "from": {
+        "name": "Brühl Mitte",
+        "stopId": "de-DELFI_de:05362:84110:1:11",
+        "importance": 0.00012931290257256478,
+        "lat": 50.82918,
+        "lon": 6.899088,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "17",
+        "track": "17",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Brühl Nord",
+        "stopId": "de-DELFI_de:05362:84109:1:11",
+        "importance": 0.00008634079858893529,
+        "lat": 50.835102000000006,
+        "lon": 6.901801000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "13",
+        "track": "13",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T08:46:00Z",
+      "arrival": "2026-09-05T08:47:00Z",
+      "scheduledDeparture": "2026-09-05T08:34:00Z",
+      "scheduledArrival": "2026-09-05T08:35:00Z",
+      "realTime": true,
+      "polyline": "kqfuH_nbi@aAOoB]YCa@I_@I_@IQGECa@MUMQKSK_@Wc@UWQkAq@oIaFa@S]MIEUEKCUCYE_@Am@AY?"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_10:04_de-DELFI_3380412714",
+          "displayName": "18"
+        }
+      ],
+      "routeColor": "85d1f5",
+      "mode": "TRAM",
+      "distance": 29464.65625,
+      "from": {
+        "name": "Brühl Nord",
+        "stopId": "de-DELFI_de:05362:84109:1:11",
+        "importance": 0.00008634079858893529,
+        "lat": 50.835102000000006,
+        "lon": 6.901801000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "13",
+        "track": "13",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Vochem Brühl-Vochem",
+        "stopId": "de-DELFI_de:05362:84611:1:11",
+        "importance": 0.000044778917072108015,
+        "lat": 50.84426499999999,
+        "lon": 6.901181,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "14",
+        "track": "14",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T08:47:00Z",
+      "arrival": "2026-09-05T08:49:00Z",
+      "scheduledDeparture": "2026-09-05T08:35:00Z",
+      "scheduledArrival": "2026-09-05T08:37:00Z",
+      "realTime": true,
+      "polyline": "kvguHc_ci@aAAI?I?gDEe@@gBDgBPq@Lw@RcBh@iErBwBbAkAh@}@T}@FS?O?[Ae@G]IWGy@WwAe@gDeAk@UYKWMi@U"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_10:04_de-DELFI_3380412714",
+          "displayName": "18"
+        }
+      ],
+      "routeColor": "85d1f5",
+      "mode": "TRAM",
+      "distance": 29464.65625,
+      "from": {
+        "name": "Vochem Brühl-Vochem",
+        "stopId": "de-DELFI_de:05362:84611:1:11",
+        "importance": 0.000044778917072108015,
+        "lat": 50.84426499999999,
+        "lon": 6.901181,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "14",
+        "track": "14",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Hürth Fischenich",
+        "stopId": "de-DELFI_de:05362:83711:1:11",
+        "importance": 0.00006336622755043209,
+        "lat": 50.864937,
+        "lon": 6.897561,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "15",
+        "track": "15",
+        "description": "Fischenich",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T08:49:00Z",
+      "arrival": "2026-09-05T08:52:00Z",
+      "scheduledDeparture": "2026-09-05T08:37:00Z",
+      "scheduledArrival": "2026-09-05T08:40:00Z",
+      "realTime": true,
+      "polyline": "uoiuHk{bi@sEsBaH}C]M]M[M[I[EQEQAQCWAY?Y?a@Bc@Da@Da@DmPrBeALOBe@F_@Fu@Ni@NODKBa@P_@Nc@T_@R_@Tg@^_@X]ZgAbAg@`@_@T]Rc@RQHUHOFMBYFYFQBYBa@@a@Ac@Ag@Ee@I_AM[Ca@EYAQA[A[@I?K?a@@]B]Dc@FWB_Ej@gBTe@Hi@JWDe@Le@Lg@N_@L[JyClAg@Ps@ZWJOD{An@m@V_@P_@Po@\\i@Z"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_10:13_de-DELFI_3380412006",
+          "displayName": "18"
+        }
+      ],
+      "routeColor": "85d1f5",
+      "mode": "TRAM",
+      "distance": 9798.5888671875,
+      "from": {
+        "name": "Köln Riehl Boltensternstr.",
+        "stopId": "de-DELFI_de:05315:15112:1:11",
+        "importance": 0.000059701113059418276,
+        "lat": 50.962414,
+        "lon": 6.981060000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "13",
+        "track": "13",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM"
+        ]
+      },
+      "to": {
+        "name": "Köln Riehl Slabystr.",
+        "stopId": "de-DELFI_de:05315:15113:1:11",
+        "importance": 0.00011202850146219134,
+        "lat": 50.966100000000004,
+        "lon": 6.987824,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "19",
+        "track": "19",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM"
+        ]
+      },
+      "departure": "2026-09-05T08:47:00Z",
+      "arrival": "2026-09-05T08:48:00Z",
+      "scheduledDeparture": "2026-09-05T08:40:00Z",
+      "scheduledArrival": "2026-09-05T08:41:00Z",
+      "realTime": true,
+      "polyline": "cr`vHqnri@g@}AeBmFcAaDuBwGm@mBY{@o@yB]cAWq@]o@]a@_@Y]UOGUIUEk@MGC"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_10:13_de-DELFI_3380412006",
+          "displayName": "18"
+        }
+      ],
+      "routeColor": "85d1f5",
+      "mode": "TRAM",
+      "distance": 9798.5888671875,
+      "from": {
+        "name": "Köln Riehl Slabystr.",
+        "stopId": "de-DELFI_de:05315:15113:1:11",
+        "importance": 0.00011202850146219134,
+        "lat": 50.966100000000004,
+        "lon": 6.987824,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "19",
+        "track": "19",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM"
+        ]
+      },
+      "to": {
+        "name": "Köln Mülheim Wiener Platz",
+        "stopId": "de-DELFI_de:05315:19211:1:11",
+        "importance": 0.00035330464015714824,
+        "lat": 50.961510000000004,
+        "lon": 7.005152,
+        "level": -2,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "18",
+        "track": "18",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T08:48:00Z",
+      "arrival": "2026-09-05T08:51:00Z",
+      "scheduledDeparture": "2026-09-05T08:41:00Z",
+      "scheduledArrival": "2026-09-05T08:44:00Z",
+      "realTime": true,
+      "polyline": "ciavH}xsi@GAQISOEEGKGKGKCKEKAGCKAOAO?O?Q?O@KDQBODOFMFMDIHMXc@HOJSL[DKBMBI@EDKDYd@wBzKsh@fDePfBsJ\\cCD]PwAJ{@NeAF[F[Hg@DUPu@Ja@DO"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_10:17_de-DELFI_3380394957",
+          "displayName": "7"
+        }
+      ],
+      "routeColor": "f08d52",
+      "mode": "TRAM",
+      "distance": 13256.828125,
+      "from": {
+        "name": "Köln Poll Raiffeisenstr.",
+        "stopId": "de-DELFI_de:05315:17015:1:11",
+        "importance": 0.00005141382644069381,
+        "lat": 50.91991,
+        "lon": 6.986036,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "13",
+        "track": "13",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Poll Salmstr.",
+        "stopId": "de-DELFI_de:05315:17013:1:11",
+        "importance": 0.00008603918104199693,
+        "lat": 50.916092,
+        "lon": 6.993169000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "13",
+        "track": "13",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T08:46:00Z",
+      "arrival": "2026-09-05T08:48:00Z",
+      "scheduledDeparture": "2026-09-05T08:39:00Z",
+      "scheduledArrival": "2026-09-05T08:41:00Z",
+      "realTime": true,
+      "polyline": "mhxuHwmsi@LWBGJWHMVk@JSHOZu@^s@Xk@\\i@j@{@JQLOb@q@v@gATY^_@`@]j@g@p@i@VWZ_@DEHOHKBIFMRe@Vo@DM\\w@Na@DKN_@R]NULSBKBKBK@M?QAIAIEYKo@Ki@UgA"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_10:17_de-DELFI_3380394957",
+          "displayName": "7"
+        }
+      ],
+      "routeColor": "f08d52",
+      "mode": "TRAM",
+      "distance": 13256.828125,
+      "from": {
+        "name": "Köln Poll Salmstr.",
+        "stopId": "de-DELFI_de:05315:17013:1:11",
+        "importance": 0.00008603918104199693,
+        "lat": 50.916092,
+        "lon": 6.993169000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "13",
+        "track": "13",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Poll Baumschulenweg",
+        "stopId": "de-DELFI_de:05315:17014:1:11",
+        "importance": 0.00004887181057711132,
+        "lat": 50.91493,
+        "lon": 6.999798000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "13",
+        "track": "13",
+        "description": "Bahnsteig 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T08:48:00Z",
+      "arrival": "2026-09-05T08:50:00Z",
+      "scheduledDeparture": "2026-09-05T08:41:00Z",
+      "scheduledArrival": "2026-09-05T08:43:00Z",
+      "realTime": true,
+      "polyline": "spwuHgzti@Ia@Qw@Ow@Ec@CSC[C]Ca@Ae@A_A?e@@i@@k@Do@LoAHe@He@Je@\\gAv@cCx@aCxAmEJY"
+    }
+  ]
+}

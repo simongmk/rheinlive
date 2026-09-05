@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101c24"><title>Rheinlive · Köln in Bewegung</title>
+<meta name="description" content="Kölns Stadtbahnen auf einer offenen Karte. Bewegte Fahrten, Linien und nächste Halte – mit transparenter Positionsqualität.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/style.css">
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script type="module" src="/app.js"></script>
+</head>
+<body>
+<main class="app">
+<div id="map" aria-label="Interaktive Karte der Kölner Stadtbahn"></div>
+<div id="map-error" class="map-error" hidden>Karte konnte nicht geladen werden. Prüfe deine Internetverbindung und lade die Seite erneut.</div>
+<header class="topbar">
+<a class="brand" href="/" aria-label="Rheinlive Startseite"><span class="brand-mark" aria-hidden="true">r<span>•</span></span><span>rheinlive<span class="brand-dot">.</span></span></a>
+<div class="city"><span class="city-pin" aria-hidden="true">◉</span>Köln<span class="region">Stadtbahn</span></div>
+<button class="icon-button info-button" id="info-open" aria-label="Über die Daten und die App" title="Über die Daten">i</button>
+</header>
+<aside class="overview" aria-label="Fahrtenübersicht">
+<div class="eyebrow"><span class="status-dot" id="status-dot"></span><span id="feed-status" role="status">DATEN WERDEN GELADEN</span></div>
+<div class="clock-row"><time id="clock">--:--</time><span class="clock-seconds" id="clock-seconds">--</span></div>
+<p id="date" class="date">Köln · Europe/Berlin</p>
+<div class="count-row"><strong id="vehicle-count">–</strong><span>Fahrten auf<br>der Karte</span><span class="train-glyph" aria-hidden="true">▥</span></div>
+<button class="quality-link" id="quality-open"><span class="quality-symbol">≈</span><span id="quality-label">Positionen sind berechnet</span><span aria-hidden="true">↗</span></button>
+<label class="schedule-option"><input id="include-schedule" type="checkbox">Auch Fahrplanfahrten zeigen</label>
+<p id="coverage-info" class="coverage-info">Fahrten ohne Echtzeitprognose sind ausgeblendet.</p>
+<div class="line-heading"><span>LINIEN</span><button id="all-lines" type="button">Alle zeigen</button></div>
+<div id="lines" class="lines" aria-label="Linien auf der Karte auswählen"></div>
+<p id="refresh-label" class="refresh-label">Verbinde mit der Datenquelle …</p>
+</aside>
+<div class="map-controls" aria-label="Kartensteuerung">
+<button id="zoom-in" class="icon-button" aria-label="Karte vergrößern" title="Vergrößern">+</button>
+<button id="zoom-out" class="icon-button" aria-label="Karte verkleinern" title="Verkleinern">−</button>
+<span class="control-separator"></span>
+<button id="recenter" class="icon-button" aria-label="Ganzes Kölner Netz anzeigen" title="Netz zentrieren">⌖</button>
+</div>
+<section id="vehicle-detail" class="vehicle-detail" aria-label="Ausgewählte Fahrt" hidden><button id="detail-close" class="close-button" aria-label="Fahrtdetails schließen">×</button><div id="detail-content"></div></section>
+<div class="bottom-note"><span class="moving-dot" aria-hidden="true"></span><span>Köln in Bewegung</span><span class="note-divider">/</span><span>Offene Karte. Offene Daten.</span></div>
+<div class="notice" id="notice" role="status" hidden><strong id="notice-title"></strong><p id="notice-body"></p><button id="retry">Erneut laden <span aria-hidden="true">↻</span></button></div>
+</main>
+<dialog id="info-dialog" aria-labelledby="info-title">
+<div class="dialog-body"><button id="info-close" class="close-button" aria-label="Information schließen">×</button>
+<span class="eyebrow">GUT ZU WISSEN</span><h1 id="info-title">Wo ist die Bahn<br><em>wirklich?</em></h1>
+<p>Rheinlive zeigt die Kölner Stadtbahn auf einer offenen Karte. Die Position einer Fahrt wird aus den verfügbaren Fahrtdaten berechnet.</p>
+<div class="explanation"><span class="explanation-icon">≈</span><div><h2>Mit Echtzeitprognose</h2><p>Aktuelle Ankunfts- und Abfahrtszeiten verschieben die Fahrt auf ihrer Strecke. Die Position dazwischen ist eine Schätzung, kein GPS-Messpunkt.</p></div></div>
+<div class="explanation"><span class="explanation-icon planned">◷</span><div><h2>Nach Fahrplan</h2><p>Ohne aktuelle Prognose folgt die Fahrt dem Sollfahrplan. Ob sie tatsächlich fährt oder verspätet ist, ist dann unbekannt. Diese Fahrten sind standardmäßig ausgeblendet. Mit „Auch Fahrplanfahrten zeigen“ erscheinen sie mit gestricheltem Rand.</p></div></div>
+<p class="data-warning">Die verwendete Schnittstelle liefert Fahrtabschnitte und Zeiten, keine GPS-Messpunkte. Auch mit Echtzeitprognosen können Ausfälle, Umleitungen und Datenlücken fehlen. Bitte prüfe verbindliche Abfahrten bei der KVB.</p>
+<h2>Quellen &amp; offene Software</h2>
+<p><a class="source-code" href="https://github.com/simongmk/rheinlive" target="_blank" rel="noreferrer">Quellcode &amp; Feedback auf GitHub ↗</a></p>
+<ul class="sources"><li><a href="https://transitous.org/sources/" target="_blank" rel="noreferrer">Verkehrsdaten und ihre jeweiligen Lizenzen: Transitous ↗</a></li><li><a href="https://transitous.org/" target="_blank" rel="noreferrer">Offene Fahrplanauskunft: Transitous / MOTIS ↗</a></li><li><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">Kartendaten: OpenStreetMap-Mitwirkende (ODbL) ↗</a></li><li><a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Kartenbibliothek: Leaflet (BSD-2-Clause) ↗</a></li></ul>
+<p class="fine-print" id="dataset-info">Fahrtdaten werden geladen.</p><p class="fine-print">Das Alter der ursprünglichen Prognose wird von dieser Schnittstelle nicht mitgeliefert. Die App zeigt den Zeitpunkt ihrer letzten Abfrage. Eigenständiges Projekt. Kein offizielles Angebot der KVB oder des VRS. App-Code: MIT-Lizenz.</p>
+</div></dialog>
+</body></html>
