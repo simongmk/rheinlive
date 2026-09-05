@@ -64,6 +64,16 @@ Fahrtdaten nicht ein. Die Kölner lokale API lieferte bei der Messung um 12:55 U
 557 Fahrten in 1,92 MB JSON und 286 ms einschließlich Antwortlesen. Das ist eine
 Momentaufnahme, kein zugesagtes Ladezeit-Ziel.
 
+Nach der Veröffentlichung wurde das Kölner Startnetz außerdem direkt über die
+private Site gemessen: HTTP 200, gzip, Cache HIT, **121.140 tatsächlich übertragene
+Bytes**, erster Antwort-Byte nach 1.536 ms, vollständig nach 1.555 ms. Diese
+authentifizierte HTTP-Abfrage misst ein einzelnes Netz-Artefakt und den Zugriff
+über den Hoster, nicht die Ladezeit der gesamten Browseransicht. Die separat
+geprüften Busdateien lagen bei 1,57–2,07 s. Es gibt deshalb weiterhin messbaren
+Netzwerk-/Hosting-Overhead; kleine Dateien allein garantieren kein sofortiges
+Rendering. Die Anzeige im Informationsdialog ergänzt diese Server-Stichprobe
+um Messungen auf dem tatsächlich verwendeten Gerät.
+
 ## CPU-Prüfung und laufende Messwerte
 
 Mit derselben aktuellen Kölner Antwort wurden 300 Interpolationsschritte nach
