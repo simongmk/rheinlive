@@ -236,3 +236,41 @@ Der neue Monitor verwendet zwei zusätzliche öffentliche MOTIS-Endpunkte:
 WALK für Gehzeiten zu einer begrenzten Stationsauswahl. Echte Abfahrten und
 Fußwegantworten wurden geprüft. Verhalten, Anfragegrenzen, Standortverarbeitung
 und Navigationslinks sind in [MONITOR.md](MONITOR.md) dokumentiert.
+
+
+## Gleisangaben: Fahrtdaten + OpenStation (05.09.2026)
+
+Die Karte, die ausgewählte Fahrt und der Abfahrtsmonitor verwenden `track` und
+`scheduledTrack` des [MOTIS-Place-Schemas](https://github.com/motis-project/motis/blob/master/openapi.yaml).
+Diese Felder garantieren keine Echtzeitbestätigung der Gleisbelegung.
+Beim aktuellen S19-Abruf standen in DELFI beispielsweise „91“ für den Halt
+`de:05315:11901:7:79` (Messe/Deutz) und „75“ für Hansaring. Das sind fehlerhafte
+Fahrgastbezeichnungen, kein Grund, Gleisnummern aus Kennungsziffern zu erraten.
+Der [dokumentierte DELFI-Fehler](https://github.com/mfdz/GTFS-Issues/issues/230)
+bestätigt die unabhängig beobachtete Unstimmigkeit.
+
+Die Korrektur verwendet ausschließlich explizite `PlateCode`-Werte an
+`QuayType=railPlatform` aus dem offiziellen
+[DB InfraGO OpenStation-Datensatz](https://github.com/dbinfrago/openstation-docs/blob/main/NeTEx.md).
+`NORMALIZED_ID_URI` liefert den exakten DHID-Schlüssel; so werden die genannten
+Halte zu Gleis 9 und Gleis 2. Bahnsteige mit mehreren Kanten oder stationweite
+Halte ohne eindeutige Gleiszuordnung liefern keine erfundene Einzelnummer.
+Gemeldete Änderungen haben Vorrang: Eine nicht auflösbare neue Nummer wird
+als unbekannt angezeigt, nicht durch das alte Gleis ersetzt.
+
+Datensatz: [offizieller Download](https://bahnhof.de/daten/netex), Publikation
+2026-09-05T02:08:30.135Z; 11.790 Gleisbezeichnungen an 5.396 Stationen.
+Lizenz laut [Datenkatalog](https://data.gov.de/suche/daten/beta-openstation-netex-station-infrastructure):
+CC0-1.0. Der erzeugte Index enthält nur Gleisbezeichnungen und Kennungen,
+keine Fahrplandaten oder Live-Belegungen. Er liegt ausschließlich auf dem
+Server (419 kB); der Browser lädt ihn nicht. Keine zusätzliche Abfrage je Icon.
+
+Aktualisieren: Den aktuellen OpenStation-Download lokal speichern, dann
+`python3 scripts/import-platforms.py /tmp/openstation.xml` ausführen, Diff prüfen,
+`npm test`, `npm run check`, `npm run build`. Publikationsdatum und Quellenhash
+stehen im erzeugten `lib/platform-data.mjs`. Die Infrastruktur ist eine datierte
+Momentaufnahme; neue/umbenannte Gleise erfordern einen erneuten Import.
+Fahrtdaten bleiben auf zwei Minuten begrenzt und werden alle 30 Sekunden erneuert.
+Eine frühere Fahrtabfrage darf eine neuere Kartenmeldung nicht überschreiben.
+Fahrt und Haltereignis werden anhand ihrer IDs und Zeiten zugeordnet; bei
+Gleiswechseln ist zusätzlich die bestätigte DB-Stationsidentität verwendbar.

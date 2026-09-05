@@ -13,6 +13,6 @@
     "start": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check public/app.js && node --check public/map.js && node --check lib/transit.mjs && node --check lib/trip.mjs && node --check lib/api.mjs && node --check worker.mjs && node --check public/vehicles.js && node --check lib/network.mjs && node --check public/rail-detail.js && node --check lib/rail-geometry.mjs && node --check public/monitor.js && node --check lib/monitor.mjs && node --check lib/monitor-api.mjs"
+    "check": "node --check public/app.js && node --check public/map.js && node --check lib/transit.mjs && node --check lib/trip.mjs && node --check lib/api.mjs && node --check worker.mjs && node --check public/vehicles.js && node --check lib/network.mjs && node --check public/rail-detail.js && node --check lib/rail-geometry.mjs && node --check public/monitor.js && node --check lib/monitor.mjs && node --check lib/monitor-api.mjs && node --check lib/platforms.mjs && node --check lib/journey-platform.mjs"
   }
 }

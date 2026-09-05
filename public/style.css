@@ -8,6 +8,8 @@
 
 .line-filter.long-label{grid-column:span 2;overflow-wrap:anywhere;padding-inline:6px}.vehicle-badge{flex-shrink:0}
 
+.detail-platform{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 10px;width:fit-content;max-width:100%;margin:0 0 13px;padding:8px 11px;background:var(--raised);border-radius:9px;line-height:1.4;overflow-wrap:anywhere}.detail-platform strong{font-size:16px;font-weight:650}.detail-platform span{font-size:12px;color:var(--muted)}.detail-platform.unavailable{background:none;padding:0;color:var(--muted)}.detail-platform.unavailable strong{font-size:13px;font-weight:400}.detail-platform.changed{background:#efa95717;color:#f2ba76}.detail-platform.changed span,.stop-platform.changed{color:#f2ba76}.stop-label{min-width:0;overflow-wrap:anywhere}.stop-platform{display:block;font-size:12px;color:var(--muted);margin-top:3px}:root[data-theme=light] .detail-platform.changed,:root[data-theme=light] .detail-platform.changed span,:root[data-theme=light] .stop-platform.changed{color:#985611}
+
 .performance-details{margin:25px 0;padding:16px;background:var(--raised);border-radius:12px;font-size:14px}.performance-details summary{cursor:pointer}.performance-details dl{display:grid;grid-template-columns:1fr auto;gap:12px;margin:20px 0}.performance-details dt{color:var(--muted)}.performance-details dd{margin:0;font-variant-numeric:tabular-nums}.performance-details p{font-size:12px;line-height:1.6;color:var(--muted)}
 
 /* The departure monitor shares the map's quiet surfaces and puts time first. */

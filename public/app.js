@@ -2,6 +2,7 @@ import {cities,transportModes,MAX_SNAPSHOT_AGE_MS,pointInBounds} from '/lib/citi
 import {prepareTrips,vehiclesAt,vehicleView} from '/lib/transit.mjs';
 import {createTransitMap} from '/map.js';
 import {createDepartureMonitor} from '/monitor.js';
+import {platformForStop,platformText,freshDetail} from '/lib/journey-platform.mjs';
 const $=s=>document.querySelector(s),text=(s,v)=>{$(s).textContent=v;};
 const element=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n;};
 const icon=id=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','icon');svg.setAttribute('aria-hidden','true');const use=document.createElementNS(svg.namespaceURI,'use');use.setAttribute('href','#i-'+id);svg.append(use);return svg;};
@@ -79,37 +80,45 @@ function updateCount(){
   text('#coverage-info',`${count.realtime} mit Prognose · ${count.schedule} nur Fahrplan${$('#include-schedule').checked?'': ' (ausgeblendet)'}`);
 }
 const delayMinutes=v=>v.segment.scheduledArrival===null?null:Math.round((v.segment.arrival-v.segment.scheduledArrival)/60000);
-const selectionKey=v=>[v.id,v.segment.key,v.segment.arrival,v.quality,v.state,v.dwell?.arrival,v.dwell?.departure,v.dwell?.kind].join('|');
+const selectionKey=v=>[v.id,v.segment.key,v.segment.arrival,v.segment.observedAt,v.quality,v.state,v.dwell?.arrival,v.dwell?.departure,v.dwell?.kind,v.segment.from.track,v.segment.to.track].join('|');
 const duration=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return s<60?s+' Sek.':Math.floor(s/60)+' Min.'+(s%60?' '+s%60+' Sek.':'');};
 function updateDwell(v){const node=$('#dwell-remaining');if(node&&v.dwell)node.textContent='Abfahrt '+(v.quality==='realtime'?'voraussichtlich':'laut Fahrplan')+' in '+duration(v.dwell.departure-Date.now()-offset);}
+function renderPlatforms(v){
+  const context={detail,detailId,now:Date.now()+offset,fetchedAt:snapshot?.fetchedAt};
+  const stops={from:platformForStop(v,'from',context),to:platformForStop(v,'to',context)};
+  const main=platformText(stops[v.state==='stopped'?'from':'to'],v.mode,{unknown:true}),node=$('#detail-platform');
+  if(node){node.className='detail-platform'+(main.changed?' changed':'')+(main.unknown?' unavailable':'');node.replaceChildren(element('strong','',main.label));if(main.note)node.append(element('span','',main.note));}
+  for(const side of ['from','to']){const row=$('#platform-'+side);if(!row)continue;const p=platformText(stops[side],v.mode);row.textContent=[p.label,p.note].filter(Boolean).join(' · ');row.classList.toggle('changed',p.changed);row.hidden=!p.label;}
+}
 function showDetails(v,{reload=true}={}){
   const changed=selected!==v.id;if(changed){detail=null;detailId=null;setFollowing(false);$('#follow').disabled=false;}
   selected=v.id;detailKey=selectionKey(v);$('#vehicle-detail').hidden=false;
   const parent=$('#detail-content');parent.replaceChildren();const badge=element('span','detail-line',v.line);badge.style.setProperty('--line-color',v.color);badge.style.setProperty('--line-text',v.textColor);
-  parent.append(badge,element('span','detail-type',transportModes.find(m=>m.id===v.mode)?.name),element('p','detail-direction',v.state==='stopped'?(v.dwell?.kind==='estimated'?'HALT GESCHÄTZT':'VORAUSSICHTLICH AM HALT'):'NÄCHSTER HALT'),element('h2','',cleanName(v.state==='stopped'?v.segment.from.name:v.segment.to.name)),element('span','detail-quality'+(v.quality==='schedule'?' planned':''),v.quality==='realtime'?'≈ Position mit Prognose':'◷ Position nach Fahrplan'));
+  const platform=element('div','detail-platform');platform.id='detail-platform';platform.setAttribute('role','status');
+  parent.append(badge,element('span','detail-type',transportModes.find(m=>m.id===v.mode)?.name),element('p','detail-direction',v.state==='stopped'?(v.dwell?.kind==='estimated'?'HALT GESCHÄTZT':'VORAUSSICHTLICH AM HALT'):'NÄCHSTER HALT'),element('h2','',cleanName(v.state==='stopped'?v.segment.from.name:v.segment.to.name)),platform,element('span','detail-quality'+(v.quality==='schedule'?' planned':''),v.quality==='realtime'?'≈ Position mit Prognose':'◷ Position nach Fahrplan'));
   const rows=element('div','stop-progress'),times=v.dwell?[[v.dwell.kind==='estimated'?'Ankunft geschätzt':'Ankunft am Halt',v.dwell.arrival,'previous'],['Abfahrt vom Halt',v.dwell.departure,'next']]:[[cleanName(v.segment.from.name),v.segment.departure,'previous'],[cleanName(v.segment.to.name),v.segment.arrival,'next']];
-  for(const [label,ts,cls]of times){const row=element('div','stop-row '+cls);row.append(element('span','',label),element('time','',time(ts)));rows.append(row);}parent.append(rows);
+  for(const [label,ts,cls]of times){const row=element('div','stop-row '+cls),labelNode=element('span','stop-label',label);if(!v.dwell){const p=element('small','stop-platform');p.id='platform-'+(cls==='previous'?'from':'to');labelNode.append(p);}row.append(labelNode,element('time','',time(ts)));rows.append(row);}parent.append(rows);renderPlatforms(v);
   if(v.dwell){parent.append(element('p','delay','Aufenthalt '+(v.dwell.kind==='estimated'?'geschätzt':v.quality==='realtime'?'laut Prognose':'laut Fahrplan')+': '+(v.dwell.kind==='estimated'?'etwa ':'')+duration(v.dwell.durationMs)));const remaining=element('p','delay');remaining.id='dwell-remaining';parent.append(remaining);updateDwell(v);if(v.dwell.kind==='estimated')parent.append(element('p','delay','Die Quelle liefert dieselbe Ankunfts- und Abfahrtsminute. Die Standzeit ist modelliert, nicht gemessen.'));}
   const delay=delayMinutes(v);parent.append(element('p','delay'+(v.quality==='realtime'&&delay>0?' is-late':''),v.quality==='schedule'?'Verspätung unbekannt':delay===null?'Aktuelle Ankunftsprognose':delay>0?`+${delay} Min. später als geplant`:delay<0?`${-delay} Min. früher als geplant`:'Ankunft laut Prognose pünktlich'));
   if(v.segment.geometry!=='shape')parent.append(element('p','delay','Streckenabschnitt fehlt. Position auf direkter Verbindung geschätzt.'));
   selectPath(v);if(changed||reload&&!detail)loadDetail(v);else if(detail)renderJourney();
 }
 function selectPath(v){
-  const full=detailId===v.id&&detail&&Date.now()+offset-detail.fetchedAt<=MAX_SNAPSHOT_AGE_MS;
+  const full=detailId===v.id&&freshDetail(detail,Date.now()+offset);
   const geo=full&&detail.paths.length?{type:'FeatureCollection',features:detail.paths.map(path=>({type:'Feature',geometry:{type:'LineString',coordinates:path.map(([lat,lon])=>[lon,lat])},properties:{color:v.color}}))}:undefined;
   map?.select(v,geo);
 }
 async function loadDetail(v){
   detailController?.abort();const controller=new AbortController();detailController=controller;const rev=revision,id=v.id;const parent=$('#journey-detail');parent.replaceChildren(element('p','','Fahrtverlauf wird geladen …'));
-  try{const r=await fetch(`/api/trip?city=${city.id}&id=${encodeURIComponent(id)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(rev!==revision||selected!==id||controller.signal.aborted)return;if(!r.ok)throw Error(data.error||'Fahrtverlauf nicht erreichbar');detail=data;detailId=id;if(data.cancelled)cancelled.set(id,Date.now());renderJourney();selectPath(visible.find(x=>x.id===id)||v);if(data.cancelled){map?.update(visible.filter(x=>x.id!==id));$('#follow').disabled=true;}else $('#follow').disabled=false;
-  }catch(e){if(controller.signal.aborted||rev!==revision||selected!==id)return;detail=null;detailId=null;parent.replaceChildren(element('p','',e.name==='TimeoutError'?'Der Fahrtverlauf braucht gerade zu lange.':e.message));const retry=element('button','text-button','Verlauf erneut laden');retry.onclick=()=>loadDetail(v);parent.append(retry);}
+  try{const r=await fetch(`/api/trip?city=${city.id}&id=${encodeURIComponent(id)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(rev!==revision||selected!==id||controller.signal.aborted)return;if(!r.ok)throw Error(data.error||'Fahrtverlauf nicht erreichbar');detail=data;detailId=id;if(data.cancelled)cancelled.set(id,Date.now());renderJourney();const current=visible.find(x=>x.id===id)||v;renderPlatforms(current);selectPath(current);if(data.cancelled){map?.update(visible.filter(x=>x.id!==id));$('#follow').disabled=true;}else $('#follow').disabled=false;
+  }catch(e){if(controller.signal.aborted||rev!==revision||selected!==id)return;detail=null;detailId=null;const current=visible.find(x=>x.id===id)||v;renderPlatforms(current);selectPath(current);parent.replaceChildren(element('p','',e.name==='TimeoutError'?'Der Fahrtverlauf braucht gerade zu lange.':e.message));const retry=element('button','text-button','Verlauf erneut laden');retry.onclick=()=>loadDetail(v);parent.append(retry);}
 }
 function renderJourney(){
   if(!detail)return;const parent=$('#journey-detail');parent.replaceChildren();
   parent.append(element('h3','',detail.cancelled?'Fahrt entfällt':'Richtung '+cleanName(detail.headsign)),element('p','operator',detail.agency||'Betreiber nicht mitgeliefert'));
   for(const a of detail.alerts){parent.append(element('div','journey-alert',[a.title,a.body].filter(Boolean).join('\n')));}
   const now=Date.now()+offset,list=element('ol','journey-stops');
-  for(const stop of detail.stops){const ts=stop.departure??stop.arrival,scheduled=stop.scheduledDeparture??stop.scheduledArrival,li=element('li',(ts<now?'passed ':'')+(stop.cancelled?'cancelled':'')),label=element('span','',cleanName(stop.name));li.append(element('time','',time(ts)),label);const notes=[];if(stop.cancelled)notes.push('Halt entfällt');if(stop.track)notes.push('Steig / Gleis '+stop.track);if(stop.track&&stop.scheduledTrack&&stop.track!==stop.scheduledTrack)notes.push('geändert von '+stop.scheduledTrack);if(detail.realtime&&Number.isFinite(ts)&&Number.isFinite(scheduled)&&ts-scheduled>=60000)notes.push('+'+Math.round((ts-scheduled)/60000)+' Min.');if(notes.length)label.append(element('small','',notes.join(' · ')));list.append(li);}parent.append(list);
+  for(const stop of detail.stops){const ts=stop.departure??stop.arrival,scheduled=stop.scheduledDeparture??stop.scheduledArrival,li=element('li',(ts<now?'passed ':'')+(stop.cancelled?'cancelled':'')),label=element('span','',cleanName(stop.name));li.append(element('time','',time(ts)),label);const notes=[];if(stop.cancelled)notes.push('Halt entfällt');const p=platformText({...stop,plannedOnly:!detail.realtime},visible.find(v=>v.id===selected)?.mode);if(!stop.cancelled&&p.label)notes.push([p.label,p.note].filter(Boolean).join(' · '));if(detail.realtime&&Number.isFinite(ts)&&Number.isFinite(scheduled)&&ts-scheduled>=60000)notes.push('+'+Math.round((ts-scheduled)/60000)+' Min.');if(notes.length)label.append(element('small','',notes.join(' · ')));list.append(li);}parent.append(list);
   const target=[...list.children].find(li=>!li.classList.contains('passed'));if(target)list.scrollTop=Math.max(0,target.offsetTop-list.offsetTop-15);
   parent.append(element('p','operator',(detail.realtime?'Mit Prognosen':'Nach Fahrplan')+' · Verlauf zuletzt '+time(detail.fetchedAt)));
 }
@@ -123,7 +132,7 @@ function draw(forceList=false){
   if(snapshot&&!isFresh()){
     text('#feed-status','Daten veraltet · Positionen ausgeblendet');text('#header-status','Daten veraltet');$('#status-dot').classList.remove('live');text('#coverage-info','Warte auf aktuelle Fahrtdaten.');notify('Warte auf aktuelle Fahrtdaten','Die letzten Positionen sind zu alt. Wir verbinden uns automatisch erneut.');
   }
-  if(detail&&now-detail.fetchedAt>MAX_SNAPSHOT_AGE_MS){detail=null;detailId=null;$('#journey-detail').replaceChildren(element('p','','Fahrtverlauf veraltet. Wird beim nächsten Datenabruf erneuert.'));const v=visible.find(v=>v.id===selected);if(v)selectPath(v);}
+  if(detail&&!freshDetail(detail,now)){detail=null;detailId=null;$('#journey-detail').replaceChildren(element('p','','Fahrtverlauf veraltet. Wird beim nächsten Datenabruf erneuert.'));const v=visible.find(v=>v.id===selected);if(v){renderPlatforms(v);selectPath(v);}}
 }
 async function refresh(){
   if(loading||document.hidden)return;loading=true;const rev=revision,started=performance.now();requestController=new AbortController();const controller=requestController;$('#retry').disabled=true;

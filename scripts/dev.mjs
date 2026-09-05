@@ -16,7 +16,7 @@ createServer(async(req,res)=>{
     const relative=decoded.startsWith('/lib/')?decoded.slice(5):decoded==='/'?'index.html':decoded.slice(1);
     const path=resolve(base,relative);
     if(!path.startsWith(base+sep)){res.writeHead(403);res.end();return;}
-    if(base.endsWith('/lib')&&!['transit.mjs','cities.mjs','monitor.mjs'].includes(relative)){res.writeHead(404);res.end();return;}
+    if(base.endsWith('/lib')&&!['transit.mjs','cities.mjs','monitor.mjs','journey-platform.mjs'].includes(relative)){res.writeHead(404);res.end();return;}
     const body=await readFile(path);
     res.writeHead(200,{'Content-Type':mime[extname(path)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?undefined:body);
   }catch(e){res.writeHead(e?.code==='ENOENT'?404:500,{'Content-Type':'text/plain'});res.end(e?.code==='ENOENT'?'Not found':'Request failed');}
