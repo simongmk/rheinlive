@@ -38,7 +38,9 @@ for(const route of raw.routes){
       const rounded=pieces.map(path=>path.map(([lat,lon])=>[+lon.toFixed(5),+lat.toFixed(5)]));
       const directionA=JSON.stringify(rounded),directionB=JSON.stringify(rounded.map(p=>[...p].reverse()).reverse());
       const featureKey=key+':'+(directionA<directionB?directionA:directionB);
-      if(!features.has(featureKey))features.set(featureKey,{type:'Feature',properties:{mode,line:name,lineKey:key,color,pathSource:route.pathSource},geometry:{type:'MultiLineString',coordinates:rounded}});
+      // Rail infrastructure comes directly from the vector basemap. Retain routes
+      // only for bus/ferry overlays; catalog and station membership still cover rail.
+      if(['bus','ferry'].includes(mode)&&!features.has(featureKey))features.set(featureKey,{type:'Feature',properties:{mode,line:name,lineKey:key,color,pathSource:route.pathSource},geometry:{type:'MultiLineString',coordinates:rounded}});
       for(const index of [segment.from,segment.to]){const p=raw.stops[index];if(!p||!validPoint([p.lat,p.lon])||!pointInBounds([p.lat,p.lon],city.bounds))continue;const id=(p.stopId||p.name)+':'+key;stops.set(id,{type:'Feature',properties:{id:p.stopId,name:p.name,mode,line:name,lineKey:key},geometry:{type:'Point',coordinates:[p.lon,p.lat]}});}
     }
     if(used)lines.set(key,{key,line:name,mode,color});
@@ -46,6 +48,6 @@ for(const route of raw.routes){
 }
 const collection=features=>({type:'FeatureCollection',features});
 const compact=compactLines([...features.values()]),generatedAt=new Date().toISOString();
-const data={city:id,generatedAt,kind:'static-network-not-live-vehicles',source:'Transitous / MOTIS, DELFI and OpenStreetMap contributors',sourceUrl:'https://transitous.org/sources/',geometry:'Timetable routes and MOTIS-computed paths, not proof of current diversions.',lines:collection(compact.features.filter(f=>f.properties.mode!=='bus')),stops:groupStations([...stops.values()]),catalog:[...lines.values()],parts:{bus:'/data/network-'+id+'-bus.json?v=5'}};
+const data={city:id,generatedAt,kind:'static-network-not-live-vehicles',source:'Transitous / MOTIS, DELFI and OpenStreetMap contributors',sourceUrl:'https://transitous.org/sources/',geometry:'Rail tracks are supplied by OpenFreeMap/OpenMapTiles, not by route overlays. Bus/ferry routes are static MOTIS paths; current diversions may differ.',lines:collection(compact.features.filter(f=>f.properties.mode==='ferry')),stops:groupStations([...stops.values()]),catalog:[...lines.values()],parts:{bus:'/data/network-'+id+'-bus.json?v=6'}};
 const bus={city:id,generatedAt,kind:'static-network-part',lines:collection(compact.features.filter(f=>f.properties.mode==='bus'))};
 await mkdir('public/data',{recursive:true});await writeFile('public/data/network-'+id+'-bus.json',JSON.stringify(bus));await writeFile('public/data/network-'+id+'.json',JSON.stringify(data));console.log(JSON.stringify({city:id,lines:lines.size,paths:compact.features.length,stops:data.stops.features.length,initialBytes:Buffer.byteLength(JSON.stringify(data)),busBytes:Buffer.byteLength(JSON.stringify(bus))}));

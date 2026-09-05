@@ -14,7 +14,7 @@ test('same-named stops in different places or with distinct parent IDs stay dist
   assert.equal(groupStations([stop('a','Hauptbahnhof',[7,51],'tram','tram:1'),stop('b','Hauptbahnhof',[7.1,51],'tram','tram:2')]).features.length,2);
   assert.equal(groupStations([stop('de:05315:1:1','Markt',[7,51],'tram','tram:1'),stop('de:05315:2:1','Markt',[7.0001,51],'tram','tram:2')]).features.length,2);
 });
-test('shared track is drawn once while retaining every line and transport-mode distinction',()=>{
+test('identical optional route geometry is stored once per mode while retaining line filters',()=>{
   const feature=(lineKey,mode,reverse=false)=>({type:'Feature',properties:{lineKey,mode,color:'#ff0000'},geometry:{type:'MultiLineString',coordinates:[reverse?[[7.1,51.1],[7,51]]:[[7,51],[7.1,51.1]]]}});
   const result=compactLines([feature('tram:3','tram'),feature('tram:4','tram',true),feature('bus:106','bus')]);assert.equal(result.features.length,2);assert.deepEqual(result.features[0].properties.lineKeys,['tram:3','tram:4']);
 });

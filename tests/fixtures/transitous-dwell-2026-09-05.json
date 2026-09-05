@@ -1,0 +1,313 @@
+{
+  "kind": "historical-live-capture-test-only",
+  "receivedAt": 1788614302497,
+  "url": "https://api.transitous.org/api/v6/map/trips?min=50.8%2C6.76&max=51.1%2C7.18&zoom=14&startTime=2026-09-05T13%3A17%3A00.000Z&endTime=2026-09-05T13%3A20%3A00.000Z&precision=5&language=de",
+  "data": [
+    {
+      "trips": [
+        {
+          "tripId": "20260905_14:50_de-DELFI_3383346225",
+          "displayName": "RB26 (33641)"
+        }
+      ],
+      "routeColor": "7a7c80",
+      "mode": "REGIONAL_RAIL",
+      "distance": 144966.46875,
+      "from": {
+        "name": "Köln West Bf",
+        "stopId": "de-DELFI_de:05315:11701:7:71",
+        "importance": 0.0013145831180736423,
+        "lat": 50.94221,
+        "lon": 6.932784,
+        "level": 1,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "71",
+        "track": "71",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "REGIONAL_RAIL"
+        ]
+      },
+      "to": {
+        "name": "Köln Süd Bf",
+        "stopId": "de-DELFI_de:05315:11513:7:71",
+        "importance": 0.0017210983205586672,
+        "lat": 50.927395000000004,
+        "lon": 6.937249000000001,
+        "level": 1,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "76",
+        "track": "76",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "HIGHSPEED_RAIL",
+          "LONG_DISTANCE",
+          "REGIONAL_RAIL",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T13:16:00Z",
+      "arrival": "2026-09-05T13:18:00Z",
+      "scheduledDeparture": "2026-09-05T13:01:00Z",
+      "scheduledArrival": "2026-09-05T13:03:00Z",
+      "realTime": true,
+      "polyline": "ys|uH}`ii@JFJFrA|@p@d@t@d@b@Z`@Vd@Zb@VRLVLJD\\NZL`@Jb@FZD\\@h@@h@@h@?r@AtDCrCAf@?xBCF?h@?f@AbC?tBCx@Aj@AHAF?LAf@E`@Gh@If@Kh@Mh@Q\\MTId@Sd@Uj@Yd@[f@[h@a@PMn@i@f@e@TU\\_@h@m@`@k@\\e@b@s@\\o@Xi@LUNWr@oAx@{ADGBGTa@LWR]n@oA\\y@h@uABI"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_14:50_de-DELFI_3383346225",
+          "displayName": "RB26 (33641)"
+        }
+      ],
+      "routeColor": "7a7c80",
+      "mode": "REGIONAL_RAIL",
+      "distance": 144966.46875,
+      "from": {
+        "name": "Köln Süd Bf",
+        "stopId": "de-DELFI_de:05315:11513:7:71",
+        "importance": 0.0017210983205586672,
+        "lat": 50.927395000000004,
+        "lon": 6.937249000000001,
+        "level": 1,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "76",
+        "track": "76",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "HIGHSPEED_RAIL",
+          "LONG_DISTANCE",
+          "REGIONAL_RAIL",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Hürth Kalscheuren Bf",
+        "stopId": "de-DELFI_de:05362:83901:7:71",
+        "importance": 0.00103256874717772,
+        "lat": 50.87679,
+        "lon": 6.910416,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "85",
+        "track": "85",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "REGIONAL_RAIL",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T13:19:00Z",
+      "arrival": "2026-09-05T13:23:00Z",
+      "scheduledDeparture": "2026-09-05T13:04:00Z",
+      "scheduledArrival": "2026-09-05T13:08:00Z",
+      "realTime": true,
+      "polyline": "iwyuH}|ii@LYjA}CTk@Xs@BEHO@ETe@BELWLU^k@`@i@LQ^a@XWTQTQXQNINIf@Ud@Ol@Mr@Ih@Ct@?h@BlBPn@H`@DH@XFLBZH\\JZL\\Nb@V`@Vt@j@h@^bAv@RNt@j@FDLJx@j@~AbAbBdAZRPJv@f@nCdBdDrBlDxBlDxB|AbAn@`@xAdAvAfAtGbFj@b@lBtAbC~AXPpAx@bDpB~BxAfDtBd@XdBfALJtHvEf@ZpFhD~A`AvEvCvBrAvAz@|CpBr@b@fBbA~Ax@jAj@TJjAh@NFrAh@bBt@p@Z^PLFd@Td@Vz@f@~DbClDxBz@h@ZRFDbEfCdC~AnJ`GjJ|FbDrBrD|BnEpC`@TzA|@t@`@fB~@bAf@~BbATH`CbANFzAp@fBp@xF`CfAd@VJ~@^lDtAjAb@jA`@tAb@jBf@l@N\\H"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_14:33_de-DELFI_3383158351",
+          "displayName": "S11"
+        }
+      ],
+      "routeColor": "f26522",
+      "mode": "SUBURBAN",
+      "distance": 27940.365234375,
+      "from": {
+        "name": "Köln Mülheim Bf Mülheim",
+        "stopId": "de-DELFI_de:05315:19201:7:77",
+        "importance": 0.0029277000576257706,
+        "lat": 50.9581,
+        "lon": 7.013902,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "85",
+        "track": "85",
+        "description": "Bahnsteig Gleis 2",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "REGIONAL_RAIL",
+          "SUBURBAN",
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Holweide S-Bahn",
+        "stopId": "de-DELFI_de:05315:19401:7:71",
+        "importance": 0.0013716487446799874,
+        "lat": 50.976257,
+        "lon": 7.04148,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "74",
+        "track": "74",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "SUBURBAN",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T13:15:00Z",
+      "arrival": "2026-09-05T13:18:00Z",
+      "scheduledDeparture": "2026-09-05T13:15:00Z",
+      "scheduledArrival": "2026-09-05T13:18:00Z",
+      "realTime": true,
+      "polyline": "cw_vH{{xi@[S}AeAoDaCu@e@cAs@{AaAkBmAsBuAm@a@[UiBoAm@a@_@Wa@Uo@_@}@g@a@Ue@Yi@]WQKIMKk@c@yAkAwAeAq@i@i@_@SOUKQK]Ou@W]IYG_@Ei@Ei@?g@@k@Dm@Ha@Hq@Pw@TE@QFaAVWFi@Le@FUB]@S@WAQASCa@GMEOEMEGCOGOIOIOIOMOKMKMMMMKMKMIKKMKQMUMSKUKSKUIWKWI[GSGUGYGWG_@G]AEEWEUEc@Ge@E_@Ec@AIGe@c@oEe@qEk@kGa@aEU_CCUsAiNWcCQeBmAmL}@{I[_DMeAMmA_@mDWgCCSO{Ai@gFIw@"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_14:33_de-DELFI_3383158351",
+          "displayName": "S11"
+        }
+      ],
+      "routeColor": "f26522",
+      "mode": "SUBURBAN",
+      "distance": 27940.365234375,
+      "from": {
+        "name": "Köln Holweide S-Bahn",
+        "stopId": "de-DELFI_de:05315:19401:7:71",
+        "importance": 0.0013716487446799874,
+        "lat": 50.976257,
+        "lon": 7.04148,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "74",
+        "track": "74",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "SUBURBAN",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Dellbrück S-Bahn",
+        "stopId": "de-DELFI_de:05315:19501:7:71",
+        "importance": 0.0013942760415375233,
+        "lat": 50.981376999999995,
+        "lon": 7.069858,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "75",
+        "track": "75",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "SUBURBAN",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T13:19:00Z",
+      "arrival": "2026-09-05T13:21:00Z",
+      "scheduledDeparture": "2026-09-05T13:19:00Z",
+      "scheduledArrival": "2026-09-05T13:21:00Z",
+      "realTime": true,
+      "polyline": "uhcvHeh~i@q@{GCScCsUm@}FyCyYCY}Gwp@e@mEaDe[E]k@qFy@gIe@sE"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_14:53_de-DELFI_3383157208",
+          "displayName": "S11"
+        }
+      ],
+      "routeColor": "f26522",
+      "mode": "SUBURBAN",
+      "distance": 48413.56640625,
+      "from": {
+        "name": "Köln Hansaring",
+        "stopId": "de-DELFI_de:05315:11801:7:71",
+        "importance": 0.0036346472334116697,
+        "lat": 50.949042999999996,
+        "lon": 6.952754,
+        "level": 1,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "74",
+        "track": "74",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "REGIONAL_RAIL",
+          "SUBURBAN",
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Nippes S-Bahn",
+        "stopId": "de-DELFI_de:05315:15001:7:71",
+        "importance": 0.0014628974022343755,
+        "lat": 50.959019999999995,
+        "lon": 6.941848000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "74",
+        "track": "74",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "SUBURBAN",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T13:16:00Z",
+      "arrival": "2026-09-05T13:18:00Z",
+      "scheduledDeparture": "2026-09-05T13:16:00Z",
+      "scheduledArrival": "2026-09-05T13:18:00Z",
+      "realTime": true,
+      "polyline": "a~}uHq|li@q@p@]Z]Tg@ZIDSFE@OF]Jk@Nw@Pw@Ps@NSDa@Hi@Na@Jm@Vo@Za@X_@X]ZQTQPUXW\\[f@m@jAO\\MTELYp@Sj@Up@Sp@I\\CLOj@Mj@Kn@Ib@EZG\\Kv@a@jDIh@Kl@Kt@Qz@YtAYbAWz@[z@Wl@Yl@QZMTMRMRORMNKJSRKJMJWPSLa@Ta@Pa@Je@Je@DQ?O@a@?SASCMAUCi@KuAW"
+    },
+    {
+      "trips": [
+        {
+          "tripId": "20260905_14:53_de-DELFI_3383157208",
+          "displayName": "S11"
+        }
+      ],
+      "routeColor": "f26522",
+      "mode": "SUBURBAN",
+      "distance": 48413.56640625,
+      "from": {
+        "name": "Köln Nippes S-Bahn",
+        "stopId": "de-DELFI_de:05315:15001:7:71",
+        "importance": 0.0014628974022343755,
+        "lat": 50.959019999999995,
+        "lon": 6.941848000000001,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "74",
+        "track": "74",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "SUBURBAN",
+          "BUS"
+        ]
+      },
+      "to": {
+        "name": "Köln Bilderstöckchen Geldernstr./Parkgürtel",
+        "stopId": "de-DELFI_de:05315:15201:7:71",
+        "importance": 0.0013217241503298283,
+        "lat": 50.968346000000004,
+        "lon": 6.941435,
+        "tz": "Europe/Berlin",
+        "scheduledTrack": "74",
+        "track": "74",
+        "description": "Bahnsteig Gleis 1",
+        "vertexType": "TRANSIT",
+        "modes": [
+          "SUBURBAN",
+          "TRAM",
+          "BUS"
+        ]
+      },
+      "departure": "2026-09-05T13:19:00Z",
+      "arrival": "2026-09-05T13:20:00Z",
+      "scheduledDeparture": "2026-09-05T13:18:00Z",
+      "scheduledArrival": "2026-09-05T13:20:00Z",
+      "realTime": true,
+      "polyline": "_}_vHexji@YEeB_@{Cm@{@Os@ISCq@G}@Gw@Cw@Ai@?aAB_@@a@Bg@BK@yAH}AJuDVK@q@Dm@FaAFk@FiAL}@HgBTkALeAHYD"
+    }
+  ]
+}

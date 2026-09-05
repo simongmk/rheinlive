@@ -76,12 +76,17 @@ function updateCount(){
   text('#coverage-info',`${count.realtime} mit Prognose · ${count.schedule} nur Fahrplan${$('#include-schedule').checked?'': ' (ausgeblendet)'}`);
 }
 const delayMinutes=v=>v.segment.scheduledArrival===null?null:Math.round((v.segment.arrival-v.segment.scheduledArrival)/60000);
+const selectionKey=v=>[v.id,v.segment.key,v.segment.arrival,v.quality,v.state,v.dwell?.arrival,v.dwell?.departure].join('|');
+const duration=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return s<60?s+' Sek.':Math.floor(s/60)+' Min.'+(s%60?' '+s%60+' Sek.':'');};
+function updateDwell(v){const node=$('#dwell-remaining');if(node&&v.dwell)node.textContent='Abfahrt '+(v.quality==='realtime'?'voraussichtlich':'laut Fahrplan')+' in '+duration(v.dwell.departure-Date.now()-offset);}
 function showDetails(v,{reload=true}={}){
   const changed=selected!==v.id;if(changed){detail=null;detailId=null;setFollowing(false);$('#follow').disabled=false;}
-  selected=v.id;detailKey=[v.id,v.segment.key,v.quality,v.state].join('|');$('#vehicle-detail').hidden=false;
+  selected=v.id;detailKey=selectionKey(v);$('#vehicle-detail').hidden=false;
   const parent=$('#detail-content');parent.replaceChildren();const badge=element('span','detail-line',v.line);badge.style.setProperty('--line-color',v.color);badge.style.setProperty('--line-text',v.textColor);
   parent.append(badge,element('span','detail-type',transportModes.find(m=>m.id===v.mode)?.name),element('p','detail-direction',v.state==='stopped'?'AN DER HALTESTELLE':'NÄCHSTER HALT'),element('h2','',cleanName(v.state==='stopped'?v.segment.from.name:v.segment.to.name)),element('span','detail-quality'+(v.quality==='schedule'?' planned':''),v.quality==='realtime'?'≈ Position mit Prognose':'◷ Position nach Fahrplan'));
-  const rows=element('div','stop-progress');for(const [p,ts,cls]of [[v.segment.from,v.segment.departure,'previous'],[v.segment.to,v.segment.arrival,'next']]){const row=element('div','stop-row '+cls);row.append(element('span','',cleanName(p.name)),element('time','',time(ts)));rows.append(row);}parent.append(rows);
+  const rows=element('div','stop-progress'),times=v.dwell?[['Ankunft am Halt',v.dwell.arrival,'previous'],['Abfahrt vom Halt',v.dwell.departure,'next']]:[[cleanName(v.segment.from.name),v.segment.departure,'previous'],[cleanName(v.segment.to.name),v.segment.arrival,'next']];
+  for(const [label,ts,cls]of times){const row=element('div','stop-row '+cls);row.append(element('span','',label),element('time','',time(ts)));rows.append(row);}parent.append(rows);
+  if(v.dwell){parent.append(element('p','delay','Aufenthalt '+(v.quality==='realtime'?'laut Prognose':'laut Fahrplan')+': '+duration(v.dwell.durationMs)));const remaining=element('p','delay');remaining.id='dwell-remaining';parent.append(remaining);updateDwell(v);}
   const delay=delayMinutes(v);parent.append(element('p','delay'+(v.quality==='realtime'&&delay>0?' is-late':''),v.quality==='schedule'?'Verspätung unbekannt':delay===null?'Aktuelle Ankunftsprognose':delay>0?`+${delay} Min. später als geplant`:delay<0?`${-delay} Min. früher als geplant`:'Ankunft laut Prognose pünktlich'));
   if(v.segment.geometry!=='shape')parent.append(element('p','delay','Streckenabschnitt fehlt. Position auf direkter Verbindung geschätzt.'));
   selectPath(v);if(changed||reload&&!detail)loadDetail(v);else if(detail)renderJourney();
@@ -110,7 +115,7 @@ function draw(forceList=false){
   const now=Date.now()+offset;for(const[id,ts]of cancelled)if(Date.now()-ts>120000)cancelled.delete(id);
   candidates=isFresh()?vehiclesAt(trips,now,snapshot.fetchedAt).filter(v=>filters(v)&&pointInBounds([v.lat,v.lon],city.bounds)&&!cancelled.has(v.id)):[];
   visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;map?.update(visible,snapshot?.fetchedAt,now);
-  if(selected){const v=visible.find(v=>v.id===selected);if(!v&&!cancelled.has(selected))clearSelected();else if(v){if(detailKey!==[v.id,v.segment.key,v.quality,v.state].join('|'))showDetails(v,{reload:false});if(following)map?.follow(v);}}
+  if(selected){const v=visible.find(v=>v.id===selected);if(!v&&!cancelled.has(selected))clearSelected();else if(v){if(detailKey!==selectionKey(v))showDetails(v,{reload:false});updateDwell(v);if(following)map?.follow(v);}}
   updateCount();if(tab==='vehicles'&&(forceList||Date.now()-lastList>10000)){lastList=Date.now();renderVehicleList();}
   if(snapshot&&!isFresh()){
     text('#feed-status','Daten veraltet · Positionen ausgeblendet');text('#header-status','Daten veraltet');$('#status-dot').classList.remove('live');text('#coverage-info','Warte auf aktuelle Fahrtdaten.');notify('Warte auf aktuelle Fahrtdaten','Die letzten Positionen sind zu alt. Wir verbinden uns automatisch erneut.');
@@ -136,7 +141,7 @@ async function loadBusPart(rev){
 }
 async function loadNetwork(rev){
   networkController?.abort();const controller=new AbortController();networkController=controller;text('#network-age','Liniennetz wird geladen …');const id=city.id,started=performance.now();
-  try{let record=networkCache.get(id);if(!record){const r=await fetch('/data/network-'+id+'.json?v=5',{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});if(!r.ok)throw Error('Netz nicht erreichbar');const data=await r.json();if(data.city!==id)throw Error('Falsches Netz');record={data,bus:null,pending:false};}
+  try{let record=networkCache.get(id);if(!record){const r=await fetch('/data/network-'+id+'.json?v=6',{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});if(!r.ok)throw Error('Netz nicht erreichbar');const data=await r.json();if(data.city!==id)throw Error('Falsches Netz');record={data,bus:null,pending:false};}
     if(rev!==revision||controller.signal.aborted)return;networkCache.delete(id);networkCache.set(id,record);if(networkCache.size>2)networkCache.delete(networkCache.keys().next().value);
     network=record.data;timings.networkMs=performance.now()-started;applyNetwork();updateCatalog();text('#network-age','Netzstand '+new Date(network.generatedAt).toLocaleDateString('de-DE'));loadBusPart(rev);
   }catch{if(rev!==revision||controller.signal.aborted)return;text('#network-age','Liniennetz nicht erreichbar');}

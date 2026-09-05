@@ -13,7 +13,7 @@ export function createWorker({api=handleApi,clock=Date.now,getEdgeCache=()=>glob
       let response;
       const url=new URL(request.url);
       const cityId=url.searchParams.get('city')||'cologne';
-      const cacheKey=new Request(new URL('/api/vehicles?version=4&city='+encodeURIComponent(cityId),url.origin));
+      const cacheKey=new Request(new URL('/api/vehicles?version=6&city='+encodeURIComponent(cityId),url.origin));
       const cacheable=url.pathname==='/api/vehicles'&&request.method==='GET'&&Object.hasOwn(cities,cityId);
       const cache=getEdgeCache();
       if(cacheable&&cache){try{response=await cache.match(cacheKey);}catch{/* Edge cache is optional. */}}

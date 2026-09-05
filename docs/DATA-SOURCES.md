@@ -129,3 +129,28 @@ und pausiert im versteckten Browser-Tab. Größere Abfragemengen müssen vorab
 abgestimmt werden. Für einen großen oder kommerziellen Betrieb wäre ein eigener
 MOTIS-Importdienst oder ein vereinbarter Anbieterzugang erforderlich. Eine
 unbegrenzte kostenlose Verkehrsdatenversorgung wird nicht versprochen.
+
+## Gleise und Aufenthalte – ergänzende Prüfung vom 5. September
+
+Die Grundkarte nutzt `class=rail/transit` aus OpenMapTiles Transportation,
+einschließlich `brunnel=tunnel`, direkt aus den vorhandenen Vektorkacheln.
+Das [offizielle Schema](https://openmaptiles.org/schema/#transportation) trennt
+diese Infrastruktur von einer Fahrplanroute. Die reale Kachel bei Severinstraße
+(Zoom 14, x 8508, y 5490, Datenstand 30. August) enthält Light-Rail-Tunnel auf
+den Ebenen −1/−2, oberirdische Gleise und Weichen. Sie wurde als Protobuf gelesen,
+nicht aus einem Screenshot geschätzt. Eine Kartenlinie entspricht einer
+gelieferten Gleisgeometrie; weder vollständige Einzelgleise in jeder Zoomstufe
+noch eine gleisgenaue Zuordnung jedes Fahrzeugmarkers werden behauptet.
+
+Der [MOTIS-Vertrag](https://github.com/motis-project/motis/blob/master/openapi.yaml)
+liefert Ankunft/Abfahrt pro Fahrtabschnitt. Die echte Antwort vom 5. September
+2026, 13:18:22 UTC, enthielt unter anderem jeweils eine Minute Aufenthalt für
+RB26 an Köln Süd und S11 in Holweide bzw. Nippes, jeweils mit Prognosen auf
+beiden angrenzenden Abschnitten. Ein kleiner historischer Ausschnitt prüft
+den Übergang Anfahrt → Halt → Abfahrt in Tests; er wird niemals live ausgeliefert.
+
+Getrennte Zeitgrenzen erlauben eine bessere Positionsschätzung am Halt.
+Minutengenaue Prognosen verraten jedoch keine sekundengenaue Türöffnung,
+Beschleunigung oder ungeplante Zwischenstopps. Unbekannte Aufenthalte werden
+nicht mit pauschalen 20 oder 30 Sekunden ergänzt. Details und Alterungsgrenzen
+stehen in [PERFORMANCE.md](PERFORMANCE.md).

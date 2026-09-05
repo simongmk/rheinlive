@@ -8,10 +8,13 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
   map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:'<a href="https://transitous.org/sources/" target="_blank">Verkehrsdaten: Transitous</a>'}),'bottom-right');
   map.addControl(new maplibregl.ScaleControl({maxWidth:100,unit:'metric'}),'bottom-left');
   const vehicleLayer=createVehicleLayer(map);vehicleLayer.setBounds(city.bounds);vehicleLayer.setTheme(initialTheme);map.on('remove',()=>vehicleLayer.destroy());
-  let selected=null,network=empty(),stops=empty(),selectedGeometry=empty(),theme=initialTheme,networkOn=true,tilted=false,filter=['literal',true],stationFilter=['literal',true];
+  let selected=null,network=empty(),stops=empty(),selectedGeometry=empty(),theme=initialTheme,networkOn=true,tilted=false,filter=['literal',true],stationFilter=['literal',true],trackFilter=['in',['get','class'],['literal',['rail','transit']]];
   function mount(){
     for(const [id,data]of [['network',network],['stations',stops],['selected-route',selectedGeometry]])map.addSource(id,{type:'geojson',data});
     map.addLayer({id:'buildings-3d',type:'fill-extrusion',source:'openmaptiles','source-layer':'building',minzoom:13,layout:{visibility:tilted?'visible':'none'},paint:{'fill-extrusion-color':theme==='dark'?'#28465a':'#c7d7e1','fill-extrusion-height':['coalesce',['get','render_height'],0],'fill-extrusion-base':['coalesce',['get','render_min_height'],0],'fill-extrusion-opacity':.8}});
+    // One stroke per supplied physical rail feature. Never merge nearby parallel tracks
+    // or draw a second copy for every route using a track. Tunnel tracks stay included.
+    map.addLayer({id:'track-lines',type:'line',source:'openmaptiles','source-layer':'transportation',minzoom:10,layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':theme==='dark'?'#7493a5':'#708b9d','line-width':['interpolate',['linear'],['zoom'],10,.65,13,1,16,1.25,18,1.8],'line-opacity':['case',['==',['get','brunnel'],'tunnel'],.55,.85]}});
     map.addLayer({id:'network-glow',type:'line',source:'network',paint:{'line-color':['get','color'],'line-width':['interpolate',['linear'],['zoom'],9,3,14,8],'line-opacity':.12,'line-blur':3}});
     map.addLayer({id:'network-lines',type:'line',source:'network',paint:{'line-color':['get','color'],'line-width':['interpolate',['linear'],['zoom'],9,.7,12,1.6,16,3],'line-opacity':['case',['==',['get','mode'],'bus'],.3,.65]}});
     map.addLayer({id:'station-dots',type:'circle',source:'stations',minzoom:12.2,paint:{'circle-radius':['interpolate',['linear'],['zoom'],12,2,16,4],'circle-color':theme==='dark'?'#17293a':'#ffffff','circle-stroke-color':theme==='dark'?'#9ab1be':'#536573','circle-stroke-width':1.1}});
@@ -20,7 +23,7 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     map.addLayer({id:'selected-route-line',type:'line',source:'selected-route',paint:{'line-color':['get','color'],'line-width':4,'line-opacity':.95}});
     applyFilter();
   }
-  function applyFilter(){for(const id of ['network-glow','network-lines','station-dots','station-labels'])if(map.getLayer(id)){map.setLayoutProperty(id,'visibility',networkOn?'visible':'none');map.setFilter(id,id.startsWith('station-')?stationFilter:filter);}}
+  function applyFilter(){for(const id of ['track-lines','network-glow','network-lines','station-dots','station-labels'])if(map.getLayer(id)){map.setLayoutProperty(id,'visibility',networkOn?'visible':'none');map.setFilter(id,id==='track-lines'?trackFilter:id.startsWith('station-')?stationFilter:filter);}}
   map.on('style.load',mount);
   map.on('click',e=>{const id=vehicleLayer.hitTest(e.point);if(id)onSelect(id);else onClear();});
   map.on('mousemove',e=>{map.getCanvas().style.cursor=vehicleLayer.hitTest(e.point)?'pointer':'';});
@@ -34,8 +37,10 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     performance:()=>vehicleLayer.stats(),
     select:(v,geometry)=>{selected=v?.id??null;selectedGeometry=geometry||collection(v?v.segments.filter(s=>s.geometry==='shape').map(s=>({type:'Feature',geometry:{type:'LineString',coordinates:s.points.map(p=>[p[1],p[0]])},properties:{color:v.color}})):[]);map.getSource('selected-route')?.setData(selectedGeometry);vehicleLayer.select(selected);},
     setNetwork:data=>{network=data.lines;stops=data.stops;map.getSource('network')?.setData(network);map.getSource('stations')?.setData(stops);},
-    // Long-distance network routes are context; only a selected trip supplies its exact itinerary.
+    // Physical tracks are infrastructure context; route filters apply to trips and stops.
     setFilter:(modes,lineKeys)=>{
+      const classes=[];if(modes.includes('tram'))classes.push('transit');if(modes.some(m=>['suburban','regional','long_distance'].includes(m)))classes.push('rail');
+      trackFilter=['in',['get','class'],['literal',classes]];
       const lineMatch=lineKeys?['any',modes.includes('long_distance')?['in','long_distance',['get','modes']]:['literal',false],...lineKeys.map(k=>['in',k,['get','lineKeys']])]:['literal',true];
       stationFilter=['all',modes.length?['any',...modes.map(m=>['in',m,['get','modes']])]:['literal',false],lineMatch];
       filter=['all',['in',['get','mode'],['literal',modes]],...(lineKeys?[['any',['==',['get','mode'],'long_distance'],...lineKeys.map(k=>['in',k,['get','lineKeys']])]]:[])];applyFilter();
@@ -52,8 +57,9 @@ async function mapStyle(theme){
     if(l.type==='background')l.paint['background-color']=theme==='dark'?'#0c1926':'#eaf0f3';
     if(l.id==='water')l.paint['fill-color']=theme==='dark'?'#103d58':'#accfdf';
     if(l.id==='building')l.paint['fill-color']=theme==='dark'?'#1b2c3a':'#d9e1e5';
-    if(l.type==='line'&&/railway/.test(l.id)){l.minzoom=Math.min(l.minzoom??9,10);l.paint['line-color']=theme==='dark'?'#566b7d':'#8a9ba8';}
     if(l.type==='symbol'&&/poi|housenumber/.test(l.id))l.layout={...l.layout,visibility:'none'};
   }
+  // The base style uses rail casing + dashes. Our single track layer replaces both.
+  style.layers=style.layers.filter(l=>!(l.type==='line'&&/railway/.test(l.id)));
   return style;
 }

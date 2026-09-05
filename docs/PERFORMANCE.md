@@ -14,10 +14,14 @@ Gruppenanker zusammengefasst. Verschiedene bekannte Eltern-IDs und entfernte
 gleichnamige Haltestellen bleiben getrennt. Alle Verkehrsmittel und Linien
 bleiben für die Filter erhalten; die Live-Haltefolge behält ihre Steigdetails.
 
-Gleiche Streckengeometrien werden pro Verkehrsmittel nur einmal gespeichert und
-gezeichnet, mit allen zugehörigen Linien. Das verhindert mehrfaches Überzeichnen
-derselben Linie. Die statische Fernzuggeometrie bleibt Kontext; ein ausgewählter
-Zug zeigt seinen eigenen Fahrtverlauf.
+Die Gleise werden jetzt unmittelbar aus der Transportation-Ebene der bereits
+geladenen OpenFreeMap-Vektorkacheln gezeichnet: eine dünne Linie je gelieferter
+Gleisgeometrie, ohne zusätzliche Fahrtrouten je Linie oder Verkehrsmittel.
+Tunnelgleise bleiben enthalten; parallele Gleise werden nicht durch räumliche
+Toleranz zusammengezogen. Die bisherigen Strich-/Umrandungsebenen der Basiskarte
+werden ersetzt. Eine ausgewählte Fahrt hebt ihren berechneten Weg separat hervor.
+Kartendaten können je Zoomstufe vereinfacht oder unvollständig sein.
+Bus-/Fährwege bleiben optionale, pro Verkehrsmittel komprimierte Routen.
 
 ## Bewegung
 
@@ -50,9 +54,9 @@ geladen. Haltestellensuche und Linienkatalog sind schon im kleinen Startnetz.
 
 | Region | Vorher gesamt | Neues Startnetz | Busnetz bei Bedarf | Startnetz gzip vorher → jetzt |
 |---|---:|---:|---:|---:|
-| Köln | 6,18 MB | 1,03 MB | 1,56 MB | 565 → 127 KB |
-| Bonn | 3,17 MB | 0,36 MB | 0,80 MB | 273 → 45 KB |
-| Düsseldorf | 6,52 MB | 0,76 MB | 1,45 MB | 579 → 89 KB |
+| Köln | 6,18 MB | 0,48 MB | 1,56 MB | 565 → 61 KB |
+| Bonn | 3,17 MB | 0,25 MB | 0,80 MB | 273 → 32 KB |
+| Düsseldorf | 6,52 MB | 0,35 MB | 1,45 MB | 579 → 43 KB |
 
 Die Zahl der Stationsobjekte sinkt von 10.420 / 6.019 / 11.742 auf
 2.121 / 1.088 / 1.502. Der Browser hält höchstens zwei Regionen im Speichercache.
@@ -64,8 +68,9 @@ Fahrtdaten nicht ein. Die Kölner lokale API lieferte bei der Messung um 12:55 U
 557 Fahrten in 1,92 MB JSON und 286 ms einschließlich Antwortlesen. Das ist eine
 Momentaufnahme, kein zugesagtes Ladezeit-Ziel.
 
-Nach der Veröffentlichung wurde das Kölner Startnetz außerdem direkt über die
-private Site gemessen: HTTP 200, gzip, Cache HIT, **121.140 tatsächlich übertragene
+Die folgende HTTP-Messung bezieht sich auf die vorherige Veröffentlichung mit
+dem 1,03-MB-Startnetz; sie ist kein Messwert der aktuellen Gleisumstellung:
+Das Kölner Startnetz wurde direkt über die private Site gemessen: HTTP 200, gzip, Cache HIT, **121.140 tatsächlich übertragene
 Bytes**, erster Antwort-Byte nach 1.536 ms, vollständig nach 1.555 ms. Diese
 authentifizierte HTTP-Abfrage misst ein einzelnes Netz-Artefakt und den Zugriff
 über den Hoster, nicht die Ladezeit der gesamten Browseransicht. Die separat
@@ -76,7 +81,8 @@ um Messungen auf dem tatsächlich verwendeten Gerät.
 
 ## CPU-Prüfung und laufende Messwerte
 
-Mit derselben aktuellen Kölner Antwort wurden 300 Interpolationsschritte nach
+Bei der vorherigen Animationsänderung wurden mit derselben Kölner Antwort
+300 Interpolationsschritte nach
 30 Aufwärmschritten in Node gemessen, jeweils 516 aktive Fahrzeuge:
 
 | Reine Positionsberechnung | Vorher | Jetzt |
@@ -96,3 +102,21 @@ Netz-/Datenabfrage, gezählte Animationsbilder, mittlere CPU-Zeichenzeit und die
 GPU-Fertigstellung und Web-Vitals/LCP sind darin nicht enthalten. Es werden keine
 Messwerte an einen Analysedienst gesendet. Browser- und Sichttests wurden für
 diese Änderung nicht angefordert und nicht durchgeführt.
+
+## Haltezeiten ohne zusätzliche Abfrage pro Fahrzeug
+
+Ankunft und nächste Abfahrt derselben Fahrt am exakt gleichen Halt begrenzen
+den Aufenthalt. In diesem Intervall bleibt die Position unverändert. Beide
+Zeitgrenzen brauchen Prognosen, damit der Halt als prognosebasiert zählt.
+Im Detail stehen Aufenthaltsdauer und verbleibende Zeit bis zur Abfahrt.
+
+Der Server kann einen gerade aus dem kurzen Abfragefenster verschwundenen
+Ankunftsabschnitt für dieselbe weiterhin gelieferte Fahrt übernehmen. Das
+sind höchstens ein Abschnitt pro Fahrt und zwei Minuten ab Empfang bzw.
+Ankunft. Der alte Empfangszeitstempel wird nicht erneuert. Neue Zeitprognosen
+haben Vorrang; fehlende Fahrten und explizit ausgefallene Abschnitte werden
+nicht ergänzt. Ein Neustart des Servers kann diese kurze Kontinuität verlieren.
+Fehlende oder gleichzeitige Ankunft/Abfahrt erzeugen keine erfundene Wartezeit.
+Längere Aufenthalte sind nur darstellbar, solange beide Zeitgrenzen frisch
+vorliegen. Es werden keine zusätzlichen Einzelabfragen für alle Fahrzeuge
+gestartet und keine Prognosen öfter als bisher abgefragt.
