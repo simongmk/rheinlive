@@ -6,15 +6,17 @@ with current stop forecasts, delays and complete trip details. Ferry services
 can appear when the source supplies them; verified Bonn examples were scheduled
 only. The German interface supports desktop and mobile screens.
 
-- Location-aware nearby stops and a departure monitor with a leave-home countdown.
+- Location-aware nearby stops and a departure monitor with a leave-home countdown, station-specific line selection and visible tight departures.
+- Tap a station dot or label on the map to open its departures.
 - Walking time from the footpath network, adjustable time/buffer, Apple/Google walking links and DB journey planning.
 - Dark and light maps, mapped rail tracks, optional bus/ferry routes, station search and map tilt.
-- City, transport-mode and line filters, plus an accessible list of visible trips.
+- One search for supported cities, local stops and lines; transport and line filters expand on demand.
+- Clock at the top right, a small combined data/status control, and tucked-away map style/3D settings.
 - Selected-trip direction, operator, stops, available alerts and platform changes.
 - One stroke per mapped rail geometry, with rounded close-up tracks, distinct construction sections and a colored selected trip.
 - Icons brake, wait at stations and accelerate again; reported stays take priority over explicitly estimated short dwells.
-- Estimated movement and optional following of a selected trip.
-- One label per station, adaptive animation up to 30 fps, deferred bus network.
+- Estimated movement and smooth camera following synchronized with the selected trip's animation.
+- One label per station, adaptive animation up to 60 fps, deferred bus network.
 - Local load/animation measurements in the information dialog.
 
 **Positions are estimated from stop forecasts and route geometry, not measured
@@ -64,7 +66,10 @@ are disclosed as straight-line estimates.
 
 The departure monitor separately requests `/api/v6/stoptimes` for one selected
 source-observed station ID, coalesced and cached for 30 seconds. A location
-permission selects a supported region and up to six nearby stations. A bounded
+permission selects a supported region and up to six nearby stations. Denied or
+unresponsive geolocation shows persistent recovery actions, including choosing
+a starting point on the map. A new location replaces the previous station;
+late or cancelled browser responses cannot undo manual choices. A bounded
 `/api/v1/one-to-many` WALK query calculates footpath durations, sent through
 our `/api/walk` POST endpoint. Origin coordinates are not included in replies
 or retained in application caches. They are sent to Transitous for the query.
