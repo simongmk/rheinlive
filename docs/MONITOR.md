@@ -24,10 +24,20 @@ dieser kleinen Auswahl. Die anderen Stationen bleiben auswählbar. Nicht
 berechenbare Wege werden nicht durch Luftlinie / Gehgeschwindigkeit ersetzt.
 Luftlinie dient nur zur Vorauswahl und ist bei den Entfernungen so beschriftet.
 
-Der Monitor bevorzugt zwei erreichbare Abfahrten unterschiedlicher Richtungen,
-wahlweise mit Linien-/Richtungsfilter, sowie weitere gemeldete Abfahrten
-am Halt. Er verwendet einen eigenen Haltestellen-Endpunkt und ist unabhängig
-vom kurzen Fahrzeugfenster und den Verkehrsmittelfiltern der Karte.
+Direkt über den Timern lassen sich mehrere relevante Linien auswählen. Die
+Auswahl wirkt auf Timer, Richtungsauswahl und Abfahrtsliste und wird pro Stadt
+und Haltestelle nur auf diesem Gerät gemerkt. „Alle“ setzt sie zurück. Die
+Linien stammen aus dem erfassten Stationsnetz und den gemeldeten Abfahrten;
+gleichnamige Bus- und Bahnlinien bleiben getrennt. Eine ausgewählte Linie ohne
+kommende Meldungen erzeugt eine leere Anzeige, keinen Wechsel auf andere Linien.
+
+Der Monitor zeigt die nächsten zwei Fahrten verschiedener Linien/Richtungen
+mit Prognose und bekannter Gehzeit. Auch knappe Fahrten bleiben dabei sichtbar,
+statt durch eine spätere erreichbare Fahrt derselben Linie/Richtung ersetzt zu
+werden. Weitere gemeldete Abfahrten stehen in der aufklappbaren Liste. Bei
+fehlenden Prognosen oder Gehzeiten bleiben die bekannten Einschränkungen sichtbar.
+Der eigene Haltestellen-Endpunkt ist unabhängig vom kurzen Fahrzeugfenster und
+von den Verkehrsmittelfiltern der Karte.
 
     Losgehzeit = prognostizierte Abfahrt − Gehzeit − Puffer
 
@@ -35,8 +45,11 @@ Gehzeit wird auf ganze Minuten aufgerundet. Der Puffer beginnt bei zwei Minuten
 und ist wie die Gehzeit einstellbar. Abfahrtsprognosen berücksichtigen gemeldete
 Verspätungen. Ausfälle, gesperrter Einstieg, fehlende Gehzeit, reine Sollzeiten
 und veraltete Antworten erzeugen keine positive Losgeh-Empfehlung. Ist der
-Puffer unterschritten, lautet die Anzeige „Knapp“; sie fordert nicht zum Rennen
-auf. Eine abgelaufene Abfahrt wird entfernt. Sekunden sind eine Anzeige der
+Puffer unterschritten, wechselt der Timer zu „Bis zur Abfahrt · knapp“ und zeigt
+die verbleibenden Sekunden bis zur gemeldeten Abfahrt. Das gilt auch, wenn diese
+Zeit kürzer als die eingestellte Gehzeit ist. Die App verändert dafür weder das
+Gehtempo noch verspricht sie, dass die Fahrt erreichbar bleibt. Erst nach der
+gemeldeten Abfahrt wird die Fahrt entfernt. Sekunden sind eine Anzeige der
 Berechnung, keine Behauptung sekundengenauer Betreiberprognosen.
 
 ## Daten und Grenzen
@@ -91,7 +104,7 @@ den Rheinlive-Server an Transitous gesendet. Rheinlive
 schreibt sie weder in dauerhaften Speicher noch in seine Antwort-Caches. Der
 POST-Aufruf und seine Antwort verwenden keine Browser-Caches. Dies ist keine
 Aussage über mögliche technische Logs des Hosters oder von Transitous. Nur
-manuelle Gehzeit pro Halt, Puffer und vorhandene Anzeigepräferenzen bleiben im
+manuelle Gehzeit und Linienauswahl pro Halt, Puffer und Anzeigepräferenzen bleiben im
 lokalen Gerätespeicher.
 
 [Apple Map Links](https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html)

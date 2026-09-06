@@ -61,3 +61,28 @@ test('foot paths preserve unreachable results, round in the UI, and never cache 
   let calls=0;const api=createMonitorApi({clock:()=>T,readJSON:readBoundedJSON,fetcher:async url=>{calls++;assert.equal(url.pathname,'/api/v1/one-to-many');assert.equal(url.searchParams.get('mode'),'WALK');assert.equal(url.searchParams.get('arriveBy'),'false');return Response.json(calls===1?[{duration:307,distance:369.5}]:[{}]);}});
   const r=await api(walkRequest());assert.equal(r.headers.get('Cache-Control'),'no-store');const a=await r.json();assert.equal(a.walks[0].seconds,307);assert.equal(a.origin,undefined);assert.equal(a.estimated,true);const b=await(await api(walkRequest())).json();assert.equal(b.walks[0].seconds,null);assert.equal(calls,2);
 });
+
+test('station line choices use only this station and its actual board, keeping bus/tram number collisions separate',async()=>{
+  const {stationLineOptions}=await import('../lib/monitor.mjs');
+  const stop={properties:{lineKeys:['tram:3','bus:106']}};
+  const result=stationLineOptions(stop,[{lineKey:'bus:3',line:'3',mode:'bus',color:'#123456'}],[{key:'tram:3',line:'3',mode:'tram',color:'#ff0000'},{key:'tram:4',line:'4',mode:'tram',color:'#00ff00'}]);
+  assert.deepEqual(result.map(e=>e.key),['bus:3','tram:3','bus:106']);assert.equal(result[0].color,'#123456');assert.equal(result[1].color,'#ff0000');
+});
+test('tight departures stay ahead of later reachable trips of the same line/direction, right up to departure',async()=>{
+  const {selectMonitorDepartures}=await import('../lib/monitor.mjs');
+  const soon={...event,id:'soon',lineKey:'tram:3',directionKey:'out',departure:T+120000},later={...soon,id:'later',departure:T+900000},other={...soon,id:'other',lineKey:'bus:3',departure:T+180000};
+  const list=[later,other,soon];
+  assert.deepEqual(selectMonitorDepartures(list,options).primary.map(e=>e.id),['soon','other']);
+  const r=departureReadiness(soon,options);assert.equal(r.state,'tight');assert.equal(r.departureSeconds,120);assert.ok(r.seconds<0);
+  assert.equal(selectMonitorDepartures(list,{...options,now:T+119999,fetchedAt:T+119999}).primary[0].id,'soon');
+  assert.ok(!selectMonitorDepartures(list,{...options,now:T+120000,fetchedAt:T+120000}).upcoming.some(e=>e.id==='soon'));
+});
+test('line and direction filters intersect without falling back to unwanted lines, cancelled or boarding-banned timers',async()=>{
+  const {selectMonitorDepartures}=await import('../lib/monitor.mjs');
+  const a={...event,id:'a',lineKey:'bus:3',directionKey:'out'},b={...a,id:'b',lineKey:'tram:3'},c={...a,id:'c',directionKey:'back'},cancelled={...a,id:'cancel',cancelled:true,departure:T+50000},banned={...a,id:'banned',boarding:false,departure:T+60000};
+  const result=selectMonitorDepartures([a,b,c,cancelled,banned],{...options,lines:new Set(['bus:3']),direction:'out'});
+  assert.deepEqual(result.primary.map(e=>e.id),['a']);assert.deepEqual(result.upcoming.map(e=>e.id),['cancel','banned','a']);
+  for(const lines of [new Set(),new Set(['bus:999'])])assert.deepEqual(selectMonitorDepartures([a,b],{...options,lines}),{primary:[],upcoming:[]});
+  assert.equal(departureReadiness({...a,realtime:false},options).departureSeconds,undefined);
+  assert.equal(departureReadiness(a,{...options,now:T+120001}).departureSeconds,undefined);
+});

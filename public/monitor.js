@@ -1,5 +1,6 @@
 import {platformText} from '../lib/journey-platform.mjs';
-import {cityAt,nearestStations,departureReadiness,navigationLinks} from '../lib/monitor.mjs';
+import {cityAt,nearestStations,departureReadiness,navigationLinks,stationLineOptions,selectMonitorDepartures} from '../lib/monitor.mjs';
+import {transportModes} from '../lib/cities.mjs';
 import {distance,validPoint} from '../lib/transit.mjs';
 import {createLocationRequest,locationMessages} from './location.js';
 const $=s=>document.querySelector(s),el=(tag,cls,value)=>{const n=document.createElement(tag);n.className=cls;if(value!==undefined)n.textContent=value;return n;};
@@ -13,6 +14,23 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore,on
   const status=(id,value)=>{$('#'+id).textContent=value;};
   let locating=false,pickingLocation=false,locateFocus=true;
   const stationId=()=>station?.properties.queryId;
+  let selectedLines=null,lineOptionsKey='';
+  const linePreference=()=>'monitor-lines:'+cityId+':'+stationId();
+  function restoreLines(){selectedLines=null;try{const value=JSON.parse(pref(linePreference()));if(Array.isArray(value)&&value.length<=200&&value.every(k=>typeof k==='string'&&k.length<=80))selectedLines=new Set(value);}catch{}lineOptionsKey='';updateLineFilters();}
+  function updateLineFilters(){
+    const options=stationLineOptions(station,board?.departures??[],network?.catalog??[]),parent=$('#departure-lines');
+    const key=JSON.stringify(options);parent.hidden=!options.length;
+    if(key!==lineOptionsKey){lineOptionsKey=key;parent.replaceChildren();
+      const all=el('button','departure-line','Alle');all.dataset.line='';all.onclick=()=>changeLines(null);parent.append(all);
+      for(const option of options){const b=el('button','departure-line'),sameName=options.filter(o=>o.line===option.line).length>1,mode=transportModes.find(m=>m.id===option.mode)?.name??option.mode;
+        b.dataset.line=option.key;b.setAttribute('aria-label',mode+' '+option.line);b.title=mode+' '+option.line;
+        const dot=el('span','line-swatch');dot.style.background=option.color;dot.setAttribute('aria-hidden','true');b.append(dot,el('span','',sameName?mode+' '+option.line:option.line));
+        b.onclick=()=>{const next=new Set(selectedLines??[]);if(next.has(option.key))next.delete(option.key);else next.add(option.key);changeLines(next);};parent.append(b);
+      }
+    }
+    for(const b of parent.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.line?Boolean(selectedLines?.has(b.dataset.line)):selectedLines===null));
+  }
+  function changeLines(next){selectedLines=next;save(linePreference(),JSON.stringify(next===null?null:[...next]));updateLineFilters();updateDirections();cardKey='';renderBoard();}
   function setActive(value,load=true){active=value;$('.overview').classList.toggle('monitor-active',value);$('#monitor-view').hidden=!value;$('#explore-view').hidden=value;for(const [id,chosen] of [['departures',value],['map',!value]]){$('#view-'+id).setAttribute('aria-selected',String(chosen));$('#view-'+id).tabIndex=chosen?0:-1;}if(value){if(load)refresh();}else{boardController?.abort();boardLoading=false;onExplore();}}
   $('#view-departures').onclick=()=>setActive(true);$('#view-map').onclick=()=>setActive(false);
   for(const id of ['departures','map'])$('#view-'+id).onkeydown=e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();setActive(id==='map');$('#view-'+(id==='map'?'departures':'map')).focus();}};
@@ -28,7 +46,7 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore,on
     $('.walk-config').open=walkMode==='unknown';$('#walk-recalculate').hidden=!location||cityAt(location.point)?.id!==cityId;cardKey='';renderBoard();
   }
   function choose(f,focus=false,requestWalk=true){
-    if(!f?.properties.queryId)return;cancelLocationRequest();cancelLocationPick();station=f;setActive(true,false);boardController?.abort();boardLoading=false;board=null;cardKey='';$('#monitor-search').value='';$('#monitor-search-results').hidden=true;$('#station-monitor').hidden=false;$('#monitor-empty').hidden=true;status('monitor-station-name',f.properties.name);$('#departure-direction').replaceChildren(el('option','','Alle Linien & Richtungen'));$('#departure-direction').firstChild.value='';
+    if(!f?.properties.queryId)return;cancelLocationRequest();cancelLocationPick();station=f;setActive(true,false);boardController?.abort();boardLoading=false;board=null;cardKey='';restoreLines();$('#monitor-search').value='';$('#monitor-search-results').hidden=true;$('#station-monitor').hidden=false;$('#monitor-empty').hidden=true;status('monitor-station-name',f.properties.name);$('#departure-direction').replaceChildren(el('option','','Alle Richtungen'));$('#departure-direction').firstChild.value='';$('#departure-direction').value='';
     const parent=$('#navigation-links');parent.replaceChildren();for(const link of navigationLinks({lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]})){const a=el('a','',link.label+' ↗');a.href=link.url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}
     renderNear();applyWalk();onStation(f,focus);refresh();if(requestWalk&&location&&!walks.has(stationId()))calculateWalks(false);
   }
@@ -37,16 +55,16 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore,on
   $('#buffer-minutes').oninput=()=>{const n=minutes($('#buffer-minutes'),15);$('#buffer-minutes').setAttribute('aria-invalid',String(n===null));if(n!==null)save('buffer',n);cardKey='';renderBoard();};
   $('#walk-recalculate').onclick=()=>{try{localStorage.removeItem('rheinlive:walk:'+stationId());}catch{}requestLocation(false);};
   $('#departure-direction').onchange=()=>{cardKey='';renderBoard();};$('#board-retry').onclick=()=>refresh(true);
-  function updateDirections(){const select=$('#departure-direction'),before=select.value,groups=new Map();for(const e of board.departures)if(!groups.has(e.directionKey))groups.set(e.directionKey,e.line+' → '+e.headsign);select.replaceChildren(el('option','','Alle Linien & Richtungen'));select.firstChild.value='';for(const [key,label]of groups){const o=el('option','',label);o.value=key;select.append(o);}if(groups.has(before))select.value=before;}
+  function updateDirections(){const select=$('#departure-direction'),before=select.value,groups=new Map();for(const e of board?.departures??[])if((selectedLines===null||selectedLines.has(e.lineKey))&&!groups.has(e.directionKey))groups.set(e.directionKey,e.line+' → '+e.headsign);select.replaceChildren(el('option','','Alle Richtungen'));select.firstChild.value='';for(const [key,label]of groups){const o=el('option','',label);o.value=key;select.append(o);}select.value=groups.has(before)?before:'';}
   async function refresh(force=false){
     if(!active||document.hidden||!station||boardLoading||!force&&board&&Date.now()+boardOffset-board.fetchedAt<30000)return;
     boardController?.abort();const c=new AbortController();boardController=c;const id=stationId(),city=cityId;boardLoading=true;$('#board-retry').hidden=true;if(!board)status('board-status','Abfahrten laden …');
-    try{const r=await fetch('/api/departures?'+new URLSearchParams({city,stopId:id}),{signal:AbortSignal.any([c.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(c.signal.aborted||id!==stationId()||city!==cityId)return;if(!r.ok||data.stale||data.stopId!==id||data.city!==city||!Array.isArray(data.departures)||!Number.isFinite(data.fetchedAt)||!Number.isFinite(data.serverTime))throw Error(data.error||'Abfahrten gerade nicht verfügbar.');board=data;boardOffset=data.serverTime-Date.now();updateDirections();cardKey='';renderBoard();}
+    try{const r=await fetch('/api/departures?'+new URLSearchParams({city,stopId:id}),{signal:AbortSignal.any([c.signal,AbortSignal.timeout(20000)])});const data=await r.json();if(c.signal.aborted||id!==stationId()||city!==cityId)return;if(!r.ok||data.stale||data.stopId!==id||data.city!==city||!Array.isArray(data.departures)||!Number.isFinite(data.fetchedAt)||!Number.isFinite(data.serverTime))throw Error(data.error||'Abfahrten gerade nicht verfügbar.');board=data;boardOffset=data.serverTime-Date.now();updateLineFilters();updateDirections();cardKey='';renderBoard();}
     catch(e){if(c.signal.aborted)return;board=null;cardKey='';renderBoard();status('board-status',e.name==='TimeoutError'?'Abfahrten brauchen gerade zu lange.':e.message);$('#board-retry').hidden=false;}
     finally{if(boardController===c)boardLoading=false;}
   }
   function readiness(e){return departureReadiness(e,{now:Date.now()+boardOffset,fetchedAt:board?.fetchedAt,walkMinutes:effectiveWalk(),bufferMinutes:minutes($('#buffer-minutes'),15)});}
-  const label=r=>({stale:'Prognose veraltet',cancelled:'Fällt aus','no-boarding':'Einstieg nicht möglich',departed:'Abfahrt vorbei',schedule:'Nur Fahrplan','no-walk':'Gehzeit prüfen',tight:'Puffer unterschritten',leave:'Jetzt bereitmachen',ready:'Bis zum Losgehen'}[r.state]);
+  const label=r=>({stale:'Prognose veraltet',cancelled:'Fällt aus','no-boarding':'Einstieg nicht möglich',departed:'Abfahrt vorbei',schedule:'Nur Fahrplan','no-walk':'Gehzeit prüfen',tight:'Bis zur Abfahrt · knapp',leave:'Jetzt bereitmachen',ready:'Bis zum Losgehen'}[r.state]);
   function renderBoard(){
     const walk=effectiveWalk(),buffer=minutes($('#buffer-minutes'),15);status('walk-summary',walk===null?'Gehzeit & Puffer einstellen':walk+' Min. zu Fuß · '+(buffer??'–')+' Min. Puffer');
     const parent=$('#departure-cards'),list=$('#departure-list');if(!station)return;
@@ -55,17 +73,15 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore,on
     status('board-status',stale?'Prognose veraltet · Countdown pausiert':'');
     $('#board-retry').hidden=!stale;
     if(walkMode==='automatic'&&Date.now()-walkAt>300000)status('walk-status','Standort älter als fünf Minuten. Neu bestimmen oder Gehzeit selbst eintragen.');
-    const upcoming=board.departures.filter(e=>e.departure>now&&(!filter||e.directionKey===filter));
-    const primary=[],directions=new Set();for(const e of upcoming){const r=readiness(e);if(['ready','leave'].includes(r.state)&&!directions.has(e.directionKey)){primary.push(e);directions.add(e.directionKey);if(primary.length===2)break;}}
-    if(!primary.length)primary.push(...upcoming.filter(e=>!e.cancelled&&e.boarding).slice(0,2));
+    const {upcoming,primary}=selectMonitorDepartures(board.departures,{now,fetchedAt:board.fetchedAt,walkMinutes:walk,bufferMinutes:buffer,lines:selectedLines,direction:filter});
     const key=[board.fetchedAt,filter,effectiveWalk(),$('#buffer-minutes').value,stale,...primary.map(e=>e.id),...upcoming.map(e=>e.id)].join('|');
     if(key!==cardKey){cardKey=key;parent.replaceChildren();list.replaceChildren();
       for(const e of primary){const card=el('article','departure-card'),head=el('div','departure-head'),badge=el('span','departure-badge',e.line);badge.style.background=e.color;badge.style.color=e.textColor;head.append(badge,el('h3','',e.headsign));card.append(head,el('strong','leave-countdown','–'),el('p','leave-label',''),el('p','departure-meta','Abfahrt '+time.format(e.departure)+(e.realtime&&e.scheduledDeparture!=null&&e.departure!==e.scheduledDeparture?' · '+(e.departure>e.scheduledDeparture?'+':'')+Math.round((e.departure-e.scheduledDeparture)/60000)+' Min.':'')));card.dataset.event=e.id;const p=platformText({...e.stop,plannedOnly:!e.realtime},e.mode);const platform=[p.label,p.note].filter(Boolean).join(' · ')||e.stop.description;if(platform)card.append(el('p','departure-platform',platform));parent.append(card);}
-      if(!primary.length)parent.append(el('p','monitor-note',upcoming.some(e=>e.cancelled)?'Die gemeldeten Fahrten fallen aus.':'Keine passenden Abfahrten.'));
+      if(!primary.length)parent.append(el('p','monitor-note',selectedLines?.size===0?'Wähle mindestens eine Linie.':upcoming.some(e=>e.cancelled)?'Die gemeldeten Fahrten fallen aus.':'Keine passenden Abfahrten.'));
       for(const e of upcoming){const row=el('div','departure-row'),badge=el('span','departure-badge',e.line);badge.style.background=e.color;badge.style.color=e.textColor;const body=el('span','departure-row-text',e.headsign),note=el('small','','');body.append(note);row.append(badge,body,el('time','',time.format(e.departure)));row.dataset.event=e.id;list.append(row);}
     }
-    for(const card of parent.querySelectorAll('[data-event]')){const e=primary.find(e=>e.id===card.dataset.event),r=readiness(e);card.dataset.state=r.state;card.querySelector('.leave-countdown').textContent=['ready','leave'].includes(r.state)?countdown(r.seconds):r.state==='tight'?'Knapp':r.state==='schedule'?'◷':'–';card.querySelector('.leave-label').textContent=label(r);}
-    for(const row of list.querySelectorAll('[data-event]')){const e=upcoming.find(e=>e.id===row.dataset.event),r=readiness(e);row.dataset.state=r.state;row.querySelector('small').textContent=['ready','leave'].includes(r.state)?'Los in '+countdown(r.seconds):label(r);}
+    for(const card of parent.querySelectorAll('[data-event]')){const e=primary.find(e=>e.id===card.dataset.event),r=readiness(e);card.dataset.state=r.state;card.querySelector('.leave-countdown').textContent=['ready','leave'].includes(r.state)?countdown(r.seconds):r.state==='tight'?countdown(r.departureSeconds):r.state==='schedule'?'◷':'–';card.querySelector('.leave-label').textContent=label(r);}
+    for(const row of list.querySelectorAll('[data-event]')){const e=upcoming.find(e=>e.id===row.dataset.event),r=readiness(e);row.dataset.state=r.state;row.querySelector('small').textContent=['ready','leave'].includes(r.state)?'Los in '+countdown(r.seconds):r.state==='tight'?'Abfahrt in '+countdown(r.departureSeconds)+' · knapp':label(r);}
   }
   async function calculateWalks(autoSelect){
     if(!location||!network||cityAt(location.point)?.id!==cityId)return;const point=[...location.point];near=nearestStations(network,point);renderNear();

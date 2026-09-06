@@ -5,8 +5,8 @@
 <meta name="theme-color" content="#0c1926"><title>Rheinlive · Verkehr in Bewegung</title>
 <meta name="description" content="Busse und Bahnen in Köln, Bonn und Düsseldorf: aktuelle Prognosen, Verspätungen und Fahrtverläufe auf einer offenen Vektorkarte.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/vendor/maplibre/maplibre-gl.css"><link rel="stylesheet" href="/style.css?v=14">
-<script defer src="/vendor/maplibre/maplibre-gl.js"></script><script type="module" src="/app.js?v=14"></script>
+<link rel="stylesheet" href="/vendor/maplibre/maplibre-gl.css"><link rel="stylesheet" href="/style.css?v=15">
+<script defer src="/vendor/maplibre/maplibre-gl.js"></script><script type="module" src="/app.js?v=15"></script>
 </head>
 <body>
 <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -40,10 +40,11 @@
 <div class="monitor-station"><span class="eyebrow">DEIN HALT</span><h2 id="monitor-station-name"></h2></div>
 <details class="walk-config"><summary id="walk-summary">Gehzeit &amp; Puffer einstellen</summary><div class="walk-settings"><label>Gehzeit <span>Min.</span><input id="walk-minutes" type="number" min="0" max="60" step="1" inputmode="numeric" placeholder="–"></label><label>Puffer <span>Min.</span><input id="buffer-minutes" type="number" min="0" max="15" step="1" inputmode="numeric" value="2"></label></div>
 <p id="walk-status" class="monitor-note">Gehzeit bis zur Haltestelle eintragen.</p><button id="walk-recalculate" class="text-button" hidden>Gehzeit neu berechnen</button></details>
-<label class="direction-filter"><span class="sr-only">Linie und Richtung filtern</span><select id="departure-direction"><option value="">Alle Linien &amp; Richtungen</option></select></label>
+<div id="departure-lines" class="departure-lines" role="group" aria-label="Relevante Linien an diesem Halt" hidden></div>
+<label class="direction-filter"><span class="sr-only">Richtung filtern</span><select id="departure-direction"><option value="">Alle Richtungen</option></select></label>
 <p id="board-status" class="monitor-note" role="status"></p><button id="board-retry" class="text-button" hidden>Abfahrten erneut laden</button>
 <div id="departure-cards" class="departure-cards"></div>
-<details class="all-departures"><summary>Alle Abfahrten</summary><div id="departure-list"></div></details>
+<details class="all-departures"><summary>Alle passenden Abfahrten</summary><div id="departure-list"></div></details>
 
 <div class="navigation-links"><span>Fußweg &amp; Weiterreise</span><div id="navigation-links"></div></div>
 </div>

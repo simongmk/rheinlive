@@ -6,7 +6,7 @@ with current stop forecasts, delays and complete trip details. Ferry services
 can appear when the source supplies them; verified Bonn examples were scheduled
 only. The German interface supports desktop and mobile screens.
 
-- Location-aware nearby stops and a departure monitor with a leave-home countdown.
+- Location-aware nearby stops and a departure monitor with a leave-home countdown, station-specific line selection and visible tight departures.
 - Tap a station dot or label on the map to open its departures.
 - Walking time from the footpath network, adjustable time/buffer, Apple/Google walking links and DB journey planning.
 - Dark and light maps, mapped rail tracks, optional bus/ferry routes, station search and map tilt.
