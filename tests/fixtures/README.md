@@ -63,3 +63,15 @@ unrelated trips were removed. The source URL and capture time are recorded.
 This is historical test evidence, never served as current activity. Transitous,
 DELFI, OSM attribution and the separate data licenses described above apply.
 The fixture proves the timestamps supplied, not the actual time doors stayed open.
+
+## Polling discontinuity, 6 September 2026
+
+`polling-dwell-2026-09-06.json` retains three actual trips (S6, KVB 4 and 16)
+from consecutive successful Cologne app snapshots at approximately 11:27 UTC.
+They are normalized Transitous responses; original trip/stop IDs, geometry,
+prediction times, observation times and response clocks are unchanged. Only
+unrelated trips were removed. An additional outgoing leg appears in the second
+capture while the current leg's shape and times stay identical. Applying its
+estimated dwell retroactively reproduced 190–500 m jumps for these examples.
+The fixture is historical regression evidence only and is never served as current
+data. The separate Transitous/DELFI/OSM attribution and licenses above apply.

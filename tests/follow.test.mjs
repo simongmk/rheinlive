@@ -106,3 +106,19 @@ test('camera work participates in the adaptive CPU budget',()=>{
   const h=harness({cameraCost:12});for(let i=1;i<=180;i++)h.frame(i*1000/60);
   assert.equal(h.layer.stats().targetFps,12);h.destroy();
 });
+
+test('newly revealed outgoing context cannot teleport either the followed camera or its icon',()=>{
+  const h=harness(),original=h.trips[0],first={...original.segments[0],arrival:epoch+60000};
+  const previous=prepareTrips([{...original,segments:[first]}]);h.layer.update(previous,epoch,epoch);
+  for(let i=1;i<=90;i++)h.frame(i*1000/60);
+  h.frame(30000);h.frame(30020);
+  const before=[...h.center()],now=epoch+30020;
+  const next={...first,from:first.to,to:{id:'c',lat:51,lon:7.12},departure:epoch+60000,arrival:epoch+120000,points:[[51,7.06],[51,7.12]]};
+  const raw=[{...original,segments:[first,next]}];
+  const updated=prepareTrips(raw,{previous,now,previousFetchedAt:epoch});
+  assert.equal(updated[0].dwells[0],null);
+  h.layer.update(updated,now,now);h.frame(30040);
+  const current=h.center();assert.ok(Math.abs(current[0]-before[0])<.00003,'only normal frame motion, no poll jump');
+  assert.ok(Math.abs(h.draws[0].x-500)<1e-8,'camera and icon share the reconciled position');
+  assert.equal(h.ends(),0);h.destroy();
+});
