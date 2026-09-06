@@ -15,7 +15,7 @@ only. The German interface supports desktop and mobile screens.
 - Selected-trip direction, operator, stops, available alerts and platform changes.
 - One stroke per mapped rail geometry, with rounded close-up tracks, distinct construction sections and a colored selected trip.
 - Icons brake, wait at stations and accelerate again; reported stays take priority over explicitly estimated short dwells.
-- Estimated movement and optional following of a selected trip.
+- Estimated movement and smooth camera following synchronized with the selected trip's animation.
 - One label per station, adaptive animation up to 60 fps, deferred bus network.
 - Local load/animation measurements in the information dialog.
 

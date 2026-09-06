@@ -5,7 +5,7 @@ const FADE_IN_MS=450,FADE_OUT_MS=650;
 const opacity=(entry,ts)=>{const t=Math.max(0,Math.min(1,(ts-entry.changedAt)/(entry.target?FADE_IN_MS:FADE_OUT_MS))),ease=t*t*(3-2*t);return entry.from+(entry.target-entry.from)*ease;};
 function transition(entry,target,ts){if(entry.target===target)return;entry.from=opacity(entry,ts);entry.target=target;entry.changedAt=ts;}
 
-/** The map and API do not participate in the vehicle animation clock. */
+/** The vehicle clock also drives follow mode; API polling stays independent. */
 export class FrameBudget {
   constructor(){this.fps=30;this.average=0;this.slow=0;this.fast=0;this.last=0;}
   ready(ts){return ts-this.last>=1000/this.fps-1;}
@@ -18,12 +18,13 @@ export class FrameBudget {
   }
 }
 
-export function createVehicleLayer(map,{document:doc=document,clock=Date.now,perf=performance,raf=requestAnimationFrame,caf=cancelAnimationFrame}={}){
+export function createVehicleLayer(map,{document:doc=document,clock=Date.now,perf=performance,raf=requestAnimationFrame,caf=cancelAnimationFrame,onFollowFrame=()=>false,onFollowEnd=()=>{}}={}){
   const canvas=doc.createElement('canvas'),ctx=canvas.getContext('2d');
   if(!ctx)throw Error('Fahrzeugdarstellung wird von diesem Browser nicht unterstützt.');
   canvas.className='vehicle-canvas';canvas.setAttribute('aria-hidden','true');
   Object.assign(canvas.style,{position:'absolute',inset:'0',pointerEvents:'none'});map.getCanvasContainer().appendChild(canvas);
   let vehicles=[],fetchedAt=0,offset=0,selected=null,theme='dark',frame=null,width=0,height=0,dpr=1,hits=[],destroyed=false,region=null,cameraDirty=false;
+  let followed=null,pendingFollow=null;
   const sprites=new Map(),entries=new Map(),budget=new FrameBudget(),motion=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)');
   let frames=0,since=perf.now(),observedFps=0,firstFrameAt=null,nextPaintAt=0,lastCameraAt=-Infinity;
   const fresh=now=>Number.isFinite(fetchedAt)&&now-fetchedAt<=MAX_SNAPSHOT_AGE_MS&&fetchedAt-now<=30000;
@@ -40,13 +41,29 @@ export function createVehicleLayer(map,{document:doc=document,clock=Date.now,per
     if(sprites.has(key))return sprites.get(key);
     const node=doc.createElement('canvas'),size=(radius+7)*2;node.width=Math.ceil(size*dpr);node.height=Math.ceil(size*dpr);const c=node.getContext('2d');c.scale(dpr,dpr);c.globalAlpha=planned?.65:1;c.beginPath();c.arc(size/2,size/2,radius,0,Math.PI*2);c.fillStyle=planned?(theme==='dark'?'#142838':'#ffffff'):v.color;c.fill();c.lineWidth=planned?1:1.8;c.strokeStyle=planned?'#8c9eab':'#ffffff';c.stroke();c.fillStyle=planned?(theme==='dark'?'#a8b9c5':'#475a66'):(v.textColor||'#ffffff');c.font=`700 ${fontSize}px system-ui, sans-serif`;c.textAlign='center';c.textBaseline='middle';const lines=label.split('\n');for(let i=0;i<lines.length;i++)c.fillText(lines[i],size/2,size/2+(i-(lines.length-1)/2)*fontSize,radius*1.75);if(stopped){const x=size/2+radius*.7,y=size/2+radius*.7;c.beginPath();c.arc(x,y,5,0,Math.PI*2);c.fillStyle=theme==='dark'?'#142838':'#ffffff';c.fill();c.strokeStyle=v.color;c.lineWidth=1;c.stroke();c.fillStyle=theme==='dark'?'#ffffff':'#142838';c.font='700 8px system-ui, sans-serif';c.fillText('Ⅱ',x,y+.3,6);}const result={node,size};if(sprites.size>=512)sprites.delete(sprites.keys().next().value);sprites.set(key,result);return result;
   }
-  function paint(frameAt=perf.now(),source='update'){
-    const start=perf.now();cameraDirty=false;resize();ctx.clearRect(0,0,width,height);hits=[];
-    if(doc.hidden){entries.clear();return;}
-    const now=clock()+offset,zoom=map.getZoom(),normalRadius=Math.round(Math.min(17,Math.max(10,10+(zoom-9)*1.4))),fontSize=zoom<11?10:12,bounds=map.getBounds();
-    if(!fresh(now)){entries.clear();vehicles=[];return;}
+  function clearCanvas(){cameraDirty=false;resize();ctx.clearRect(0,0,width,height);hits=[];}
+  const inRegion=p=>!region||(p.lat>=region[0][0]&&p.lat<=region[1][0]&&p.lon>=region[0][1]&&p.lon<=region[1][1]);
+  function stopFollowing(){if(!followed)return;followed=null;pendingFollow=null;onFollowFrame(null);onFollowEnd();}
+  function paint(frameAt=perf.now(),source='update',sample=null){
+    const start=perf.now(),actualNow=clock()+offset;
+    if(doc.hidden){pendingFollow=null;onFollowFrame(null);entries.clear();clearCanvas();return;}
+    if(!fresh(actualNow)){stopFollowing();entries.clear();vehicles=[];clearCanvas();return;}
+    const now=sample?.now??actualNow,entry=followed?entries.get(followed):null;
+    let tracked=entry?.present?positionAt(entry.vehicle,now,entry.age):null;
+    if(followed&&(!tracked||tracked.quality!==entry.vehicle.quality||!inRegion(tracked)))stopFollowing();
+    if(followed&&pendingFollow)return;
+    if(followed&&source!=='camera'&&source!=='follow'){
+      if(onFollowFrame(tracked,frameAt,motion?.matches)){
+        // jumpTo changes the transform before the base map reaches the screen.
+        // Paint the overlay after that render, using this exact same time sample.
+        pendingFollow={now,tracked,frameAt,source,cameraCost:perf.now()-start};return;
+      }
+    }
+    if(sample&&followed)tracked=sample.tracked;
+    clearCanvas();
+    const zoom=map.getZoom(),normalRadius=Math.round(Math.min(17,Math.max(10,10+(zoom-9)*1.4))),fontSize=zoom<11?10:12,bounds=map.getBounds();
     for(const [id,e]of entries){
-      const v=e.vehicle,current=e.present?positionAt(v,now,e.age):null,active=current&&current.quality===v.quality;
+      const v=e.vehicle,current=v.id===followed?tracked:e.present?positionAt(v,now,e.age):null,active=current&&current.quality===v.quality;
       const observation=e.position?.segment.observedAt??e.age;
       if(!active&&(now-observation>MAX_SNAPSHOT_AGE_MS||observation-now>30000)){entries.delete(id);continue;}
       if(active){e.position=current;transition(e,1,start);}
@@ -62,31 +79,32 @@ export function createVehicleLayer(map,{document:doc=document,clock=Date.now,per
       if(v.id===selected&&active){ctx.beginPath();ctx.arc(xy.x,xy.y,radius+7,0,Math.PI*2);ctx.fillStyle=v.color;ctx.globalAlpha=.2*alpha;ctx.fill();ctx.globalAlpha=alpha;ctx.lineWidth=2;ctx.strokeStyle=v.color;ctx.stroke();}
       const s=sprite(v,radius,fontSize,p.state==='stopped');ctx.globalAlpha=alpha;ctx.drawImage(s.node,xy.x-s.size/2,xy.y-s.size/2,s.size,s.size);ctx.globalAlpha=1;if(active&&alpha>=.2)hits.push({id:v.id,x:xy.x,y:xy.y,radius});
     }
-    const end=perf.now(),previousFps=budget.fps;if(firstFrameAt===null&&hits.length)firstFrameAt=end;budget.record(end,end-start);
+    const end=perf.now(),previousFps=budget.fps;if(firstFrameAt===null&&hits.length)firstFrameAt=end;budget.record(end,end-start+(sample?.cameraCost??0));
     const interval=motion?.matches?1000:1000/budget.fps;
     // Keep clock deadlines on their original phase. Charging paint duration to
     // the next deadline can turn cheap 30/60 fps drawings into 20/30 fps.
-    if(source==='clock'&&previousFps===budget.fps)nextPaintAt+=Math.max(1,Math.floor((frameAt-nextPaintAt+1)/interval)+1)*interval;
+    if((sample?.source??source)==='clock'&&previousFps===budget.fps)nextPaintAt+=Math.max(1,Math.floor((frameAt-nextPaintAt+1)/interval)+1)*interval;
     else nextPaintAt=frameAt+interval;
     if(source==='camera')lastCameraAt=frameAt;
     frames++;if(end-since>=1000){observedFps=Math.round(frames*1000/(end-since));frames=0;since=end;}
   }
   // A held drag can keep isMoving() true without producing any map frames.
   // Always keep our clock alive; recent camera paints already satisfy its budget.
-  function loop(ts){frame=null;if(destroyed||doc.hidden||!entries.size)return;if(ts>=nextPaintAt-1&&ts-lastCameraAt>=50)paint(ts,'clock');schedule();}
+  function loop(ts){frame=null;if(destroyed||doc.hidden||!entries.size)return;if(!pendingFollow&&ts>=nextPaintAt-1&&(followed||ts-lastCameraAt>=50))paint(ts,'clock');schedule();}
   function schedule(){if(frame===null&&!destroyed&&!doc.hidden&&entries.size)frame=raf(loop);}
   function wake(){if(frame!==null){caf(frame);frame=null;}paint();schedule();}
   function onVisibility(){if(!doc.hidden)reconcile();wake();}
   const onMove=()=>{cameraDirty=true;};
-  const onRender=()=>{if(cameraDirty&&!doc.hidden)paint(perf.now(),'camera');};
+  const onRender=()=>{if(cameraDirty&&!doc.hidden){const sample=pendingFollow;pendingFollow=null;paint(sample?.frameAt??perf.now(),sample?'follow':'camera',sample);}};
   map.on('move',onMove);map.on('render',onRender);map.on('resize',wake);doc.addEventListener('visibilitychange',onVisibility);motion?.addEventListener('change',wake);
   return {
     update(next,age=fetchedAt,now=clock()+offset,{immediate=false,discard=[]}={}){for(const id of discard)entries.delete(id);vehicles=next;fetchedAt=age;offset=now-clock();if(immediate)entries.clear();reconcile();wake();},
     select(id){selected=id;paint();},
+    follow(id){if(followed===id)return;followed=id;pendingFollow=null;if(id)wake();else onFollowFrame(null);},
     setBounds(bounds){if(region&&JSON.stringify(region)!==JSON.stringify(bounds)){entries.clear();vehicles=[];}region=bounds;paint();},
     setTheme(next){theme=next;sprites.clear();paint();},
     hitTest(p){let result=null,nearest=Infinity;for(const h of hits){const d=Math.hypot(p.x-h.x,p.y-h.y);if(d<=h.radius+5&&d<nearest){nearest=d;result=h.id;}}return result;},
     stats:()=>({firstFrameAt,targetFps:motion?.matches?1:budget.fps,observedFps:doc.hidden||!entries.size?0:observedFps,drawMs:+budget.average.toFixed(2),visible:hits.length,sprites:sprites.size,transitions:entries.size}),
-    destroy(){destroyed=true;if(frame!==null)caf(frame);map.off('move',onMove);map.off('render',onRender);map.off('resize',wake);doc.removeEventListener('visibilitychange',onVisibility);motion?.removeEventListener('change',wake);sprites.clear();entries.clear();canvas.remove();},
+    destroy(){destroyed=true;followed=null;pendingFollow=null;onFollowFrame(null);if(frame!==null)caf(frame);map.off('move',onMove);map.off('render',onRender);map.off('resize',wake);doc.removeEventListener('visibilitychange',onVisibility);motion?.removeEventListener('change',wake);sprites.clear();entries.clear();canvas.remove();},
   };
 }

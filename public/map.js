@@ -1,15 +1,16 @@
 import {createVehicleLayer} from './vehicles.js';
 import {bindMapPicking} from './map-picking.js';
 import {createRailDetail,DETAIL_ZOOM} from './rail-detail.js';
+import {createFollowCamera} from './follow-camera.js';
 // Static network layers stay in MapLibre; vehicle animation uses its own cached canvas.
 const collection=features=>({type:'FeatureCollection',features});
 const empty=()=>collection([]);
-export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=()=>{},onStation=()=>{},onPickLocation=()=>{},onMove=()=>{},onClear=()=>{},onError=()=>{},onRailDetail=()=>{}}={}){
+export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=()=>{},onStation=()=>{},onPickLocation=()=>{},onMove=()=>{},onClear=()=>{},onError=()=>{},onRailDetail=()=>{},onFollowEnd=()=>{}}={}){
   if(!window.maplibregl)throw new Error('Kartenbibliothek konnte nicht geladen werden.');
   const map=new maplibregl.Map({container:'map',style:await mapStyle(initialTheme),center:[city.center[1],city.center[0]],zoom:11.7,minZoom:9,maxZoom:18,pitch:0,attributionControl:false,collectResourceTiming:true,canvasContextAttributes:{antialias:true}});
   map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:'<a href="https://transitous.org/sources/" target="_blank">Verkehrsdaten: Transitous</a>'}),'bottom-right');
   map.addControl(new maplibregl.ScaleControl({maxWidth:100,unit:'metric'}),'bottom-left');
-  const vehicleLayer=createVehicleLayer(map);vehicleLayer.setBounds(city.bounds);vehicleLayer.setTheme(initialTheme);map.on('remove',()=>vehicleLayer.destroy());
+  const followCamera=createFollowCamera(map),vehicleLayer=createVehicleLayer(map,{onFollowFrame:followCamera.step,onFollowEnd});vehicleLayer.setBounds(city.bounds);vehicleLayer.setTheme(initialTheme);map.on('remove',()=>vehicleLayer.destroy());
   let selected=null,network=empty(),stops=empty(),selectedGeometry=empty(),userLocation=empty(),boardStation=empty(),theme=initialTheme,networkOn=true,tilted=false,detailActive=false,hasRails=true,filter=['literal',true],stationFilter=['literal',true],trackFilter=['in',['get','class'],['literal',['rail','transit']]];
   const railDetail=createRailDetail(map,state=>{detailActive=state.active;applyFilter();onRailDetail(state);});
   map.on('remove',()=>railDetail.destroy());
@@ -45,7 +46,8 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
   let stationIndex=new Map(),pickingLocation=false;
   const removePicking=bindMapPicking(map,{vehicles:vehicleLayer,stationById:id=>stationIndex.get(id),onVehicle:onSelect,onStation,onClear,isPickingLocation:()=>pickingLocation,onLocation:point=>onPickLocation(point)});
   map.on('remove',removePicking);
-  map.on('moveend',onMove);map.on('error',e=>{if(e.sourceId!=='detail-tracks')onError(e.error?.message||'Die Karte konnte nicht vollständig geladen werden.');});
+  let lastFollowUi=-Infinity;
+  map.on('moveend',e=>{const now=performance.now();if(e.vehicleFollow&&now-lastFollowUi<1000)return;lastFollowUi=now;onMove();});map.on('error',e=>{if(e.sourceId!=='detail-tracks')onError(e.error?.message||'Die Karte konnte nicht vollständig geladen werden.');});
   return {
     raw:map,
     getBounds:()=>{const bounds=map.getBounds();return {contains:([lat,lon])=>bounds.contains([lon,lat])};},
@@ -70,7 +72,7 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     showNetwork:value=>{networkOn=value;applyFilter();railDetail.setEnabled(networkOn&&hasRails);},
     setTheme:async next=>{const style=await mapStyle(next);theme=next;map.setStyle(style);vehicleLayer.setTheme(next);},
     setTilt:value=>{tilted=value;if(map.getLayer('buildings-3d'))map.setLayoutProperty('buildings-3d','visibility',value?'visible':'none');map.easeTo({pitch:value?45:0,bearing:value?-12:0,duration:500});},
-    follow:v=>map.easeTo({center:[v.lon,v.lat],duration:800}),
+    follow:id=>{if(id)followCamera.start();else followCamera.reset();vehicleLayer.follow(id);},
   };
 }
 async function mapStyle(theme){

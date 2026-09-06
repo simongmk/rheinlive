@@ -1,6 +1,6 @@
 # Ladezeiten und Fahrzeuganimation
 
-Stand: 5. September 2026. Die Änderungen beheben sowohl redundante Kartenobjekte
+Stand: 6. September 2026. Die Änderungen beheben sowohl redundante Kartenobjekte
 als auch unnötige Arbeit beim Animieren. Die Messungen unten sind Datei-, CPU-
 und HTTP-Messungen, keine Behauptung getesteter Browser-FPS oder GPU-Leistung.
 
@@ -114,6 +114,32 @@ Die Empfehlungen zum Wiederverwenden vorgezeichneter Symbole und zu getrennten
 Zeichenebenen sind in der [Canvas-Dokumentation](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
 beschrieben. Die Positionierung verwendet MapLibres dokumentierte
 [Projektions- und Kartenereignisse](https://maplibre.org/maplibre-gl-js/docs/API/classes/Map/).
+
+## Flüssiges Folgen einer Fahrt
+
+Die Kamera folgt jetzt der Fahrzeug-Animationsuhr. Vorher löste der sekundliche
+UI-Tick eine neue 800-ms-Kamerafahrt aus; die wiederholten Anfahrten und Pausen
+führten zum sichtbaren Sekundentakt. Das Einschwenken dauert einmalig 450 ms.
+Danach verwendet die Kamera dieselbe Position wie das verfolgte Icon, inklusive
+Stillstand an Haltestellen. Zoom, Neigung und Ausrichtung bleiben erhalten.
+
+MapLibres öffentliches `jumpTo` aktualisiert zunächst die Projektion. Erst beim
+zugehörigen Karten-`render` wird die Canvas-Ebene mit genau derselben Zeitprobe
+gezeichnet. Maximal eine Probe wartet auf das Kartenbild; es gibt keine zweite
+Animationsschleife und keine Nachholserie. Kamera-Aufwand geht in das bestehende
+CPU-Budget ein. Zähler und Listen werden beim Folgen höchstens einmal pro Sekunde
+aktualisiert; zusätzliche Betreiberanfragen entstehen dadurch nicht.
+
+Manuelles Verschieben, Zoomen, Drehen und der Neigungsbutton beenden das Folgen.
+Entfernte, ausgefilterte, abgelaufene oder außerhalb der Region liegende Fahrten
+werden nicht weiter verfolgt, auch wenn ihr Icon noch ausblendet. Ein versteckter
+Tab pausiert die Animation. Reduzierte Bewegung behält den sekündlichen Takt.
+
+Neun zusätzliche Node-Tests prüfen Kamera und Canvas gemeinsam: 500 Icons mit
+simulierten 60-/120-Hz-Callbacks, 30 und später 60 Kameraänderungen pro Sekunde,
+Render-Reihenfolge, Haltephasen, Prognoseaktualisierung, manuelles Beenden,
+abgelaufene Daten, Sichtbarkeit und Lastdrosselung. Das sind deterministische
+Scheduler-/Koordinatenprüfungen, keine Messung realer Browser- oder GPU-FPS.
 
 ## Ladevolumen
 
