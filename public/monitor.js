@@ -61,17 +61,17 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore,on
     catch(e){if(c.signal.aborted)return;board=null;cardKey='';renderBoard();status('board-status',e.name==='TimeoutError'?'Abfahrten brauchen gerade zu lange.':e.message);$('#board-retry').hidden=false;}
     finally{if(boardController===c)boardLoading=false;}
   }
-  function readiness(e){return departureReadiness(e,{now:Date.now()+boardOffset,fetchedAt:board?.fetchedAt,walkMinutes:effectiveWalk(),bufferMinutes:minutes($('#buffer-minutes'),15)});}
+  function readiness(e){return departureReadiness(e,{now:Date.now()+boardOffset,fetchedAt:board?.fetchedAt,validUntil:board?.validUntil,walkMinutes:effectiveWalk(),bufferMinutes:minutes($('#buffer-minutes'),15)});}
   const label=r=>({stale:'Prognose veraltet',cancelled:'Fällt aus','no-boarding':'Einstieg nicht möglich',departed:'Abfahrt vorbei',schedule:'Nur Fahrplan','no-walk':'Gehzeit prüfen',tight:'Bis zur Abfahrt · knapp',leave:'Jetzt bereitmachen',ready:'Bis zum Losgehen'}[r.state]);
   function renderBoard(){
     const walk=effectiveWalk(),buffer=minutes($('#buffer-minutes'),15);status('walk-summary',walk===null?'Gehzeit & Puffer einstellen':walk+' Min. zu Fuß · '+(buffer??'–')+' Min. Puffer');
     const parent=$('#departure-cards'),list=$('#departure-list');if(!station)return;
     if(!board){parent.replaceChildren();list.replaceChildren();cardKey='';return;}
-    const now=Date.now()+boardOffset,stale=now-board.fetchedAt>120000,filter=$('#departure-direction').value;
+    const now=Date.now()+boardOffset,stale=now-board.fetchedAt>120000||(board.validUntil!==undefined&&(!Number.isFinite(board.validUntil)||now>board.validUntil)),filter=$('#departure-direction').value;
     status('board-status',stale?'Prognose veraltet · Countdown pausiert':'');
     $('#board-retry').hidden=!stale;
     if(walkMode==='automatic'&&Date.now()-walkAt>300000)status('walk-status','Standort älter als fünf Minuten. Neu bestimmen oder Gehzeit selbst eintragen.');
-    const {upcoming,primary}=selectMonitorDepartures(board.departures,{now,fetchedAt:board.fetchedAt,walkMinutes:walk,bufferMinutes:buffer,lines:selectedLines,direction:filter});
+    const {upcoming,primary}=selectMonitorDepartures(board.departures,{now,fetchedAt:board.fetchedAt,validUntil:board.validUntil,walkMinutes:walk,bufferMinutes:buffer,lines:selectedLines,direction:filter});
     const key=[board.fetchedAt,filter,effectiveWalk(),$('#buffer-minutes').value,stale,...primary.map(e=>e.id),...upcoming.map(e=>e.id)].join('|');
     if(key!==cardKey){cardKey=key;parent.replaceChildren();list.replaceChildren();
       for(const e of primary){const card=el('article','departure-card'),head=el('div','departure-head'),badge=el('span','departure-badge',e.line);badge.style.background=e.color;badge.style.color=e.textColor;head.append(badge,el('h3','',e.headsign));card.append(head,el('strong','leave-countdown','–'),el('p','leave-label',''),el('p','departure-meta','Abfahrt '+time.format(e.departure)+(e.realtime&&e.scheduledDeparture!=null&&e.departure!==e.scheduledDeparture?' · '+(e.departure>e.scheduledDeparture?'+':'')+Math.round((e.departure-e.scheduledDeparture)/60000)+' Min.':'')));card.dataset.event=e.id;const p=platformText({...e.stop,plannedOnly:!e.realtime},e.mode);const platform=[p.label,p.note].filter(Boolean).join(' · ')||e.stop.description;if(platform)card.append(el('p','departure-platform',platform));parent.append(card);}

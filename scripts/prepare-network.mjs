@@ -3,8 +3,9 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {cities,modeFor,lineName,lineKey,lineColor,pointInBounds,segmentIntersectsBounds} from '../lib/cities.mjs';
 import {decodePolyline,validPoint} from '../lib/transit.mjs';
 import {groupStations,compactLines} from '../lib/network.mjs';
-const id=process.argv[2],input=process.argv[3];if(!cities[id]||!input)throw Error('Usage: node scripts/prepare-network.mjs city raw-routes.json');
-const city=cities[id],raw=JSON.parse(await readFile(input,'utf8'));
+import {adaptOwnResponse,OWN_SOURCE} from '../lib/own-backend.mjs';
+const id=process.argv[2],input=process.argv[3],output=process.argv[4]||'public/data',provider=process.argv[5]||'transitous';if(!cities[id]||!input||!['transitous','own'].includes(provider))throw Error('Usage: node scripts/prepare-network.mjs city raw-routes.json [output-directory] [transitous|own]');
+const city=cities[id],original=JSON.parse(await readFile(input,'utf8')),raw=provider==='own'?adaptOwnResponse('/api/experimental/map/routes',original):original;
 if(!Array.isArray(raw.routes)||!Array.isArray(raw.polylines)||!Array.isArray(raw.stops))throw Error('Invalid network response');
 const features=new Map(),stops=new Map(),lines=new Map(),paths=new Map();
 function simplify(points){
@@ -40,8 +41,8 @@ for(const route of raw.routes){
       const featureKey=key+':'+(directionA<directionB?directionA:directionB);
       // Rail infrastructure comes directly from the vector basemap. Retain routes
       // only for bus/ferry overlays; catalog and station membership still cover rail.
-      if(['bus','ferry'].includes(mode)&&!features.has(featureKey))features.set(featureKey,{type:'Feature',properties:{mode,line:name,lineKey:key,color,pathSource:route.pathSource},geometry:{type:'MultiLineString',coordinates:rounded}});
-      for(const index of [segment.from,segment.to]){const p=raw.stops[index];if(!p||!validPoint([p.lat,p.lon])||!pointInBounds([p.lat,p.lon],city.bounds))continue;const id=(p.stopId||p.name)+':'+key;stops.set(id,{type:'Feature',properties:{id:p.stopId,name:p.name,mode,line:name,lineKey:key},geometry:{type:'Point',coordinates:[p.lon,p.lat]}});}
+      if(['bus','ferry'].includes(mode)&&(provider!=='own'||['ROUTED','TIMETABLE'].includes(route.pathSource))&&!features.has(featureKey))features.set(featureKey,{type:'Feature',properties:{mode,line:name,lineKey:key,color,pathSource:route.pathSource},geometry:{type:'MultiLineString',coordinates:rounded}});
+      for(const index of [segment.from,segment.to]){const p=raw.stops[index];if(!p||!validPoint([p.lat,p.lon])||!pointInBounds([p.lat,p.lon],city.bounds))continue;const id=(p.stopId||p.name)+':'+key;stops.set(id,{type:'Feature',properties:{id:p.stopId,...(provider==='own'?{sourceParentId:p.parentId||null,queryId:p.parentId||p.stopId}:{}),name:p.name,mode,line:name,lineKey:key},geometry:{type:'Point',coordinates:[p.lon,p.lat]}});}
     }
     if(used)lines.set(key,{key,line:name,mode,color});
   }
@@ -50,4 +51,5 @@ const collection=features=>({type:'FeatureCollection',features});
 const compact=compactLines([...features.values()]),generatedAt=new Date().toISOString();
 const data={city:id,generatedAt,kind:'static-network-not-live-vehicles',source:'Transitous / MOTIS, DELFI and OpenStreetMap contributors',sourceUrl:'https://transitous.org/sources/',geometry:'Rail tracks are supplied by OpenFreeMap/OpenMapTiles, not by route overlays. Bus/ferry routes are static MOTIS paths; current diversions may differ.',lines:collection(compact.features.filter(f=>f.properties.mode==='ferry')),stops:groupStations([...stops.values()]),catalog:[...lines.values()],parts:{bus:'/data/network-'+id+'-bus.json?v=7'}};
 const bus={city:id,generatedAt,kind:'static-network-part',lines:collection(compact.features.filter(f=>f.properties.mode==='bus'))};
-await mkdir('public/data',{recursive:true});await writeFile('public/data/network-'+id+'-bus.json',JSON.stringify(bus));await writeFile('public/data/network-'+id+'.json',JSON.stringify(data));console.log(JSON.stringify({city:id,lines:lines.size,paths:compact.features.length,stops:data.stops.features.length,initialBytes:Buffer.byteLength(JSON.stringify(data)),busBytes:Buffer.byteLength(JSON.stringify(bus))}));
+if(provider==='own')Object.assign(data,{source:OWN_SOURCE+' · DELFI e.V. · OpenStreetMap contributors',sourceUrl:'https://gtfs.de/de/feeds/de_full/',license:'GTFS.de static: CC BY 4.0; OpenStreetMap geometry: ODbL 1.0',provider:'own'});
+await mkdir(output,{recursive:true});await writeFile(output+'/network-'+id+'-bus.json',JSON.stringify(bus));await writeFile(output+'/network-'+id+'.json',JSON.stringify(data));console.log(JSON.stringify({city:id,lines:lines.size,paths:compact.features.length,stops:data.stops.features.length,initialBytes:Buffer.byteLength(JSON.stringify(data)),busBytes:Buffer.byteLength(JSON.stringify(bus))}));

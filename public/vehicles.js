@@ -23,11 +23,11 @@ export function createVehicleLayer(map,{document:doc=document,clock=Date.now,per
   if(!ctx)throw Error('Fahrzeugdarstellung wird von diesem Browser nicht unterstützt.');
   canvas.className='vehicle-canvas';canvas.setAttribute('aria-hidden','true');
   Object.assign(canvas.style,{position:'absolute',inset:'0',pointerEvents:'none'});map.getCanvasContainer().appendChild(canvas);
-  let vehicles=[],fetchedAt=0,offset=0,selected=null,theme='dark',frame=null,width=0,height=0,dpr=1,hits=[],destroyed=false,region=null,cameraDirty=false;
+  let validUntil,vehicles=[],fetchedAt=0,offset=0,selected=null,theme='dark',frame=null,width=0,height=0,dpr=1,hits=[],destroyed=false,region=null,cameraDirty=false;
   let followed=null,pendingFollow=null;
   const sprites=new Map(),entries=new Map(),budget=new FrameBudget(),motion=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)');
   let frames=0,since=perf.now(),observedFps=0,firstFrameAt=null,nextPaintAt=0,lastCameraAt=-Infinity;
-  const fresh=now=>Number.isFinite(fetchedAt)&&now-fetchedAt<=MAX_SNAPSHOT_AGE_MS&&fetchedAt-now<=30000;
+  const fresh=now=>Number.isFinite(fetchedAt)&&now-fetchedAt<=MAX_SNAPSHOT_AGE_MS&&fetchedAt-now<=30000&&(validUntil===undefined||Number.isFinite(validUntil)&&now<=validUntil);
   function reconcile(){
     const ts=perf.now(),ids=new Set(vehicles.map(v=>v.id));
     for(const [id,e]of entries)if(!ids.has(id)){e.present=false;transition(e,0,ts);}
@@ -98,7 +98,7 @@ export function createVehicleLayer(map,{document:doc=document,clock=Date.now,per
   const onRender=()=>{if(cameraDirty&&!doc.hidden){const sample=pendingFollow;pendingFollow=null;paint(sample?.frameAt??perf.now(),sample?'follow':'camera',sample);}};
   map.on('move',onMove);map.on('render',onRender);map.on('resize',wake);doc.addEventListener('visibilitychange',onVisibility);motion?.addEventListener('change',wake);
   return {
-    update(next,age=fetchedAt,now=clock()+offset,{immediate=false,discard=[]}={}){for(const id of discard)entries.delete(id);vehicles=next;fetchedAt=age;offset=now-clock();if(immediate)entries.clear();reconcile();wake();},
+    update(next,age=fetchedAt,now=clock()+offset,{immediate=false,discard=[],validUntil:deadline}={}){validUntil=deadline;for(const id of discard)entries.delete(id);vehicles=next;fetchedAt=age;offset=now-clock();if(immediate)entries.clear();reconcile();wake();},
     select(id){selected=id;paint();},
     follow(id){if(followed===id)return;followed=id;pendingFollow=null;if(id)wake();else onFollowFrame(null);},
     setBounds(bounds){if(region&&JSON.stringify(region)!==JSON.stringify(bounds)){entries.clear();vehicles=[];}region=bounds;paint();},

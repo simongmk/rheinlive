@@ -3,8 +3,8 @@
 Der eigenständige Import prüft die offenen GTFS.de-Feeds gegen ihre passenden
 Echtzeitmeldungen. Er ist die Grundlage für einen eigenen Datenbetrieb. Die
 bestehende Karte verwendet weiterhin Transitous; dieser Import ersetzt noch
-keine ihrer APIs. Es gibt keine neue Produktionsabhängigkeit oder laufende
-Infrastruktur.
+keine ihrer APIs. Die separate [eigene MOTIS-Anbindung](OWN-BACKEND.md)
+setzt darauf auf; die gehostete Karte wurde noch nicht umgestellt.
 
 Erster realer Durchlauf: [Stichprobe vom 6. September 2026](assessments/2026-09-06/README.md).
 

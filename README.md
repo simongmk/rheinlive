@@ -79,6 +79,7 @@ walking time. See [monitor behavior and limits](docs/MONITOR.md).
 
 ## Evidence and extension
 
+- [Own GTFS.de/MOTIS backend and separate local integration](docs/OWN-BACKEND.md)
 - [Independent Germany GTFS import and coverage assessment](docs/GTFS-PIPELINE.md)
 - [Checked data sources, access conditions and live coverage](docs/DATA-SOURCES.md)
 - [How to add another city or provider](docs/EXPANSION.md)

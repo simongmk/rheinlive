@@ -10,6 +10,13 @@ const element=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.cla
 const icon=id=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','icon');svg.setAttribute('aria-hidden','true');const use=document.createElementNS(svg.namespaceURI,'use');use.setAttribute('href','#i-'+id);svg.append(use);return svg;};
 const readPref=(key,fallback)=>{try{return localStorage.getItem('rheinlive:'+key)||fallback;}catch{return fallback;}};
 const savePref=(key,value)=>{try{localStorage.setItem('rheinlive:'+key,value);}catch{}};
+
+if(document.documentElement.dataset.provider==='own'){
+  text('#platform-provider-note','Gleis und Steig stammen aus den gemeldeten Fahrt- und Haltestellendaten von GTFS.de. Änderungen werden hervorgehoben. Fehlt eine eindeutige Angabe, bleibt sie unbekannt. Die freien Haltestellen-IDs lassen sich nicht automatisch mit DB OpenStation-Gleiskennungen gleichsetzen.');
+  text('#walking-provider-note','Für die Gehzeit werden dein Standort oder der gewählte Kartenpunkt und nahe Haltestellen auf unserem eigenen Server mit dem OpenStreetMap-Fußwegenetz berechnet. Standortkoordinaten werden nicht dauerhaft gespeichert. Gehzeit und Puffer kannst du anpassen; Zugänge, Ampeln und dein Tempo können zusätzliche Zeit brauchen.');
+  text('#freshness-provider-note','Wir prüfen die Veröffentlichung des GTFS.de-Feeds und dessen Übernahme im eigenen Server. Bei veralteten oder ausgefallenen Daten werden Positionen und Countdown-Prognosen ausgeblendet. Das Alter einzelner Betreiberprognosen bleibt unbekannt; die Feed-Prüfung bestätigt keine GPS-Messung.');
+  const link=$('#transit-provider-link');link.href='https://gtfs.de/de/realtime/';link.textContent='GTFS.de · Echtzeit: CC BY-SA 4.0; Fahrplan: CC BY 4.0 ↗';
+}
 const preferredCity=readPref('city','cologne');
 let city=Object.hasOwn(cities,preferredCity)?cities[preferredCity]:cities.cologne,map=null,snapshot=null,trips=[],network=null,catalog=[],networkError='',visible=[],candidates=[],selected=null,detail=null,detailId=null,detailKey='',offset=0,revision=0,loading=false,requestController=null,detailController=null,networkController=null,following=false,listLimit=50,tab='lines',lastList=0,theme='dark';
 const networkCache=new Map(),timings={started:performance.now(),firstVehicles:null,mapReady:null,networkMs:null,feedMs:null};
@@ -21,7 +28,7 @@ let viewBounds=null;
 let pendingLocationFocus=false;
 const monitor=createDepartureMonitor({onCity:id=>changeCity(id,{fromLocation:true}),onLocation:(p,focus)=>{clearSelected();map?.setLocation(p);if(!p)pendingLocationFocus=false;else if(focus){pendingLocationFocus=!map;map?.centerLocation(p);}},onStation:(f,focus)=>{clearSelected();if(f)placeSearch.clear();map?.setBoardStation(f);if(focus)map?.raw.flyTo({center:f.geometry.coordinates,zoom:15,pitch:0,duration:700});},onExplore:()=>clearSelected(),onPickLocation:active=>{map?.setLocationPicking(active);return Boolean(map);}});
 const inView=v=>pointInBounds([v.lat,v.lon],city.bounds)&&(!viewBounds||viewBounds.contains([v.lat,v.lon]));
-const isFresh=()=>snapshot&&!snapshot.stale&&Date.now()+offset-snapshot.fetchedAt<=MAX_SNAPSHOT_AGE_MS;
+const isFresh=()=>snapshot&&!snapshot.stale&&Date.now()+offset-snapshot.fetchedAt<=MAX_SNAPSHOT_AGE_MS&&(snapshot.validUntil===undefined||Number.isFinite(snapshot.validUntil)&&Date.now()+offset<=snapshot.validUntil);
 const filters=v=>activeModes.has(v.mode)&&!hiddenLines.has(v.lineKey);
 function notify(title,body){text('#notice-title',title);text('#notice-body',body);$('#notice').hidden=false;}
 function setFollowing(value){following=value;$('#follow').setAttribute('aria-pressed',String(value));$('#follow').replaceChildren(icon('target'),document.createTextNode(value?'Folgen aktiv':'Fahrt folgen'));map?.follow(value?selected:null);}
@@ -135,7 +142,7 @@ function draw(forceList=false){
   viewBounds=map?.getBounds()??null;
   const now=Date.now()+offset;for(const[id,ts]of cancelled)if(Date.now()-ts>120000)cancelled.delete(id);
   candidates=isFresh()?vehiclesAt(trips,now,snapshot.fetchedAt).filter(v=>filters(v)&&pointInBounds([v.lat,v.lon],city.bounds)&&!cancelled.has(v.id)):[];
-  visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;map?.update(visible,snapshot?.fetchedAt,now,{immediate:!isFresh()});
+  visible=vehicleView(candidates,{includeSchedule:$('#include-schedule').checked}).visible;map?.update(visible,snapshot?.fetchedAt,now,{immediate:!isFresh(),validUntil:snapshot?.validUntil});
   if(selected){const v=visible.find(v=>v.id===selected);if(!v&&!cancelled.has(selected))clearSelected();else if(v){if(detailKey!==selectionKey(v))showDetails(v,{reload:false});updateDwell(v);}}
   updateCount();if(tab==='vehicles'&&(forceList||Date.now()-lastList>10000)){lastList=Date.now();renderVehicleList();}
   if(snapshot&&!isFresh()){
@@ -145,7 +152,7 @@ function draw(forceList=false){
 }
 async function refresh(){
   if(loading||document.hidden)return;loading=true;const rev=revision,started=performance.now();requestController=new AbortController();const controller=requestController;$('#retry').disabled=true;
-  try{const r=await fetch('/api/vehicles?city='+city.id,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(55000)])});const result=await r.json();if(rev!==revision||controller.signal.aborted)return;if(!r.ok||result.stale)throw Error(result.error||'Datenquelle nicht erreichbar');if(result.city!==city.id||!Array.isArray(result.trips)||!Number.isFinite(result.fetchedAt)||!Number.isFinite(result.serverTime))throw Error('Fahrtdaten sind nicht lesbar');timings.feedMs=performance.now()-started;offset=result.serverTime-Date.now();snapshot=result;trips=prepareTrips(result.trips);$('#notice').hidden=true;updateCatalog();draw(true);renderModes();text('#dataset-info','Verkehr: '+city.region+'. Letzter erfolgreicher Abruf: '+new Date(result.fetchedAt).toLocaleString('de-DE',{timeZone:city.timezone})+'. Quelle: Transitous / MOTIS.');if(!trips.length)notify('Gerade keine Fahrten gemeldet','Das kann eine Datenlücke oder eine Betriebspause sein.');const v=visible.find(v=>v.id===selected);if(v)loadDetail(v);
+  try{const r=await fetch('/api/vehicles?city='+city.id,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(55000)])});const result=await r.json();if(rev!==revision||controller.signal.aborted)return;if(!r.ok||result.stale)throw Error(result.error||'Datenquelle nicht erreichbar');if(result.city!==city.id||!Array.isArray(result.trips)||!Number.isFinite(result.fetchedAt)||!Number.isFinite(result.serverTime))throw Error('Fahrtdaten sind nicht lesbar');timings.feedMs=performance.now()-started;offset=result.serverTime-Date.now();snapshot=result;trips=prepareTrips(result.trips);$('#notice').hidden=true;updateCatalog();draw(true);renderModes();text('#dataset-info','Verkehr: '+city.region+'. Letzter erfolgreicher Abruf: '+new Date(result.fetchedAt).toLocaleString('de-DE',{timeZone:city.timezone})+'. Quelle: '+(result.source||'unbekannt')+'.');if(!trips.length)notify('Gerade keine Fahrten gemeldet','Das kann eine Datenlücke oder eine Betriebspause sein.');const v=visible.find(v=>v.id===selected);if(v)loadDetail(v);
   }catch(e){if(rev!==revision||controller.signal.aborted)return;snapshot=null;trips=[];clearSelected();draw(true);renderModes();text('#header-status','Verbindung fehlt');text('#feed-status','Verkehrsdaten nicht erreichbar');text('#coverage-info','Keine aktuellen Positionen verfügbar.');$('#status-dot').classList.remove('live');notify('Die Verbindung fehlt gerade',e.name==='TimeoutError'?'Die Datenquelle braucht zu lange. Der nächste Versuch erfolgt automatisch.':e.message);
   }finally{if(rev===revision){loading=false;$('#retry').disabled=false;}}
 }

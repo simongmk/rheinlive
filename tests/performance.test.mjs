@@ -142,3 +142,16 @@ test('reduced motion skips fades and rapid filter churn bounds retained exits',(
   for(let batch=0;batch<4;batch++){const next=h.trips.map(v=>({...v,id:v.id+'-'+batch}));h.layer.update(next,start,start+500);assert.ok(h.layer.stats().transitions<=1012);}
   h.layer.destroy();assert.equal(h.tasks.size,0);
 });
+
+test('source expiry removes icons and hit targets between polls, regardless of recent HTTP receipt',()=>{
+  const h=harness(),start=h.now();h.layer.update(h.trips,start,start,{validUntil:start+2000});
+  h.setTime(start+500,500);h.frame();assert.equal(h.layer.stats().visible,500);
+  h.setTime(start+2001,2001);h.frame();assert.equal(h.layer.stats().visible,0);assert.equal(h.layer.hitTest({x:500,y:400}),null);h.layer.destroy();
+});
+
+
+test('observed own-provider parent IDs group different platform names without guessing old DHIDs',()=>{
+  const make=(id,name,parent,lon)=>({type:'Feature',properties:{id,queryId:parent,sourceParentId:parent,name,mode:'tram',lineKey:'tram:3'},geometry:{type:'Point',coordinates:[lon,50.93]}});
+  const grouped=groupStations([make('de_a','Station Platform A','de_parent',6.96),make('de_b','Station Platform B','de_parent',6.962),make('de_c','Station Platform B','de_other',6.962)]);
+  assert.equal(grouped.features.length,2);assert.equal(grouped.features[0].properties.id,'de_parent');assert.equal(grouped.features[0].properties.queryId,'de_parent');
+});
