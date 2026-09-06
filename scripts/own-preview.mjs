@@ -14,7 +14,7 @@ for(const id of Object.keys(cities)){
 }
 const api=createOwnApi({stations});
 const port=Number(process.env.PORT||4174);
-const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.json':'application/json'};
+const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.json':'application/json','.md':'text/plain; charset=utf-8'};
 createServer(async(req,res)=>{
   try{
     const url=new URL(req.url,'http://localhost');
@@ -25,7 +25,7 @@ createServer(async(req,res)=>{
     const pathname=decodeURIComponent(url.pathname),isLib=pathname.startsWith('/lib/');
     // All transit networks come from this import, while map tiles/OSM track detail
     // remain the independently licensed existing assets.
-    const isNetwork=pathname.startsWith('/data/network-');
+    const isNetwork=pathname.startsWith('/data/network-')||pathname==='/data/LICENSE.md';
     const base=isNetwork?dataRoot:resolve(root,isLib?'lib':'public');
     const relative=isNetwork?pathname.slice(6):isLib?pathname.slice(5):pathname==='/'?'index.html':pathname.slice(1);
     const path=resolve(base,relative);

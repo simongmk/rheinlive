@@ -13,7 +13,7 @@ const selected=JSON.parse(await readFile('scripts/gtfs/areas.json','utf8')).area
 for(const [id,name,lat,lon]of selected){
   // Approximate 20 km square, deliberately distinct from the audit's circles.
   const dLat=10/111.2,dLon=dLat/Math.cos(lat*Math.PI/180);
-  const region={id,name,bounds:[[lat-dLat,lon-dLon],[lat+dLat,lon+dLon]]};
+  const region={id,name,modes:cities.cologne.modes,bounds:[[lat-dLat,lon-dLon],[lat+dLat,lon+dLon]]};
   const now=Date.now(),start=performance.now();
   const raw=await get(upstreamUrl(now,region,engine));
   const {trips,rejected}=normaliseSegments(adaptOwnResponse('/api/v6/map/trips',raw),region);

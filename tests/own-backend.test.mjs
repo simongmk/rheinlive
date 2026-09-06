@@ -71,7 +71,7 @@ test('feed deadline survives API caching and expires countdowns and details befo
     if(u.pathname==='/status')return Response.json(relay());
     if(u.pathname==='/api/v6/map/trips'){mapCalls++;return Response.json([vehicle]);}
     throw Error('Unexpected query');}});
-  const first=await(await api(request('/api/vehicles'))).json();assert.equal(first.validUntil,T+10000);assert.equal(first.trips[0].mode,'suburban');
+  const first=await(await api(request('/api/vehicles'))).json();assert.equal(first.validUntil,T+10000);assert.equal(first.trips[0].mode,'suburban');assert.equal(first.trips[0].source,'GTFS.de · eigener MOTIS');assert.equal(first.trips[0].labelKind,'route');
   now+=6000;const second=await(await api(request('/api/vehicles'))).json();assert.equal(second.validUntil,first.validUntil);assert.equal(second.fetchedAt,first.fetchedAt);assert.equal(mapCalls,1);
   const event={departure:T+300000,realtime:true,boarding:true};
   const options={now:T+10001,fetchedAt:T,validUntil:first.validUntil,walkMinutes:1,bufferMinutes:0};
@@ -91,5 +91,6 @@ test('a feed expiring while a map request is running never returns a newly fresh
 test('own platform labels keep reported changes without claiming an old provider or guessing DHIDs',()=>{
   assert.deepEqual(ownPlatformFields({stopId:'de_123',track:' 9 ',scheduledTrack:'10'}),{track:'9',scheduledTrack:'10',trackChanged:true,trackSource:'gtfs.de',stationId:null});
   assert.equal(ownPlatformFields({stopId:'de_123'}).track,null);
+  assert.equal(ownPlatformFields({stopId:'de_123',track:'-'}).track,null);
   assert.deepEqual(adaptOwnResponse('/api/v6/stoptimes',{error:'broken'}),{error:'broken'});
 });

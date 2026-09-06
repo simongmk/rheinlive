@@ -11,6 +11,9 @@ Die Engine hat einen Deutschland-Datensatz. Die App-Integration verwendet
 zunächst die bereits vorhandenen Oberflächen für Köln, Bonn und Düsseldorf.
 Das ist kein fertig veröffentlichter deutschlandweiter Produktstart.
 
+[Erfolgreiche Live-Integration in 30 Orten](assessments/2026-09-06-engine/README.md)
+mit Ausfall- und Wiederanlaufbeleg.
+
 ## Lokal reproduzieren
 
 Node 22+, Python mit `scripts/gtfs/requirements.txt`, macOS ARM64 oder Linux
@@ -104,6 +107,12 @@ IC/EC oder Nachtzug eingeordnet. Andere Bahnlinien bleiben Regionalverkehr;
 ein Ersatzbus namens ICE bleibt Bus. Bei gemeinsam gelieferten Segmenten
 mit unterschiedlichen Fahrtklassen bleiben diese getrennt. Die gleiche
 Einordnung gilt für Kartenfahrten, Haltestellenabfahrten und Linienkataloge.
+
+Der kombinierte freie Fahrplan enthält in `trips.txt` nur Fahrt-, Linien- und
+Kalender-IDs, keine `trip_short_name`-Zugnummern. Die Kartenlabels stammen aus
+`route_short_name`. Fernverkehr ist deshalb ausdrücklich als Linie bezeichnet;
+beispielsweise ist eine ICE-Liniennummer kein Nachweis einer individuellen
+Zugnummer. Interne Fahrt-IDs halten gleichzeitig laufende Fahrten getrennt.
 
 Die freien GTFS.de-Stop-IDs sind keine DHIDs. Daher werden sie nicht mit alten
 Transitous- oder OpenStation-IDs gleichgesetzt. Plattformnummern stammen bei

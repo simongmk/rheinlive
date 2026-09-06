@@ -1,0 +1,20 @@
+{
+  "kind": "intentional-local-outage-test",
+  "at": "2026-09-06T11:10:19.610Z",
+  "checks": [
+    {
+      "path": "/api/vehicles?city=cologne",
+      "status": 503,
+      "trips": 0,
+      "departures": 0
+    },
+    {
+      "path": "/api/departures?city=cologne&stopId=de_129775",
+      "status": 503,
+      "trips": 0,
+      "departures": 0
+    }
+  ],
+  "motisHealthStillTrue": true,
+  "independentWalkStatus": 200
+}

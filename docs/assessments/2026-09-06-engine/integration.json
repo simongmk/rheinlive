@@ -1,0 +1,1470 @@
+{
+  "kind": "dated-live-integration-evidence-not-live-data",
+  "beganAt": "2026-09-06T11:09:01.905Z",
+  "source": "GTFS.de · own MOTIS",
+  "freshness": {
+    "appliedPublicationAt": 1788692909000,
+    "appliedAt": 1788692914000,
+    "ready": true,
+    "publicationAt": 1788692909000,
+    "receivedAt": 1788692913999
+  },
+  "regions": [
+    {
+      "id": "berlin",
+      "name": "Berlin",
+      "bounds": [
+        [
+          52.43007194244605,
+          13.257209771064081
+        ],
+        [
+          52.60992805755396,
+          13.552790228935917
+        ]
+      ],
+      "at": "2026-09-06T11:09:01.907Z",
+      "milliseconds": 142,
+      "rawSegments": 2175,
+      "trips": 832,
+      "active": 711,
+      "rejected": 37,
+      "modes": {
+        "suburban": {
+          "forecast": 81,
+          "schedule": 0,
+          "shape": 81,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 3,
+          "schedule": 1,
+          "shape": 4,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 7,
+          "schedule": 0,
+          "shape": 7,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 0,
+          "schedule": 199,
+          "shape": 199,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 1,
+          "schedule": 419,
+          "shape": 417,
+          "straight": 3
+        }
+      }
+    },
+    {
+      "id": "hamburg",
+      "name": "Hamburg",
+      "bounds": [
+        [
+          53.46107194244605,
+          9.842633236184437
+        ],
+        [
+          53.64092805755396,
+          10.145366763815563
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.049Z",
+      "milliseconds": 90,
+      "rawSegments": 1363,
+      "trips": 566,
+      "active": 490,
+      "rejected": 16,
+      "modes": {
+        "suburban": {
+          "forecast": 28,
+          "schedule": 10,
+          "shape": 38,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 8,
+          "schedule": 0,
+          "shape": 8,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 2,
+          "schedule": 1,
+          "shape": 3,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 36,
+          "schedule": 0,
+          "shape": 36,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 264,
+          "schedule": 135,
+          "shape": 397,
+          "straight": 2
+        },
+        "ferry": {
+          "forecast": 6,
+          "schedule": 0,
+          "shape": 6,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "munich",
+      "name": "München",
+      "bounds": [
+        [
+          48.047071942446046,
+          11.441246392034525
+        ],
+        [
+          48.226928057553955,
+          11.710753607965476
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.139Z",
+      "milliseconds": 91,
+      "rawSegments": 1287,
+      "trips": 485,
+      "active": 401,
+      "rejected": 50,
+      "modes": {
+        "regional": {
+          "forecast": 6,
+          "schedule": 0,
+          "shape": 6,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 27,
+          "schedule": 0,
+          "shape": 27,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 2,
+          "schedule": 0,
+          "shape": 2,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 102,
+          "schedule": 0,
+          "shape": 102,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 226,
+          "schedule": 38,
+          "shape": 263,
+          "straight": 1
+        }
+      }
+    },
+    {
+      "id": "cologne",
+      "name": "Köln",
+      "bounds": [
+        [
+          50.84807194244605,
+          6.817293515340254
+        ],
+        [
+          51.02792805755396,
+          7.102706484659746
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.230Z",
+      "milliseconds": 13,
+      "rawSegments": 575,
+      "trips": 249,
+      "active": 203,
+      "rejected": 10,
+      "modes": {
+        "suburban": {
+          "forecast": 9,
+          "schedule": 0,
+          "shape": 9,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 8,
+          "schedule": 0,
+          "shape": 8,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 2,
+          "schedule": 1,
+          "shape": 3,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 70,
+          "schedule": 0,
+          "shape": 70,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 79,
+          "schedule": 34,
+          "shape": 113,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "frankfurt",
+      "name": "Frankfurt am Main",
+      "bounds": [
+        [
+          50.020071942446044,
+          8.541775686332016
+        ],
+        [
+          50.199928057553954,
+          8.822224313667984
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.244Z",
+      "milliseconds": 73,
+      "rawSegments": 840,
+      "trips": 369,
+      "active": 288,
+      "rejected": 13,
+      "modes": {
+        "suburban": {
+          "forecast": 20,
+          "schedule": 0,
+          "shape": 20,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 8,
+          "schedule": 0,
+          "shape": 8,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 84,
+          "schedule": 0,
+          "shape": 84,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 135,
+          "schedule": 37,
+          "shape": 171,
+          "straight": 1
+        }
+      }
+    },
+    {
+      "id": "stuttgart",
+      "name": "Stuttgart",
+      "bounds": [
+        [
+          48.68607194244605,
+          9.046539554626927
+        ],
+        [
+          48.86592805755396,
+          9.319460445373073
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.316Z",
+      "milliseconds": 55,
+      "rawSegments": 635,
+      "trips": 274,
+      "active": 223,
+      "rejected": 18,
+      "modes": {
+        "suburban": {
+          "forecast": 7,
+          "schedule": 0,
+          "shape": 7,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 8,
+          "schedule": 1,
+          "shape": 9,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 78,
+          "schedule": 8,
+          "shape": 86,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 97,
+          "schedule": 23,
+          "shape": 120,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "duesseldorf",
+      "name": "Düsseldorf",
+      "bounds": [
+        [
+          51.13707194244604,
+          6.630399204841131
+        ],
+        [
+          51.31692805755395,
+          6.917600795158869
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.371Z",
+      "milliseconds": 14,
+      "rawSegments": 675,
+      "trips": 266,
+      "active": 224,
+      "rejected": 7,
+      "modes": {
+        "suburban": {
+          "forecast": 8,
+          "schedule": 0,
+          "shape": 8,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 6,
+          "schedule": 1,
+          "shape": 7,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 3,
+          "schedule": 1,
+          "shape": 4,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 26,
+          "schedule": 8,
+          "shape": 34,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 135,
+          "schedule": 36,
+          "shape": 171,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "bonn",
+      "name": "Bonn",
+      "bounds": [
+        [
+          50.64707194244605,
+          6.955906849431895
+        ],
+        [
+          50.82692805755396,
+          7.2400931505681045
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.385Z",
+      "milliseconds": 11,
+      "rawSegments": 437,
+      "trips": 163,
+      "active": 135,
+      "rejected": 12,
+      "modes": {
+        "suburban": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 2,
+          "schedule": 13,
+          "shape": 15,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 23,
+          "schedule": 90,
+          "shape": 113,
+          "straight": 0
+        },
+        "ferry": {
+          "forecast": 0,
+          "schedule": 1,
+          "shape": 1,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "leipzig",
+      "name": "Leipzig",
+      "bounds": [
+        [
+          51.25007194244605,
+          12.23104547095927
+        ],
+        [
+          51.42992805755396,
+          12.51895452904073
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.397Z",
+      "milliseconds": 37,
+      "rawSegments": 458,
+      "trips": 179,
+      "active": 155,
+      "rejected": 15,
+      "modes": {
+        "suburban": {
+          "forecast": 11,
+          "schedule": 1,
+          "shape": 12,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 3,
+          "schedule": 0,
+          "shape": 3,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 79,
+          "schedule": 1,
+          "shape": 80,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 50,
+          "schedule": 9,
+          "shape": 59,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "dresden",
+      "name": "Dresden",
+      "bounds": [
+        [
+          50.96107194244605,
+          13.594945599429785
+        ],
+        [
+          51.14092805755396,
+          13.881054400570214
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.434Z",
+      "milliseconds": 33,
+      "rawSegments": 586,
+      "trips": 193,
+      "active": 172,
+      "rejected": 29,
+      "modes": {
+        "regional": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 5,
+          "schedule": 0,
+          "shape": 5,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 64,
+          "schedule": 7,
+          "shape": 71,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 71,
+          "schedule": 21,
+          "shape": 92,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "hannover",
+      "name": "Hannover",
+      "bounds": [
+        [
+          52.285071942446045,
+          9.584695476382873
+        ],
+        [
+          52.464928057553955,
+          9.879304523617126
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.467Z",
+      "milliseconds": 36,
+      "rawSegments": 501,
+      "trips": 190,
+      "active": 155,
+      "rejected": 12,
+      "modes": {
+        "regional": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 8,
+          "schedule": 0,
+          "shape": 8,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 2,
+          "schedule": 1,
+          "shape": 3,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 61,
+          "schedule": 0,
+          "shape": 61,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 76,
+          "schedule": 3,
+          "shape": 79,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "bremen",
+      "name": "Bremen",
+      "bounds": [
+        [
+          52.989071942446046,
+          8.652297871146635
+        ],
+        [
+          53.168928057553956,
+          8.951702128853364
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.503Z",
+      "milliseconds": 24,
+      "rawSegments": 339,
+      "trips": 118,
+      "active": 103,
+      "rejected": 9,
+      "modes": {
+        "regional": {
+          "forecast": 3,
+          "schedule": 0,
+          "shape": 3,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 35,
+          "schedule": 6,
+          "shape": 41,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 52,
+          "schedule": 7,
+          "shape": 59,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "nuremberg",
+      "name": "Nürnberg",
+      "bounds": [
+        [
+          49.36307194244605,
+          10.938664379228833
+        ],
+        [
+          49.54292805755396,
+          11.215335620771167
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.527Z",
+      "milliseconds": 38,
+      "rawSegments": 465,
+      "trips": 178,
+      "active": 137,
+      "rejected": 19,
+      "modes": {
+        "regional": {
+          "forecast": 5,
+          "schedule": 0,
+          "shape": 5,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 5,
+          "schedule": 0,
+          "shape": 5,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 34,
+          "schedule": 10,
+          "shape": 44,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 80,
+          "schedule": 3,
+          "shape": 83,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "essen",
+      "name": "Essen",
+      "bounds": [
+        [
+          51.36607194244605,
+          6.8676799432112166
+        ],
+        [
+          51.54592805755396,
+          7.156320056788783
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.565Z",
+      "milliseconds": 50,
+      "rawSegments": 749,
+      "trips": 293,
+      "active": 241,
+      "rejected": 1,
+      "modes": {
+        "suburban": {
+          "forecast": 7,
+          "schedule": 0,
+          "shape": 7,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 6,
+          "schedule": 1,
+          "shape": 7,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 39,
+          "schedule": 10,
+          "shape": 49,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 108,
+          "schedule": 70,
+          "shape": 178,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "kiel",
+      "name": "Kiel",
+      "bounds": [
+        [
+          54.233071942446045,
+          9.985806382108073
+        ],
+        [
+          54.412928057553955,
+          10.294193617891928
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.615Z",
+      "milliseconds": 17,
+      "rawSegments": 237,
+      "trips": 92,
+      "active": 79,
+      "rejected": 4,
+      "modes": {
+        "regional": {
+          "forecast": 7,
+          "schedule": 0,
+          "shape": 7,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 64,
+          "schedule": 7,
+          "shape": 71,
+          "straight": 0
+        },
+        "ferry": {
+          "forecast": 0,
+          "schedule": 1,
+          "shape": 1,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "schwerin",
+      "name": "Schwerin",
+      "bounds": [
+        [
+          53.53907194244604,
+          11.262353581502524
+        ],
+        [
+          53.71892805755395,
+          11.565646418497476
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.632Z",
+      "milliseconds": 9,
+      "rawSegments": 71,
+      "trips": 28,
+      "active": 25,
+      "rejected": 10,
+      "modes": {
+        "regional": {
+          "forecast": 2,
+          "schedule": 1,
+          "shape": 3,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 8,
+          "schedule": 1,
+          "shape": 8,
+          "straight": 1
+        },
+        "bus": {
+          "forecast": 8,
+          "schedule": 5,
+          "shape": 13,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "potsdam",
+      "name": "Potsdam",
+      "bounds": [
+        [
+          52.310071942446044,
+          12.912612029276842
+        ],
+        [
+          52.48992805755395,
+          13.20738797072316
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.641Z",
+      "milliseconds": 20,
+      "rawSegments": 286,
+      "trips": 97,
+      "active": 86,
+      "rejected": 17,
+      "modes": {
+        "regional": {
+          "forecast": 3,
+          "schedule": 0,
+          "shape": 3,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 16,
+          "schedule": 0,
+          "shape": 16,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 37,
+          "schedule": 25,
+          "shape": 61,
+          "straight": 1
+        },
+        "ferry": {
+          "forecast": 0,
+          "schedule": 1,
+          "shape": 1,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "magdeburg",
+      "name": "Magdeburg",
+      "bounds": [
+        [
+          52.03107194244605,
+          11.480536398129583
+        ],
+        [
+          52.21092805755396,
+          11.773463601870418
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.661Z",
+      "milliseconds": 15,
+      "rawSegments": 191,
+      "trips": 82,
+      "active": 60,
+      "rejected": 15,
+      "modes": {
+        "regional": {
+          "forecast": 2,
+          "schedule": 1,
+          "shape": 3,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 0,
+          "schedule": 1,
+          "shape": 1,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 27,
+          "schedule": 0,
+          "shape": 27,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 17,
+          "schedule": 3,
+          "shape": 20,
+          "straight": 0
+        },
+        "ferry": {
+          "forecast": 1,
+          "schedule": 7,
+          "shape": 4,
+          "straight": 4
+        }
+      }
+    },
+    {
+      "id": "erfurt",
+      "name": "Erfurt",
+      "bounds": [
+        [
+          50.889071942446044,
+          10.887167540359153
+        ],
+        [
+          51.068928057553954,
+          11.172832459640846
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.676Z",
+      "milliseconds": 15,
+      "rawSegments": 133,
+      "trips": 65,
+      "active": 47,
+      "rejected": 4,
+      "modes": {
+        "regional": {
+          "forecast": 8,
+          "schedule": 0,
+          "shape": 8,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 0,
+          "schedule": 1,
+          "shape": 1,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 23,
+          "schedule": 0,
+          "shape": 23,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 13,
+          "schedule": 2,
+          "shape": 15,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "wiesbaden",
+      "name": "Wiesbaden",
+      "bounds": [
+        [
+          49.99307194244604,
+          8.100854684043178
+        ],
+        [
+          50.17292805755395,
+          8.381145315956822
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.691Z",
+      "milliseconds": 31,
+      "rawSegments": 423,
+      "trips": 182,
+      "active": 144,
+      "rejected": 7,
+      "modes": {
+        "regional": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 6,
+          "schedule": 0,
+          "shape": 6,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 40,
+          "schedule": 90,
+          "shape": 130,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "mainz",
+      "name": "Mainz",
+      "bounds": [
+        [
+          49.910071942446045,
+          8.131096778160035
+        ],
+        [
+          50.089928057553955,
+          8.410903221839966
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.723Z",
+      "milliseconds": 13,
+      "rawSegments": 433,
+      "trips": 183,
+      "active": 151,
+      "rejected": 6,
+      "modes": {
+        "regional": {
+          "forecast": 5,
+          "schedule": 0,
+          "shape": 5,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 7,
+          "schedule": 1,
+          "shape": 8,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 53,
+          "schedule": 80,
+          "shape": 133,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "saarbruecken",
+      "name": "Saarbrücken",
+      "bounds": [
+        [
+          49.145071942446044,
+          6.85927590553872
+        ],
+        [
+          49.324928057553954,
+          7.13472409446128
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.736Z",
+      "milliseconds": 17,
+      "rawSegments": 187,
+      "trips": 62,
+      "active": 55,
+      "rejected": 7,
+      "modes": {
+        "regional": {
+          "forecast": 5,
+          "schedule": 0,
+          "shape": 5,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 38,
+          "schedule": 8,
+          "shape": 46,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "freiburg",
+      "name": "Freiburg",
+      "bounds": [
+        [
+          47.90607194244605,
+          7.715615046071761
+        ],
+        [
+          48.08592805755396,
+          7.984384953928238
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.753Z",
+      "milliseconds": 16,
+      "rawSegments": 211,
+      "trips": 88,
+      "active": 66,
+      "rejected": 6,
+      "modes": {
+        "suburban": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 1,
+          "schedule": 1,
+          "shape": 2,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 0,
+          "schedule": 1,
+          "shape": 1,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 29,
+          "schedule": 0,
+          "shape": 29,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 26,
+          "schedule": 4,
+          "shape": 30,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "rostock",
+      "name": "Rostock",
+      "bounds": [
+        [
+          54.002071942446044,
+          11.945666175751382
+        ],
+        [
+          54.181928057553954,
+          12.252333824248618
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.770Z",
+      "milliseconds": 12,
+      "rawSegments": 199,
+      "trips": 84,
+      "active": 69,
+      "rejected": 6,
+      "modes": {
+        "regional": {
+          "forecast": 4,
+          "schedule": 0,
+          "shape": 4,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 3,
+          "schedule": 0,
+          "shape": 3,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 0,
+          "schedule": 3,
+          "shape": 3,
+          "straight": 0
+        },
+        "tram": {
+          "forecast": 14,
+          "schedule": 0,
+          "shape": 14,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 31,
+          "schedule": 14,
+          "shape": 45,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "muenster",
+      "name": "Münster",
+      "bounds": [
+        [
+          51.87207194244605,
+          7.480056479614994
+        ],
+        [
+          52.05192805755396,
+          7.7719435203850065
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.782Z",
+      "milliseconds": 17,
+      "rawSegments": 231,
+      "trips": 82,
+      "active": 68,
+      "rejected": 3,
+      "modes": {
+        "regional": {
+          "forecast": 4,
+          "schedule": 2,
+          "shape": 6,
+          "straight": 0
+        },
+        "long_distance": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 48,
+          "schedule": 13,
+          "shape": 61,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "passau",
+      "name": "Passau",
+      "bounds": [
+        [
+          48.47607194244605,
+          13.295107104702938
+        ],
+        [
+          48.65592805755396,
+          13.56689289529706
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.799Z",
+      "milliseconds": 8,
+      "rawSegments": 63,
+      "trips": 26,
+      "active": 18,
+      "rejected": 8,
+      "modes": {
+        "regional": {
+          "forecast": 0,
+          "schedule": 1,
+          "shape": 0,
+          "straight": 1
+        },
+        "bus": {
+          "forecast": 2,
+          "schedule": 15,
+          "shape": 17,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "neubrandenburg",
+      "name": "Neubrandenburg",
+      "bounds": [
+        [
+          53.46707194244605,
+          13.109611770865797
+        ],
+        [
+          53.64692805755396,
+          13.412388229134201
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.807Z",
+      "milliseconds": 6,
+      "rawSegments": 51,
+      "trips": 14,
+      "active": 13,
+      "rejected": 14,
+      "modes": {
+        "bus": {
+          "forecast": 10,
+          "schedule": 3,
+          "shape": 13,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "stendal",
+      "name": "Stendal",
+      "bounds": [
+        [
+          52.51507194244604,
+          11.709923113242093
+        ],
+        [
+          52.69492805755395,
+          12.006076886757908
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.813Z",
+      "milliseconds": 7,
+      "rawSegments": 39,
+      "trips": 19,
+      "active": 12,
+      "rejected": 11,
+      "modes": {
+        "long_distance": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "regional": {
+          "forecast": 2,
+          "schedule": 0,
+          "shape": 2,
+          "straight": 0
+        },
+        "suburban": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 5,
+          "schedule": 3,
+          "shape": 8,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "pruem",
+      "name": "Prüm",
+      "bounds": [
+        [
+          50.117071942446046,
+          6.2824908857335915
+        ],
+        [
+          50.296928057553956,
+          6.563509114266409
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.820Z",
+      "milliseconds": 3,
+      "rawSegments": 6,
+      "trips": 2,
+      "active": 1,
+      "rejected": 2,
+      "modes": {
+        "bus": {
+          "forecast": 1,
+          "schedule": 0,
+          "shape": 1,
+          "straight": 0
+        }
+      }
+    },
+    {
+      "id": "goslar",
+      "name": "Goslar",
+      "bounds": [
+        [
+          51.816071942446044,
+          10.28323850778927
+        ],
+        [
+          51.995928057553954,
+          10.574761492210731
+        ]
+      ],
+      "at": "2026-09-06T11:09:02.823Z",
+      "milliseconds": 6,
+      "rawSegments": 40,
+      "trips": 20,
+      "active": 18,
+      "rejected": 2,
+      "modes": {
+        "regional": {
+          "forecast": 7,
+          "schedule": 0,
+          "shape": 7,
+          "straight": 0
+        },
+        "bus": {
+          "forecast": 7,
+          "schedule": 4,
+          "shape": 11,
+          "straight": 0
+        }
+      }
+    }
+  ],
+  "integration": [
+    {
+      "city": "cologne",
+      "at": "2026-09-06T11:09:02.982Z",
+      "milliseconds": 153,
+      "trips": 358,
+      "validUntil": 1788693004000,
+      "selectedLine": "ICE 41",
+      "detailStops": 8,
+      "detailPaths": 1,
+      "reportedTracks": 0,
+      "station": "Köln Hbf",
+      "stopId": "de_129775",
+      "departures": 60,
+      "walkSeconds": 161,
+      "walkMeters": 198.15054893493652
+    },
+    {
+      "city": "bonn",
+      "at": "2026-09-06T11:09:03.077Z",
+      "milliseconds": 95,
+      "trips": 168,
+      "validUntil": 1788693004000,
+      "selectedLine": "ICE 49",
+      "detailStops": 6,
+      "detailPaths": 1,
+      "reportedTracks": 0,
+      "station": "Bonn Hbf",
+      "stopId": "de_608320",
+      "departures": 61,
+      "walkSeconds": 254,
+      "walkMeters": 307.86425590515137
+    },
+    {
+      "city": "duesseldorf",
+      "at": "2026-09-06T11:09:03.159Z",
+      "milliseconds": 81,
+      "trips": 311,
+      "validUntil": 1788693004000,
+      "selectedLine": "ICE 47",
+      "detailStops": 12,
+      "detailPaths": 1,
+      "reportedTracks": 0,
+      "station": "Düsseldorf Hbf",
+      "stopId": "de_544642",
+      "departures": 60,
+      "walkSeconds": 126,
+      "walkMeters": 156.02316665649414
+    }
+  ],
+  "positionType": "estimated",
+  "endedAt": "2026-09-06T11:09:03.159Z",
+  "limitations": [
+    "Single time window; not a field accuracy test or representative coverage estimate.",
+    "Feed publication is not an individual vehicle observation.",
+    "Route shapes are inferred from OSM; missing/two-point paths remain straight estimates.",
+    "Counts in overlapping regions must not be summed."
+  ]
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "city": "cologne",
+    "source": "http://127.0.0.1:8787/api/experimental/map/routes?min=50.8%2C6.76&max=51.1%2C7.18&zoom=14&language=de",
+    "generatedAt": "2026-09-06T11:08:48.966Z",
+    "milliseconds": 854,
+    "pathSources": {
+      "ROUTED": 3309,
+      "NONE": 165
+    }
+  },
+  {
+    "city": "bonn",
+    "source": "http://127.0.0.1:8787/api/experimental/map/routes?min=50.62%2C6.99&max=50.82%2C7.27&zoom=14&language=de",
+    "generatedAt": "2026-09-06T11:08:49.243Z",
+    "milliseconds": 277,
+    "pathSources": {
+      "ROUTED": 1577,
+      "NONE": 176
+    }
+  },
+  {
+    "city": "duesseldorf",
+    "source": "http://127.0.0.1:8787/api/experimental/map/routes?min=51.1%2C6.62&max=51.36%2C6.95&zoom=14&language=de",
+    "generatedAt": "2026-09-06T11:08:49.736Z",
+    "milliseconds": 493,
+    "pathSources": {
+      "NONE": 209,
+      "ROUTED": 2980
+    }
+  }
+]

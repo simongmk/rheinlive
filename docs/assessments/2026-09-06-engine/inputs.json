@@ -1,0 +1,25 @@
+{
+  "gtfs": {
+    "url": "https://download.gtfs.de/germany/free/latest.zip",
+    "fetchedAt": "2026-09-06T10:13:29.181060+00:00",
+    "bytes": 284373340,
+    "sha256": "9a1d770884c736e269d8fa723b40a25caddbe34ed9cbf714d9546350bcbd6696",
+    "license": "CC BY 4.0, GTFS.de"
+  },
+  "osm": {
+    "url": "https://download.geofabrik.de/europe/germany-260905.osm.pbf",
+    "fetchedAt": "2026-09-06T10:23:12.491222+00:00",
+    "bytes": 4833032297,
+    "seconds": 655.74,
+    "sha256": "f13de8d9a9303058f2d390a5a22b3a6db1eb1a2273a2263aeafb7ea8c9c6b1a2",
+    "md5": "3d355befecf4d934f34f7481aed7a098",
+    "license": "ODbL 1.0, OpenStreetMap contributors, Geofabrik"
+  },
+  "motisVersion": "2.11.2",
+  "motisArchiveSha256": "00b6f544424107af57bcc8da3d4a03f602360cb2aa8beb2ad4ca54fda7a28a8f",
+  "timetableImportSeconds": 21.46,
+  "osmShapesMatchingImportSeconds": 2484,
+  "runtimeResidentMemorySampleKiB": 3510560,
+  "residentSampleAt": "2026-09-06T11:09:13Z",
+  "resourceLimitations": "Single local macOS ARM64 development machine, not peak memory or a load-test sizing guarantee."
+}
