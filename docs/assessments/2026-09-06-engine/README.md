@@ -99,6 +99,9 @@ Karten- und Abfahrts-API antworteten danach mit 503 und leeren Prognosedaten,
 obwohl MOTIS `/api/v1/health` weiterhin `rt: true` meldete. Gehzeiten blieben
 erreichbar. Anschließend startete der gemeinsame Startbefehl alle Dienste neu;
 die Karten-API lieferte wieder 360 Fahrten mit frischer GTFS.de-Veröffentlichung.
+Zum Testende beendete SIGTERM am gemeinsamen Starter auch dessen Engine,
+Relay und Vorschau. Alle drei Ports waren danach geschlossen; es bleibt kein
+dauerhafter Datenabruf auf dem Entwicklungsrechner aktiv.
 
 ## Reproduktion und Rechte
 
@@ -106,6 +109,7 @@ die Karten-API lieferte wieder 360 Fahrten mit frischer GTFS.de-Veröffentlichun
 - [Quellen, Lizenzen und Änderungshinweise](../../OWN-DATA-NOTICES.md)
 - [Karten-/API-Belege](integration.json), [Netzrouten](network.json)
 - [Ausfallprüfung](outage.json), [Wiederanlauf](restart.json), [Eingaben und Messwerte](inputs.json)
+- [Gemeinsames Beenden](shutdown.json)
 
 Eigener Text und Code: MIT. Abgeleitete Prognose-/Auswertungsdaten: CC BY-SA 4.0,
 GTFS.de; zugrunde liegender Fahrplan GTFS.de / DELFI e.V., CC BY 4.0.

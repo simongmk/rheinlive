@@ -1,0 +1,11 @@
+{
+  "at": "2026-09-06T11:23:05Z",
+  "signal": "SIGTERM to verified own-start and dev parents",
+  "closedPorts": [
+    4173,
+    4174,
+    8787,
+    8788
+  ],
+  "ownedProcessesStopped": true
+}

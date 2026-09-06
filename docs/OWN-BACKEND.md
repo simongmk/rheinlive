@@ -138,7 +138,9 @@ Der Betrieb benötigt einen dauerhaft laufenden Server mit Arbeitsspeicher
 und SSD; der bisherige kleine Edge-Worker ist dafür ungeeignet. Noch kein
 Cloud-Server, Abo oder Domainkauf. Vor öffentlicher Bereitstellung fehlen
 insbesondere TLS/Proxy, Zugriffslimits, automatischer Importwechsel,
-Restart-/Outage-Prüfung, längerfristige Abdeckung und Vor-Ort-Positionsvergleich.
+Restart-/Outage-Prüfung auf dem Zielserver, längerfristige Abdeckung und
+Vor-Ort-Positionsvergleich. Die lokale Ausfall- und Wiederanlaufprüfung ist
+bereits erfolgreich belegt.
 Keine ungemessene Hosting-Größe oder Verfügbarkeitsgarantie ableiten.
 
 Siehe [Datenhinweise](OWN-DATA-NOTICES.md),
