@@ -65,7 +65,10 @@ are disclosed as straight-line estimates.
 
 The departure monitor separately requests `/api/v6/stoptimes` for one selected
 source-observed station ID, coalesced and cached for 30 seconds. A location
-permission selects a supported region and up to six nearby stations. A bounded
+permission selects a supported region and up to six nearby stations. Denied or
+unresponsive geolocation shows persistent recovery actions, including choosing
+a starting point on the map. A new location replaces the previous station;
+late or cancelled browser responses cannot undo manual choices. A bounded
 `/api/v1/one-to-many` WALK query calculates footpath durations, sent through
 our `/api/walk` POST endpoint. Origin coordinates are not included in replies
 or retained in application caches. They are sent to Transitous for the query.

@@ -1,15 +1,17 @@
-import {platformText} from '/lib/journey-platform.mjs';
-import {cityAt,nearestStations,departureReadiness,navigationLinks} from '/lib/monitor.mjs';
-import {distance} from '/lib/transit.mjs';
+import {platformText} from '../lib/journey-platform.mjs';
+import {cityAt,nearestStations,departureReadiness,navigationLinks} from '../lib/monitor.mjs';
+import {distance,validPoint} from '../lib/transit.mjs';
+import {createLocationRequest,locationMessages} from './location.js';
 const $=s=>document.querySelector(s),el=(tag,cls,value)=>{const n=document.createElement(tag);n.className=cls;if(value!==undefined)n.textContent=value;return n;};
 const time=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit'});
 const minutes=(input,max)=>input.value.trim()!==''&&Number.isInteger(Number(input.value))&&Number(input.value)>=0&&Number(input.value)<=max?Number(input.value):null;
 const countdown=s=>Math.floor(Math.max(0,s)/60)+':'+String(Math.max(0,s)%60).padStart(2,'0');
 const pref=key=>{try{return localStorage.getItem('rheinlive:'+key);}catch{return null;}};
 const save=(key,value)=>{try{localStorage.setItem('rheinlive:'+key,String(value));}catch{}};
-export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
-  let cityId=null,network=null,location=null,station=null,board=null,boardOffset=0,active=true,boardLoading=false,boardController=null,walkController=null,walkRevision=0,geoRevision=0,near=[],walks=new Map(),walkMode='unknown',walkAt=0,cardKey='';
+export function createDepartureMonitor({onCity,onLocation,onStation,onExplore,onPickLocation=()=>false}){
+  let cityId=null,network=null,location=null,station=null,board=null,boardOffset=0,active=true,boardLoading=false,boardController=null,walkController=null,walkRevision=0,near=[],walks=new Map(),walkMode='unknown',walkAt=0,cardKey='';
   const status=(id,value)=>{$('#'+id).textContent=value;};
+  let locating=false,pickingLocation=false,locateFocus=true;
   const stationId=()=>station?.properties.queryId;
   function setActive(value,load=true){active=value;$('.overview').classList.toggle('monitor-active',value);$('#monitor-view').hidden=!value;$('#explore-view').hidden=value;for(const [id,chosen] of [['departures',value],['map',!value]]){$('#view-'+id).setAttribute('aria-selected',String(chosen));$('#view-'+id).tabIndex=chosen?0:-1;}if(value){if(load)refresh();}else{boardController?.abort();boardLoading=false;onExplore();}}
   $('#view-departures').onclick=()=>setActive(true);$('#view-map').onclick=()=>setActive(false);
@@ -26,7 +28,7 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
     $('.walk-config').open=walkMode==='unknown';$('#walk-recalculate').hidden=!location||cityAt(location.point)?.id!==cityId;cardKey='';renderBoard();
   }
   function choose(f,focus=false,requestWalk=true){
-    if(!f?.properties.queryId)return;station=f;setActive(true,false);boardController?.abort();boardLoading=false;board=null;cardKey='';$('#monitor-search').value='';$('#monitor-search-results').hidden=true;$('#station-monitor').hidden=false;$('#monitor-empty').hidden=true;status('monitor-station-name',f.properties.name);$('#departure-direction').replaceChildren(el('option','','Alle Linien & Richtungen'));$('#departure-direction').firstChild.value='';
+    if(!f?.properties.queryId)return;cancelLocationRequest();cancelLocationPick();station=f;setActive(true,false);boardController?.abort();boardLoading=false;board=null;cardKey='';$('#monitor-search').value='';$('#monitor-search-results').hidden=true;$('#station-monitor').hidden=false;$('#monitor-empty').hidden=true;status('monitor-station-name',f.properties.name);$('#departure-direction').replaceChildren(el('option','','Alle Linien & Richtungen'));$('#departure-direction').firstChild.value='';
     const parent=$('#navigation-links');parent.replaceChildren();for(const link of navigationLinks({lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]})){const a=el('a','',link.label+' ↗');a.href=link.url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}
     renderNear();applyWalk();onStation(f,focus);refresh();if(requestWalk&&location&&!walks.has(stationId()))calculateWalks(false);
   }
@@ -76,24 +78,41 @@ export function createDepartureMonitor({onCity,onLocation,onStation,onExplore}){
       else if(station)applyWalk();
     }catch(e){if(controller.signal.aborted)return;if(autoSelect&&!station&&near[0])choose(near[0].feature,false,false);status('walk-status','Fußweg nicht berechenbar. Gehzeit bitte selbst eintragen.');}
   }
-  function requestLocation(focus=true){
-    const seq=++geoRevision;$('#locate').disabled=true;$('#location-browser').hidden=true;status('location-status','Standort suchen …');
-    const fail=error=>{if(seq!==geoRevision)return;$('#locate').disabled=false;status('location-status',error?.code===1?'Standort nicht freigegeben. Haltestelle suchen.':'Standort gerade nicht verfügbar. Erneut versuchen oder Haltestelle suchen.');if(error?.code===1){$('#location-browser').href=window.location.origin;$('#location-browser').hidden=false;}};
-    if(!navigator.geolocation){fail();return;}
-    navigator.geolocation.getCurrentPosition(result=>{
-      if(seq!==geoRevision)return;$('#locate').disabled=false;const p=result.coords,point=[p.latitude,p.longitude],region=cityAt(point);if(!point.every(Number.isFinite)||!Number.isFinite(p.accuracy)||p.accuracy<0||!Number.isFinite(result.timestamp)){fail();return;}location={point,accuracy:p.accuracy,timestamp:result.timestamp};walks.clear();if(walkMode==='automatic'){walkMode='unknown';$('#walk-minutes').value='';renderBoard();}status('location-status','');
-      if(!region){onLocation(location,focus);status('location-status','Hier gibt es noch keine Verkehrsdaten. Aktuell sind Köln, Bonn und Düsseldorf verfügbar.');return;}
-      if(region.id!==cityId){onCity(region.id);}else if(network)calculateWalks(!station);onLocation(location,focus);
-    },fail,{enableHighAccuracy:false,timeout:12000,maximumAge:30000});
+  const locationRequest=createLocationRequest({onState(state){
+    locating=state==='locating';$('#locate').disabled=locating;status('location-status',locationMessages[state]);
+    const error=state!=='locating'&&state!=='found';$('#location-browser').hidden=!error;$('#location-browser').href=window.location.origin;$('#location-pick').hidden=!error;
+  },onPosition:p=>acceptLocation(p,locateFocus)});
+  function cancelLocationRequest(){locationRequest.cancel();if(locating)status('location-status','');locating=false;$('#locate').disabled=false;}
+  function cancelLocationPick(){if(!pickingLocation)return;pickingLocation=false;onPickLocation(false);$('#location-pick').setAttribute('aria-pressed','false');$('#location-pick').textContent='Standort auf Karte setzen';status('location-status','');}
+  function acceptLocation(p,focus){
+    location=p;walkController?.abort();walkRevision++;walks.clear();near=[];renderNear();
+    if(walkMode==='automatic'){walkMode='unknown';$('#walk-minutes').value='';renderBoard();}
+    if(focus){station=null;board=null;boardController?.abort();boardLoading=false;cardKey='';$('#station-monitor').hidden=true;$('#monitor-empty').hidden=false;onStation(null,false);}
+    const region=cityAt(p.point);setActive(true,false);
+    status('location-status',p.source==='manual'?'Startpunkt auf der Karte gesetzt.':p.accuracy>300?'Standort nur auf ca. '+Math.round(p.accuracy)+' m genau.':'');
+    $('#location-pick').hidden=p.source!=='manual'&&p.accuracy<=300;$('#location-browser').hidden=true;
+    if(!region){onLocation(p,focus);status('location-status','Hier gibt es noch keine Verkehrsdaten. Aktuell sind Köln, Bonn und Düsseldorf verfügbar.');return;}
+    if(region.id!==cityId)onCity(region.id);else if(network)calculateWalks(!station);
+    onLocation(p,focus);
   }
+  function requestLocation(focus=true){
+    setActive(true,false);cancelLocationPick();locateFocus=focus;walkController?.abort();walkRevision++;walks.clear();near=[];renderNear();location=null;onLocation(null,false);
+    if(walkMode==='automatic'){walkMode='unknown';$('#walk-minutes').value='';renderBoard();}
+    locationRequest.request();
+  }
+  $('#location-pick').onclick=()=>{
+    if(pickingLocation){cancelLocationPick();return;}cancelLocationRequest();
+    if(!onPickLocation(true)){status('location-status','Die Karte ist noch nicht bereit. Haltestelle suchen oder gleich erneut versuchen.');return;}
+    pickingLocation=true;$('#location-pick').setAttribute('aria-pressed','true');$('#location-pick').textContent='Auswahl abbrechen';status('location-status','Tippe deinen Startpunkt auf der Karte an.');
+  };
   $('#locate').onclick=()=>requestLocation(true);
   const timer=setInterval(()=>refresh(),30000),visibility=()=>{if(!document.hidden){renderBoard();refresh();}else{boardController?.abort();boardLoading=false;}};
   const pageShow=e=>{if(e.persisted&&!document.hidden){renderBoard();refresh();}};
-  const pageHide=e=>{boardController?.abort();boardLoading=false;walkController?.abort();walkRevision++;geoRevision++;$('#locate').disabled=false;if(!e.persisted){clearInterval(timer);document.removeEventListener('visibilitychange',visibility);removeEventListener('pageshow',pageShow);removeEventListener('pagehide',pageHide);}};
+  const pageHide=e=>{boardController?.abort();boardLoading=false;walkController?.abort();walkRevision++;cancelLocationRequest();cancelLocationPick();if(!e.persisted){clearInterval(timer);document.removeEventListener('visibilitychange',visibility);removeEventListener('pageshow',pageShow);removeEventListener('pagehide',pageHide);}};
   document.addEventListener('visibilitychange',visibility);addEventListener('pagehide',pageHide);addEventListener('pageshow',pageShow);
   return {
-    start:()=>requestLocation(true),tick:()=>{if(active&&!document.hidden)renderBoard();},getLocation:()=>location,getStation:()=>station,
-    setCity:(id,{manual=false}={})=>{cityId=id;network=null;station=null;board=null;near=[];walks.clear();cardKey='';walkMode='unknown';boardController?.abort();walkController?.abort();walkRevision++;boardLoading=false;if(manual){geoRevision++;$('#locate').disabled=false;}$('#station-monitor').hidden=true;$('#monitor-empty').hidden=false;$('#nearby-stops').replaceChildren();$('#departure-cards').replaceChildren();$('#departure-list').replaceChildren();$('#monitor-search-results').hidden=true;$('#monitor-search').value='';},
+    start:()=>requestLocation(true),locate:()=>requestLocation(true),cancelLocationPick,setManualLocation:point=>{if(!validPoint(point))return;cancelLocationRequest();cancelLocationPick();acceptLocation({point:[...point],accuracy:null,timestamp:Date.now(),source:'manual'},true);},tick:()=>{if(active&&!document.hidden)renderBoard();},getLocation:()=>location,getStation:()=>station,
+    setCity:(id,{manual=false}={})=>{cityId=id;network=null;station=null;board=null;near=[];walks.clear();cardKey='';walkMode='unknown';boardController?.abort();walkController?.abort();walkRevision++;boardLoading=false;if(manual){cancelLocationRequest();cancelLocationPick();}$('#station-monitor').hidden=true;$('#monitor-empty').hidden=false;$('#nearby-stops').replaceChildren();$('#departure-cards').replaceChildren();$('#departure-list').replaceChildren();$('#monitor-search-results').hidden=true;$('#monitor-search').value='';},
     setNetwork:data=>{if(data.city!==cityId)return;network=data;search();if(location&&cityAt(location.point)?.id===cityId){calculateWalks(!station);}},
     choose,
   };

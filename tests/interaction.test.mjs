@@ -6,11 +6,17 @@ import {createVisibleTicker} from '../public/ui-clock.js';
 function picking(){
   const handlers=new Map(),frames=new Map(),queries=[],chosen=[],canvas={style:{cursor:''}};
   const stop=(id,x)=>({type:'Feature',properties:{queryId:id,name:id,modes:['tram','bus']},geometry:{type:'Point',coordinates:[x,100]}});
-  const stops=new Map([['a',stop('a',100)],['b',stop('b',110)]]);let hits=[],vehicle=null,loaded=true;
+  const stops=new Map([['a',stop('a',100)],['b',stop('b',110)]]);let hits=[],vehicle=null,loaded=true,pickLocation=false;
   const map={getCanvas:()=>canvas,getLayer:()=>loaded,queryRenderedFeatures:(box,options)=>{queries.push({box,options});return hits;},project:([x,y])=>({x,y}),on:(e,f)=>handlers.set(e,f),off:e=>handlers.delete(e)};
-  const destroy=bindMapPicking(map,{vehicles:{hitTest:()=>vehicle},stationById:id=>stops.get(id),onVehicle:id=>chosen.push(id),onStation:f=>chosen.push(f),onClear:()=>chosen.push(null),raf:f=>{frames.set(1,f);return 1;},caf:id=>frames.delete(id)});
-  return {handlers,frames,queries,chosen,canvas,stops,destroy,hits:value=>hits=value,vehicle:value=>vehicle=value,loaded:value=>loaded=value,fire:(e,point={x:101,y:100},buttons=0)=>handlers.get(e)({point,originalEvent:{buttons}}),frame:()=>{const f=frames.get(1);frames.clear();f?.();}};
+  const destroy=bindMapPicking(map,{vehicles:{hitTest:()=>vehicle},stationById:id=>stops.get(id),onVehicle:id=>chosen.push(id),onStation:f=>chosen.push(f),onClear:()=>chosen.push(null),isPickingLocation:()=>pickLocation,onLocation:p=>chosen.push(p),raf:f=>{frames.set(1,f);return 1;},caf:id=>frames.delete(id)});
+  return {handlers,frames,queries,chosen,canvas,stops,destroy,hits:value=>hits=value,vehicle:value=>vehicle=value,loaded:value=>loaded=value,pickLocation:value=>pickLocation=value,fire:(e,point={x:101,y:100},buttons=0)=>handlers.get(e)({point,originalEvent:{buttons}}),frame:()=>{const f=frames.get(1);frames.clear();f?.();}};
 }
+test('explicit location picking uses the clicked coordinates instead of vehicles or station hits',()=>{
+  const h=picking();h.vehicle('train');h.pickLocation(true);h.fire('mousemove');h.frame();assert.equal(h.canvas.style.cursor,'crosshair');assert.equal(h.queries.length,0);
+  h.handlers.get('click')({point:{x:101,y:100},lngLat:{lat:50.93,lng:6.95}});assert.deepEqual(h.chosen,[[50.93,6.95]]);
+  h.fire('dragstart');h.handlers.get('click')({lngLat:{lat:51,lng:7}});assert.equal(h.chosen.length,1);
+  h.fire('dragend');assert.equal(h.canvas.style.cursor,'crosshair');h.pickLocation(false);h.fire('click');assert.equal(h.chosen.at(-1),'train');h.destroy();
+});
 test('station picking resolves duplicate labels to the closest original known station',()=>{
   const h=picking();h.hits([{properties:{queryId:'foreign'}},{properties:{queryId:'b'}},{properties:{queryId:'a',modes:'["tram"]'}},{properties:{queryId:'a'}}]);
   h.fire('click');assert.equal(h.chosen[0],h.stops.get('a'));assert.deepEqual(h.chosen[0].properties.modes,['tram','bus']);

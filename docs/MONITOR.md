@@ -1,6 +1,6 @@
 # Standort, Abfahrtsmonitor und Losgehzeit
 
-Stand: 5. September 2026. Der Monitor ist in Köln, Bonn und Düsseldorf verfügbar.
+Stand: 6. September 2026. Der Monitor ist in Köln, Bonn und Düsseldorf verfügbar.
 Die [KVB-Monitor-Referenz](https://kvb-monitor.de/) des Nutzers war die inhaltliche
 Anregung; übernommen werden weder deren Layout noch deren Datenabruf.
 
@@ -8,10 +8,14 @@ Anregung; übernommen werden weder deren Layout noch deren Datenabruf.
 
 Die App bittet beim Öffnen über die Browser-Standortfunktion um Freigabe. Nach
 Erlaubnis wählt sie die unterstützte Region und zeigt die Umgebung samt blauem
-Standortpunkt. Bei verweigerter Freigabe bleibt die Haltestellensuche verfügbar;
-Gehzeit kann dann manuell eingegeben werden. Außerhalb der drei Regionen wird
-fehlende Abdeckung ausdrücklich gemeldet. Manuelle Stadtauswahl hat Vorrang
-vor einem noch ausstehenden Standortergebnis.
+Standortpunkt. „Meine Umgebung“ und das Standortsymbol rechts fragen den Standort
+erneut ab und wählen die nahe Station neu, auch nach einer früheren manuellen
+Haltestellenauswahl. Bei verweigerter Freigabe kann ein Startpunkt auf der Karte
+gesetzt werden; die Haltestellensuche und manuelle Gehzeit bleiben verfügbar.
+Ein Kartenpunkt wird ausdrücklich als selbst gewählter Startpunkt behandelt,
+ohne vorgetäuschte GPS-Genauigkeit. Außerhalb der drei Regionen wird fehlende
+Abdeckung ausdrücklich gemeldet. Manuelle Stadt- oder Haltestellenauswahl hat
+Vorrang vor einem noch ausstehenden Standortergebnis.
 
 Aus den bereits geladenen Stationen werden höchstens sechs innerhalb von drei
 Kilometern gesucht. Eine gemeinsame Fußwegabfrage liefert berechnete Gehzeiten.
@@ -62,14 +66,28 @@ Prognosen; der Countdown pausiert. Bei Abruffehlern werden alte Daten entfernt.
 ## Standort und Navigation
 
 Die [Browser-Geolocation](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition)
-braucht HTTPS bzw. localhost und die Freigabe des Browsers. Eingebettete Ansichten
-können sie zusätzlich sperren. Die App bietet dann einen Link zum Öffnen im
-Browser und die manuelle Haltestellenauswahl. Die eigene Worker-Policy erlaubt
-Geolocation für die eigene Origin; eine übergeordnete Browser-/Frame-Policy
-kann die App nicht überschreiben.
+braucht HTTPS bzw. localhost sowie die Freigaben von Browser und Gerät.
+[Eingebettete Ansichten](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy/geolocation)
+können sie zusätzlich sperren. Eine erkennbar blockierte Policy, verweigerte
+Freigabe, fehlende Unterstützung oder Zeitüberschreitung bleibt als konkrete
+Meldung mit erneuter Anfrage und Kartenpunkt-Alternative sichtbar. „Separat
+öffnen“ öffnet die eigene URL in einem neuen Fenster/Tab; welche Browser-App
+dafür verwendet wird, bestimmt die Umgebung. Die eigene Worker-Policy erlaubt
+Geolocation für die eigene Origin. Die App kann weder eine übergeordnete
+Frame-Policy noch fehlende Betriebssystemfreigaben überschreiben.
 
-Standortkoordinaten bleiben im Sitzungsspeicher des Browsers, werden jedoch zur
-Fußwegberechnung durch den Rheinlive-Server an Transitous gesendet. Rheinlive
+Die einmalige Anfrage fordert hohe Genauigkeit und keinen gespeicherten Fix
+an (`enableHighAccuracy: true`, `maximumAge: 0`, nativer Timeout 12 Sekunden).
+Ein zusätzlicher 18-Sekunden-Abbruch beendet auch hängen gebliebene Dialoge
+oder ausbleibende Callbacks im App-Zustand; einen fremden nativen Dialog kann
+die Webseite nicht selbst schließen. Ungültige oder mehr als 30 Sekunden alte
+Ergebnisse werden verworfen. Abgebrochene oder ersetzte Anfragen dürfen später
+weder Karte noch Station überschreiben. Eine neue Anfrage verwirft alte
+automatische Gehzeiten und laufende Fußwegantworten.
+
+Standortkoordinaten beziehungsweise ein selbst gewählter Kartenpunkt bleiben im
+Arbeitsspeicher der geöffneten Seite, werden jedoch zur Fußwegberechnung durch
+den Rheinlive-Server an Transitous gesendet. Rheinlive
 schreibt sie weder in dauerhaften Speicher noch in seine Antwort-Caches. Der
 POST-Aufruf und seine Antwort verwenden keine Browser-Caches. Dies ist keine
 Aussage über mögliche technische Logs des Hosters oder von Transitous. Nur

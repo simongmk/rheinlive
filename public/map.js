@@ -4,7 +4,7 @@ import {createRailDetail,DETAIL_ZOOM} from './rail-detail.js';
 // Static network layers stay in MapLibre; vehicle animation uses its own cached canvas.
 const collection=features=>({type:'FeatureCollection',features});
 const empty=()=>collection([]);
-export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=()=>{},onStation=()=>{},onMove=()=>{},onClear=()=>{},onError=()=>{},onRailDetail=()=>{}}={}){
+export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=()=>{},onStation=()=>{},onPickLocation=()=>{},onMove=()=>{},onClear=()=>{},onError=()=>{},onRailDetail=()=>{}}={}){
   if(!window.maplibregl)throw new Error('Kartenbibliothek konnte nicht geladen werden.');
   const map=new maplibregl.Map({container:'map',style:await mapStyle(initialTheme),center:[city.center[1],city.center[0]],zoom:11.7,minZoom:9,maxZoom:18,pitch:0,attributionControl:false,collectResourceTiming:true,canvasContextAttributes:{antialias:true}});
   map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:'<a href="https://transitous.org/sources/" target="_blank">Verkehrsdaten: Transitous</a>'}),'bottom-right');
@@ -42,8 +42,8 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     }
   }
   map.on('style.load',mount);
-  let stationIndex=new Map();
-  const removePicking=bindMapPicking(map,{vehicles:vehicleLayer,stationById:id=>stationIndex.get(id),onVehicle:onSelect,onStation,onClear});
+  let stationIndex=new Map(),pickingLocation=false;
+  const removePicking=bindMapPicking(map,{vehicles:vehicleLayer,stationById:id=>stationIndex.get(id),onVehicle:onSelect,onStation,onClear,isPickingLocation:()=>pickingLocation,onLocation:point=>onPickLocation(point)});
   map.on('remove',removePicking);
   map.on('moveend',onMove);map.on('error',e=>{if(e.sourceId!=='detail-tracks')onError(e.error?.message||'Die Karte konnte nicht vollständig geladen werden.');});
   return {
@@ -53,6 +53,7 @@ export async function createTransitMap(city,{theme:initialTheme='dark',onSelect=
     fitBounds:(bounds)=>{vehicleLayer.setBounds(bounds);map.fitBounds([[bounds[0][1],bounds[0][0]],[bounds[1][1],bounds[1][0]]],{padding:{top:100,right:60,bottom:innerWidth<760?250:70,left:innerWidth<760?40:390},maxZoom:12.3});},
     update:(next,fetchedAt,now,options)=>vehicleLayer.update(next,fetchedAt,now,options),
     performance:()=>({...vehicleLayer.stats(),railTransferBytes:railDetail.stats().transferBytes}),
+    setLocationPicking:value=>{pickingLocation=value;map.getCanvas().style.cursor=value?'crosshair':'';},
     setLocation:p=>{userLocation=collection(p?[{type:'Feature',properties:{},geometry:{type:'Point',coordinates:[p.point[1],p.point[0]]}}]:[]);map.getSource('user-location')?.setData(userLocation);},
     centerLocation:p=>map.easeTo({center:[p.point[1],p.point[0]],zoom:p.accuracy>300?13.2:14.8,pitch:0,duration:700,padding:{top:100,bottom:innerWidth<760?380:60,left:innerWidth<760?25:370,right:60}}),
     setBoardStation:f=>{boardStation=collection(f?[f]:[]);map.getSource('board-station')?.setData(boardStation);},
