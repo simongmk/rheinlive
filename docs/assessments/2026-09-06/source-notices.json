@@ -1,0 +1,14 @@
+{
+  "nv": {
+    "attributions.txt": "attribution_id,organization_name,is_producer,attribution_url,attribution_email\n1,DELFI e.V,1,https://www.delfi.de,\n2,GTFS.de,1,https://wwww.gtfs.de,info@gtfs.de\n3,OpenStreetMap contributors,,https://openstreetmap.org,\n",
+    "feed_info.txt": "feed_publisher_name,feed_publisher_url,feed_lang,feed_version,feed_contact_email,feed_contact_url\n\"gtfs.de - GTFS für Deutschland, Daten bereitgestellt von DELFI e.V.\",http://gtfs.de,de,latest-nv-free,info@gtfs.de,https://gtfs.de\n"
+  },
+  "rv": {
+    "attributions.txt": "attribution_id,organization_name,is_producer,attribution_url,attribution_email\n1,DELFI e.V,1,https://www.delfi.de,\n2,GTFS.de,1,https://wwww.gtfs.de,info@gtfs.de\n3,OpenStreetMap contributors,,https://openstreetmap.org,\n",
+    "feed_info.txt": "feed_publisher_name,feed_publisher_url,feed_lang,feed_version,feed_contact_email,feed_contact_url\n\"gtfs.de - GTFS für Deutschland, Daten bereitgestellt von DELFI e.V.\",http://gtfs.de,de,latest-rv-free,info@gtfs.de,https://gtfs.de\n"
+  },
+  "fv": {
+    "attributions.txt": "attribution_id,organization_name,is_producer,attribution_url,attribution_email\n1,DELFI e.V,1,https://www.delfi.de,\n2,GTFS.de,1,https://wwww.gtfs.de,info@gtfs.de\n3,OpenStreetMap contributors,,https://openstreetmap.org,\n",
+    "feed_info.txt": "feed_publisher_name,feed_publisher_url,feed_lang,feed_version,feed_contact_email,feed_contact_url\n\"gtfs.de - GTFS für Deutschland, Daten bereitgestellt von DELFI e.V.\",http://gtfs.de,de,latest-fv-free,info@gtfs.de,https://gtfs.de\n"
+  }
+}

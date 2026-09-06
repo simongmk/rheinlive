@@ -1,0 +1,21 @@
+{
+  "description": "Manually selected, approximate city-centre points; 10 km circles, not administrative boundaries or a population-weighted national sample. Covers all 16 states plus additional cities and smaller towns. Overlapping areas must not be summed.",
+  "radiusKm": 10,
+  "areas": [
+    ["berlin","Berlin",52.52,13.405],["hamburg","Hamburg",53.551,9.994],
+    ["munich","München",48.137,11.576],["cologne","Köln",50.938,6.96],
+    ["frankfurt","Frankfurt am Main",50.11,8.682],["stuttgart","Stuttgart",48.776,9.183],
+    ["duesseldorf","Düsseldorf",51.227,6.774],["bonn","Bonn",50.737,7.098],
+    ["leipzig","Leipzig",51.34,12.375],["dresden","Dresden",51.051,13.738],
+    ["hannover","Hannover",52.375,9.732],["bremen","Bremen",53.079,8.802],
+    ["nuremberg","Nürnberg",49.453,11.077],["essen","Essen",51.456,7.012],
+    ["kiel","Kiel",54.323,10.14],["schwerin","Schwerin",53.629,11.414],
+    ["potsdam","Potsdam",52.4,13.06],["magdeburg","Magdeburg",52.121,11.627],
+    ["erfurt","Erfurt",50.979,11.03],["wiesbaden","Wiesbaden",50.083,8.241],
+    ["mainz","Mainz",50.0,8.271],["saarbruecken","Saarbrücken",49.235,6.997],
+    ["freiburg","Freiburg",47.996,7.85],["rostock","Rostock",54.092,12.099],
+    ["muenster","Münster",51.962,7.626],["passau","Passau",48.566,13.431],
+    ["neubrandenburg","Neubrandenburg",53.557,13.261],["stendal","Stendal",52.605,11.858],
+    ["pruem","Prüm",50.207,6.423],["goslar","Goslar",51.906,10.429]
+  ]
+}

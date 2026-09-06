@@ -1,0 +1,4 @@
+# Offline importer itself uses only the Python standard library.
+# Official MobilityData bindings used to decode actual GTFS-Realtime snapshots.
+gtfs-realtime-bindings==2.0.0
+protobuf==6.33.6
