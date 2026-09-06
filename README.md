@@ -10,7 +10,8 @@ only. The German interface supports desktop and mobile screens.
 - Tap a station dot or label on the map to open its departures.
 - Walking time from the footpath network, adjustable time/buffer, Apple/Google walking links and DB journey planning.
 - Dark and light maps, mapped rail tracks, optional bus/ferry routes, station search and map tilt.
-- City, transport-mode and line filters, plus an accessible list of visible trips.
+- One search for supported cities, local stops and lines; transport and line filters expand on demand.
+- Clock at the top right, a small combined data/status control, and tucked-away map style/3D settings.
 - Selected-trip direction, operator, stops, available alerts and platform changes.
 - One stroke per mapped rail geometry, with rounded close-up tracks, distinct construction sections and a colored selected trip.
 - Icons brake, wait at stations and accelerate again; reported stays take priority over explicitly estimated short dwells.

@@ -3,6 +3,7 @@ import {prepareTrips,vehiclesAt,vehicleView} from '/lib/transit.mjs';
 import {createTransitMap} from '/map.js';
 import {createDepartureMonitor} from '/monitor.js';
 import {createVisibleTicker} from '/ui-clock.js';
+import {createPlaceSearch} from '/search.js';
 import {platformForStop,platformText,freshDetail} from '/lib/journey-platform.mjs';
 const $=s=>document.querySelector(s),text=(s,v)=>{const n=$(s),value=String(v);if(n.textContent!==value)n.textContent=value;};
 const element=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n;};
@@ -10,7 +11,7 @@ const icon=id=>{const svg=document.createElementNS('http://www.w3.org/2000/svg',
 const readPref=(key,fallback)=>{try{return localStorage.getItem('rheinlive:'+key)||fallback;}catch{return fallback;}};
 const savePref=(key,value)=>{try{localStorage.setItem('rheinlive:'+key,value);}catch{}};
 const preferredCity=readPref('city','cologne');
-let city=Object.hasOwn(cities,preferredCity)?cities[preferredCity]:cities.cologne,map=null,snapshot=null,trips=[],network=null,catalog=[],visible=[],candidates=[],selected=null,detail=null,detailId=null,detailKey='',offset=0,revision=0,loading=false,requestController=null,detailController=null,networkController=null,following=false,listLimit=50,tab='lines',lastList=0,theme='dark';
+let city=Object.hasOwn(cities,preferredCity)?cities[preferredCity]:cities.cologne,map=null,snapshot=null,trips=[],network=null,catalog=[],networkError='',visible=[],candidates=[],selected=null,detail=null,detailId=null,detailKey='',offset=0,revision=0,loading=false,requestController=null,detailController=null,networkController=null,following=false,listLimit=50,tab='lines',lastList=0,theme='dark';
 const networkCache=new Map(),timings={started:performance.now(),firstVehicles:null,mapReady:null,networkMs:null,feedMs:null};
 const activeModes=new Set(['tram','suburban','regional','long_distance']),hiddenLines=new Set(),cancelled=new Map();
 const timeFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit',hour12:false}),secondsFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',second:'2-digit'}),dateFormat=new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',weekday:'short',day:'numeric',month:'short'});
@@ -18,7 +19,7 @@ const time=t=>Number.isFinite(t)?timeFormat.format(new Date(t)):'–';
 const cleanName=s=>String(s||'').replace(/^(?:Köln|Koeln|Bonn)[, ]+/,'').replace(/^D-/,'');
 let viewBounds=null;
 let pendingLocationFocus=false;
-const monitor=createDepartureMonitor({onCity:id=>changeCity(id,{fromLocation:true}),onLocation:(p,focus)=>{clearSelected();map?.setLocation(p);if(!p)pendingLocationFocus=false;else if(focus){pendingLocationFocus=!map;map?.centerLocation(p);}},onStation:(f,focus)=>{clearSelected();map?.setBoardStation(f);if(focus)map?.raw.flyTo({center:f.geometry.coordinates,zoom:15,pitch:0,duration:700});},onExplore:()=>clearSelected(),onPickLocation:active=>{map?.setLocationPicking(active);return Boolean(map);}});
+const monitor=createDepartureMonitor({onCity:id=>changeCity(id,{fromLocation:true}),onLocation:(p,focus)=>{clearSelected();map?.setLocation(p);if(!p)pendingLocationFocus=false;else if(focus){pendingLocationFocus=!map;map?.centerLocation(p);}},onStation:(f,focus)=>{clearSelected();if(f)placeSearch.clear();map?.setBoardStation(f);if(focus)map?.raw.flyTo({center:f.geometry.coordinates,zoom:15,pitch:0,duration:700});},onExplore:()=>clearSelected(),onPickLocation:active=>{map?.setLocationPicking(active);return Boolean(map);}});
 const inView=v=>pointInBounds([v.lat,v.lon],city.bounds)&&(!viewBounds||viewBounds.contains([v.lat,v.lon]));
 const isFresh=()=>snapshot&&!snapshot.stale&&Date.now()+offset-snapshot.fetchedAt<=MAX_SNAPSHOT_AGE_MS;
 const filters=v=>activeModes.has(v.mode)&&!hiddenLines.has(v.lineKey);
@@ -30,10 +31,21 @@ $('#journey-fold').addEventListener('toggle',()=>{if(!$('#journey-fold').open)re
 $('#follow').onclick=()=>{setFollowing(!following);const v=visible.find(v=>v.id===selected);if(following&&v)map?.follow(v);};
 $('#panel-toggle').onclick=()=>{const open=$('#panel-toggle').getAttribute('aria-expanded')!=='true';$('#panel-toggle').setAttribute('aria-expanded',String(open));$('.overview').classList.toggle('expanded',open);};
 function showInfo(){renderPerformance();$('#info-dialog').showModal();}
-$('#info-open').onclick=showInfo;$('#quality-open').onclick=showInfo;$('#info-close').onclick=()=>$('#info-dialog').close();
+$('#info-open').onclick=showInfo;$('#info-close').onclick=()=>$('#info-dialog').close();
 $('#info-dialog').onclick=e=>{if(e.target===$('#info-dialog'))$('#info-dialog').close();};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){monitor.cancelLocationPick();clearSelected();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){monitor.cancelLocationPick();placeSearch.close();$('.map-options').open=false;clearSelected();}});
 $('#map-retry').onclick=()=>location.reload();
+const placeSearch=createPlaceSearch({input:$('#search'),results:$('#stop-results'),getContext:()=>({city,network,catalog,networkError}),onChoose:item=>{
+  setFollowing(false);
+  if(item.kind==='station'){monitor.choose(item.station,true);return;}
+  monitor.explore();
+  if(item.kind==='city'){if(item.cityId!==city.id||!network)changeCity(item.cityId);else map?.fitBounds(city.bounds);return;}
+  activeModes.add(item.line.mode);hiddenLines.clear();for(const line of catalog)if(line.key!==item.line.key)hiddenLines.add(line.key);
+  renderModes();renderLines();syncNetworkFilter();draw(true);
+  const points=(network?.stops.features??[]).filter(f=>f.properties.lineKeys?.includes(item.line.key)).map(f=>f.geometry.coordinates);
+  for(const trip of trips.filter(t=>t.lineKey===item.line.key))for(const segment of trip.segments)points.push([segment.from.lon,segment.from.lat],[segment.to.lon,segment.to.lat]);
+  if(points.length&&map){const lng=points.map(p=>p[0]),lat=points.map(p=>p[1]);map.raw.fitBounds([[Math.min(...lng),Math.min(...lat)],[Math.max(...lng),Math.max(...lat)]],{maxZoom:14,padding:{top:100,right:70,bottom:innerWidth<=760?340:70,left:innerWidth<=760?30:390},duration:700});}
+}});
 function renderModes(){
   const all=isFresh()?vehiclesAt(trips,Date.now()+offset,snapshot.fetchedAt).filter(inView):[];
   $('#modes').replaceChildren();
@@ -48,20 +60,13 @@ function updateCatalog(){
   // Timetable network numbers are not individual long-distance train numbers.
   const lines=new Map((network?.catalog||[]).filter(l=>l.mode!=='long_distance').map(l=>[l.key,l]));
   for(const trip of trips)lines.set(trip.lineKey,{key:trip.lineKey,line:trip.line,mode:trip.mode,color:trip.color});
-  catalog=[...lines.values()].sort((a,b)=>transportModes.findIndex(m=>m.id===a.mode)-transportModes.findIndex(m=>m.id===b.mode)||a.line.localeCompare(b.line,'de',{numeric:true}));renderLines();syncNetworkFilter();
+  catalog=[...lines.values()].sort((a,b)=>transportModes.findIndex(m=>m.id===a.mode)-transportModes.findIndex(m=>m.id===b.mode)||a.line.localeCompare(b.line,'de',{numeric:true}));renderLines();syncNetworkFilter();placeSearch.refresh();
 }
 function renderLines(){
-  const query=$('#search').value.trim().toLocaleLowerCase('de'),lines=catalog.filter(l=>activeModes.has(l.mode)&&(!query||l.line.toLocaleLowerCase('de').includes(query)));
-  text('#line-count',`${lines.length} Linien`);$('#lines').replaceChildren();$('#lines-empty').hidden=lines.length>0;
+  const lines=catalog.filter(l=>activeModes.has(l.mode));
+  const chosen=lines.filter(l=>!hiddenLines.has(l.key));text('#panel-filter-label',hiddenLines.size?(chosen.length===1?'Linie '+chosen[0].line:chosen.length+' Linien ausgewählt'):'Verkehr & Linien');text('#line-count',`${lines.length} Linien`);$('#lines').replaceChildren();$('#lines-empty').hidden=lines.length>0;
   for(const line of lines){const b=element('button','line-filter'+(line.line.length>4?' long-label':''),line.line);b.style.setProperty('--line-color',line.color);b.setAttribute('aria-pressed',String(!hiddenLines.has(line.key)));const mode=transportModes.find(m=>m.id===line.mode);b.setAttribute('aria-label',`${mode.name} ${line.line} anzeigen`);b.title=mode.name+' '+line.line;b.onclick=()=>{hiddenLines.has(line.key)?hiddenLines.delete(line.key):hiddenLines.add(line.key);b.setAttribute('aria-pressed',String(!hiddenLines.has(line.key)));draw(true);syncNetworkFilter();};$('#lines').append(b);}
-  renderStopSearch(query);
 }
-function renderStopSearch(query){
-  const results=$('#stop-results');results.replaceChildren();results.hidden=true;if(query.length<2||!network)return;
-  const found=new Map();for(const f of network.stops.features){if(!f.properties.name.toLocaleLowerCase('de').includes(query))continue;const p=f.geometry.coordinates,key=f.properties.name+':'+p.map(n=>n.toFixed(3)).join(',');if(!found.has(key))found.set(key,f);if(found.size>=6)break;}
-  for(const f of found.values()){const b=element('button','stop-result');b.append(icon('pin'),document.createTextNode(f.properties.name));b.onclick=()=>{monitor.choose(f,true);if(innerWidth<=760){$('.overview').classList.remove('expanded');$('#panel-toggle').setAttribute('aria-expanded','false');}setFollowing(false);};results.append(b);}results.hidden=found.size===0;
-}
-$('#search').addEventListener('input',()=>{renderLines();renderVehicleList();});
 $('#all-lines').onclick=()=>{hiddenLines.clear();renderLines();draw(true);syncNetworkFilter();};
 $('#include-schedule').onchange=()=>draw(true);
 function syncNetworkFilter(){map?.setFilter([...activeModes],hiddenLines.size?catalog.filter(l=>activeModes.has(l.mode)&&!hiddenLines.has(l.key)).map(l=>l.key):null);loadBusPart(revision);}
@@ -69,7 +74,7 @@ function switchTab(next){tab=next;for(const id of ['lines','vehicles']){$('#tab-
 for(const id of ['lines','vehicles']){$('#tab-'+id).onclick=()=>switchTab(id);$('#tab-'+id).onkeydown=e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const next=id==='lines'?'vehicles':'lines';switchTab(next);$('#tab-'+next).focus();}};}
 $('#more-vehicles').onclick=()=>{listLimit+=50;renderVehicleList();};
 function renderVehicleList(){
-  const query=$('#search').value.trim().toLocaleLowerCase('de');const list=visible.filter(inView).filter(v=>!query||`${v.line} ${v.segment.from.name} ${v.segment.to.name}`.toLocaleLowerCase('de').includes(query)).sort((a,b)=>a.line.localeCompare(b.line,'de',{numeric:true})||a.segment.arrival-b.segment.arrival);
+  const list=visible.filter(inView).sort((a,b)=>a.line.localeCompare(b.line,'de',{numeric:true})||a.segment.arrival-b.segment.arrival);
   const parent=$('#vehicle-list');parent.replaceChildren();if(!list.length)parent.append(element('p','empty',isFresh()?'Keine passenden Fahrten. Prüfe Filter und Kartenausschnitt.':'Warte auf aktuelle Fahrtdaten.'));
   for(const v of list.slice(0,listLimit)){const b=element('button','vehicle-row');const badge=element('span','vehicle-badge',v.line);badge.style.setProperty('--line-color',v.color);badge.style.setProperty('--line-text',v.textColor);const label=element('span','row-label',cleanName(v.segment.to.name));label.append(element('small','',transportModes.find(m=>m.id===v.mode)?.name+' · '+(v.quality==='realtime'?'mit Prognose':'nur Fahrplan')));b.append(badge,label);const delay=delayMinutes(v);if(v.quality==='realtime'&&delay>0)b.append(element('span','row-delay','+'+delay+'′'));b.onclick=()=>{showDetails(v);map?.raw.easeTo({center:[v.lon,v.lat],zoom:Math.max(13,map.raw.getZoom()),duration:600});};parent.append(b);}$('#more-vehicles').hidden=list.length<=listLimit;
 }
@@ -156,11 +161,11 @@ async function loadBusPart(rev){
   finally{record.pending=false;}
 }
 async function loadNetwork(rev){
-  networkController?.abort();const controller=new AbortController();networkController=controller;text('#network-age','Liniennetz wird geladen …');const id=city.id,started=performance.now();
+  networkController?.abort();const controller=new AbortController();networkController=controller;networkError='';text('#network-age','Liniennetz wird geladen …');const id=city.id,started=performance.now();
   try{let record=networkCache.get(id);if(!record){const r=await fetch('/data/network-'+id+'.json?v=7',{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});if(!r.ok)throw Error('Netz nicht erreichbar');const data=await r.json();if(data.city!==id)throw Error('Falsches Netz');record={data,bus:null,pending:false};}
     if(rev!==revision||controller.signal.aborted)return;networkCache.delete(id);networkCache.set(id,record);if(networkCache.size>2)networkCache.delete(networkCache.keys().next().value);
     network=record.data;timings.networkMs=performance.now()-started;applyNetwork();updateCatalog();monitor.setNetwork(network);text('#network-age','Netzstand '+new Date(network.generatedAt).toLocaleDateString('de-DE'));loadBusPart(rev);
-  }catch{if(rev!==revision||controller.signal.aborted)return;text('#network-age','Liniennetz nicht erreichbar');}
+  }catch{if(rev!==revision||controller.signal.aborted)return;networkError='Haltestellen gerade nicht verfügbar.';placeSearch.refresh();text('#network-age','Liniennetz nicht erreichbar');}
 }
 function renderPerformance(){
   const stats=map?.performance(),seconds=n=>n===null?'noch nicht verfügbar':(n/1000).toFixed(2)+' s';
@@ -170,10 +175,10 @@ function renderPerformance(){
   text('#perf-transfer',entries.length||stats?.railTransferBytes?((entries.reduce((n,e)=>n+e.transferSize,0)+(stats?.railTransferBytes||0))/1024).toFixed(0)+' KB':'noch nicht verfügbar');
 }
 function changeCity(id,{fromLocation=false}={}){
+  if(!Object.hasOwn(cities,id))return;placeSearch.clear();
   monitor.setCity(id,{manual:!fromLocation});if(!fromLocation)pendingLocationFocus=false;map?.setBoardStation(null);
-  if(!Object.hasOwn(cities,id))return;revision++;city=cities[id];savePref('city',id);$('#city-select').value=id;requestController?.abort();loading=false;clearSelected();snapshot=null;trips=[];network=null;catalog=[];hiddenLines.clear();cancelled.clear();$('#search').value='';map?.setNetwork({lines:{type:'FeatureCollection',features:[]},stops:{type:'FeatureCollection',features:[]}});map?.fitBounds(city.bounds);map?.update([]);text('#region-label',city.region.toLocaleUpperCase('de'));text('#feed-status','Aktuelle Fahrten werden geladen …');text('#header-status','Verbinden');text('#coverage-info','Warte auf aktuelle Prognosen.');text('#refresh-label','');text('#vehicle-count','–');$('#notice').hidden=true;$('#status-dot').classList.remove('live');renderModes();renderLines();renderVehicleList();loadNetwork(revision);refresh();
+  revision++;city=cities[id];savePref('city',id);requestController?.abort();loading=false;clearSelected();snapshot=null;trips=[];network=null;catalog=[];hiddenLines.clear();cancelled.clear();map?.setNetwork({lines:{type:'FeatureCollection',features:[]},stops:{type:'FeatureCollection',features:[]}});map?.fitBounds(city.bounds);map?.update([]);text('#region-label',city.region.toLocaleUpperCase('de'));text('#feed-status','Aktuelle Fahrten werden geladen …');text('#header-status','Verbinden');text('#coverage-info','Warte auf aktuelle Prognosen.');text('#refresh-label','');text('#vehicle-count','–');$('#notice').hidden=true;$('#status-dot').classList.remove('live');renderModes();renderLines();renderVehicleList();loadNetwork(revision);refresh();
 }
-$('#city-select').onchange=e=>changeCity(e.target.value);
 $('#retry').onclick=refresh;
 $('#recenter').onclick=()=>{setFollowing(false);monitor.locate();};$('#zoom-in').onclick=()=>map?.zoomIn();$('#zoom-out').onclick=()=>map?.zoomOut();
 $('#tilt').onclick=()=>{const next=$('#tilt').getAttribute('aria-pressed')!=='true';$('#tilt').setAttribute('aria-pressed',String(next));map?.setTilt(next);};
@@ -186,7 +191,6 @@ async function setTheme(next){
 }
 $('#theme-dark').onclick=()=>setTheme('dark');$('#theme-light').onclick=()=>setTheme('light');
 async function init(){
-  $('#city-select').replaceChildren(...Object.values(cities).map(c=>{const option=element('option','',c.name);option.value=c.id;return option;}));
   changeCity(city.id,{fromLocation:true});monitor.start();const pref=readPref('theme','dark')==='light'?'light':'dark';theme=pref;document.documentElement.dataset.theme=pref;for(const id of ['dark','light'])$('#theme-'+id).setAttribute('aria-pressed',String(pref===id));
   try{map=await createTransitMap(city,{theme:pref,onStation:f=>monitor.choose(f,false),onPickLocation:point=>monitor.setManualLocation(point),onSelect:id=>{const v=visible.find(v=>v.id===id);if(v)showDetails(v);},onMove:()=>{viewBounds=map?.getBounds()??null;updateCount();renderModes();if(tab==='vehicles')renderVehicleList();},onClear:clearSelected,onRailDetail:({active})=>{$('#track-legend').hidden=!active;},onError:message=>{text('#map-error-text',message);$('#map-error').hidden=false;}});map.raw.once('idle',()=>{timings.mapReady=performance.now()-timings.started;});map.raw.on('idle',()=>{$('#map-error').hidden=true;});map.raw.on('dragstart',()=>setFollowing(false));map.raw.on('zoomstart',e=>{if(e.originalEvent)setFollowing(false);});if(network)applyNetwork();syncNetworkFilter();map.fitBounds(city.bounds);map.setBoardStation(monitor.getStation());const position=monitor.getLocation();if(position){map.setLocation(position);if(pendingLocationFocus)map.centerLocation(position);}draw(true);}
   catch(e){text('#map-error-text',e.message+' Eine WebGL-fähige Browseransicht wird benötigt.');$('#map-error').hidden=false;}

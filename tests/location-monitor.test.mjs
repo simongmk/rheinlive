@@ -85,3 +85,9 @@ test('a selected line disappearing from a board refresh never silently enables u
   assert.equal(chip(h,'bus:106').attributes['aria-pressed'],'true');assert.equal(rows(h).length,0);assert.equal(cards(h).length,0);
   h.departures.push(departure('106-back','106',9));h.node('#board-retry').onclick();await flush();assert.deepEqual(rows(h).map(r=>r.dataset.event),['106-back']);
 },{startTime:T,departures:[departure('106-out','106',10),departure('132-out','132',12)]}));
+test('opening a map search result cancels a pending location and cannot be pulled back into departures',()=>withMonitor(async h=>{
+  h.monitor.locate();h.monitor.explore();h.requests[0].ok({coords:{latitude:50.93,longitude:6.955,accuracy:20},timestamp:Date.now()});await flush();
+  assert.equal(h.monitor.getLocation(),null);assert.equal(h.node('#monitor-view').hidden,true);
+  h.monitor.setManualLocation([50.93,6.955]);h.monitor.explore();await flush();await flush();
+  assert.equal(h.node('#monitor-view').hidden,true);assert.equal(h.monitor.getStation(),null);
+}));

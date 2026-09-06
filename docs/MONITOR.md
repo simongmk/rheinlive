@@ -6,6 +6,15 @@ Anregung; übernommen werden weder deren Layout noch deren Datenabruf.
 
 ## Vom Öffnen zum Losgehen
 
+Ein gemeinsames Suchfeld bleibt in Karten- und Abfahrtsansicht erreichbar.
+Städte werden auch vor dem Laden der Kartendaten gefunden; Linien und
+Haltestellen stammen aus der gerade gewählten Region. Ein Stadttreffer wechselt
+die Region, ein Linientreffer wählt diese Linie auf der Karte, ein Haltestellentreffer
+öffnet deren Abfahrten. „Koeln“ und „Duesseldorf“ sind ebenfalls suchbar.
+Die Suche lädt keine weiteren Regionen beim Tippen. Weitere Verkehrsfilter
+sowie Kartenstil, Netz und 3D sind eingeklappt; Dateninfo und Prognosestatus
+teilen sich einen kleinen Button unten, die Uhr steht oben rechts.
+
 Die App bittet beim Öffnen über die Browser-Standortfunktion um Freigabe. Nach
 Erlaubnis wählt sie die unterstützte Region und zeigt die Umgebung samt blauem
 Standortpunkt. „Meine Umgebung“ und das Standortsymbol rechts fragen den Standort
